@@ -101,6 +101,8 @@ def test_orphan_targets_report_reference_usage(tmp_path, monkeypatch):
 def test_get_available_vault_references():
     """DataVault 가용 수집 자산 조회 및 미등록 자산 우선순위 정렬 검증"""
     res = SymbolRelationsManager.get_available_vault_references("KRW-BTC")
+    if not res.get("all_collected"):
+        pytest.skip("DataVault 수집 데이터 없음(git 제외 폴더 — CI 등)")
     assert res["target"] == "KRW-BTC"
     assert "unattached" in res
     assert "all_collected" in res
