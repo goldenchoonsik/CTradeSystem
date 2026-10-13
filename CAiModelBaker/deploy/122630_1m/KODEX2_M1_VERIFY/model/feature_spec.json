@@ -1,0 +1,38 @@
+{
+    "session_id": "KODEX2_M1_VERIFY",
+    "symbol": "122630",
+    "interval": "1m",
+    "seed": 42,
+    "features_order": [
+        "mtf_ema_distance_4h",
+        "target_ma_ratio",
+        "ref_000660_ret_5c",
+        "target_adx",
+        "target_bb_kc_squeeze",
+        "ref_005930_ret_5c"
+    ],
+    "feature_params": {
+        "mtf_ema_distance_4h": {
+            "period": 200
+        },
+        "target_ma_ratio": {
+            "period_bars": 15
+        },
+        "ref_000660_ret_5c": {
+            "candles": 10
+        },
+        "target_adx": {
+            "period_bars": 14
+        },
+        "target_bb_kc_squeeze": {
+            "period_bars": 20
+        },
+        "ref_005930_ret_5c": {
+            "candles": 10
+        }
+    },
+    "param_policy": "scale_v2",
+    "params_resolved": true,
+    "required_history_bars": 410,
+    "horizon_bars": 10
+}

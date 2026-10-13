@@ -1,0 +1,1043 @@
+{
+  "069500": {
+    "symbol": "069500",
+    "category": "KRX_ETF",
+    "role": "target",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m",
+      "15m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "10s",
+      "1m",
+      "15m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "069500",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "005930": {
+    "symbol": "005930",
+    "category": "KRX_STOCK",
+    "role": "leading_stock",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "ingestion_sources": [
+      "1M",
+      "TICK",
+      "1D"
+    ],
+    "target_scales": [
+      "10s",
+      "1m"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "005930",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "000660": {
+    "symbol": "000660",
+    "category": "KRX_STOCK",
+    "role": "leading_stock",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "10s",
+      "1m"
+    ],
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "000660",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "10100": {
+    "symbol": "10100",
+    "category": "KRX_FUTURES",
+    "role": "macro_futures",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m"
+    ],
+    "ingestion_sources": [
+      "1M"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "10100",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "U180": {
+    "symbol": "U180",
+    "category": "KRX_INDEX",
+    "role": "index_benchmark",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m"
+    ],
+    "ingestion_sources": [
+      "1M"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "REST_POLLING",
+      "channel": "index",
+      "symbol": "U180",
+      "required_depth": "BAR_1M",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "https://openapi.koreainvestment.com:9443"
+    }
+  },
+  "379810": {
+    "symbol": "379810",
+    "category": "KRX_ETF",
+    "role": "leading_stock",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "10s",
+      "1m"
+    ],
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "379810",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "449190": {
+    "symbol": "449190",
+    "category": "KRX_ETF",
+    "role": "leading_stock",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "10s",
+      "1m"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "449190",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "396500": {
+    "symbol": "396500",
+    "category": "KRX_ETF",
+    "role": "macro_futures",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "10s",
+      "1m"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "TICK",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "396500",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "0048J0": {
+    "symbol": "0048J0",
+    "category": "KRX_ETF",
+    "role": "leading_stock",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": false,
+    "target_scales": [
+      "10s",
+      "1m"
+    ],
+    "ingestion_sources": [],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "0048J0",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": false,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "KRW-BTC": {
+    "symbol": "KRW-BTC",
+    "category": "CRYPTO_SPOT",
+    "role": "target_or_macro",
+    "primary_source": "UPBIT",
+    "primary_type": "1M_ARCHIVE",
+    "fallback_source": "BINANCE",
+    "fallback_type": "1M_VISION",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "10m",
+      "15m"
+    ],
+    "is_active": true,
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "target_scales": [
+      "1m",
+      "10m",
+      "15m",
+      "1d"
+    ],
+    "live_connection": {
+      "provider": "UPBIT",
+      "feed_type": "WEBSOCKET",
+      "channel": "ticker",
+      "symbol": "KRW-BTC",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://api.upbit.com/websocket/v1"
+    }
+  },
+  "KRW-ETH": {
+    "symbol": "KRW-ETH",
+    "category": "CRYPTO_SPOT",
+    "role": "target_or_macro",
+    "primary_source": "UPBIT",
+    "primary_type": "1M_ARCHIVE",
+    "fallback_source": "BINANCE",
+    "fallback_type": "1M_VISION",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "10m",
+      "15m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "10m",
+      "15m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "UPBIT",
+      "feed_type": "WEBSOCKET",
+      "channel": "ticker",
+      "symbol": "KRW-ETH",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://api.upbit.com/websocket/v1"
+    }
+  },
+  "BTCUSDT": {
+    "symbol": "BTCUSDT",
+    "category": "CRYPTO_SPOT",
+    "role": "leading_stock",
+    "primary_source": "BINANCE",
+    "primary_type": "1M_VISION",
+    "fallback_source": "COINBASE",
+    "fallback_type": "1M_REST",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "10m",
+      "15m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "10m",
+      "15m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "BINANCE",
+      "feed_type": "WEBSOCKET",
+      "channel": "trade",
+      "symbol": "btcusdt",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://stream.binance.com:9443/ws"
+    }
+  },
+  "BTC-USD": {
+    "symbol": "BTC-USD",
+    "category": "CRYPTO_SPOT",
+    "role": "leading_stock",
+    "primary_source": "COINBASE",
+    "primary_type": "1M_REST",
+    "fallback_source": "BINANCE",
+    "fallback_type": "1M_VISION",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "10m",
+      "15m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "10m",
+      "15m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "COINBASE",
+      "feed_type": "WEBSOCKET",
+      "channel": "ticker",
+      "symbol": "BTC-USD",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://ws-feed.exchange.coinbase.com"
+    }
+  },
+  "US_TECH_100": {
+    "symbol": "US_TECH_100",
+    "category": "GLOBAL_INDEX_CFD_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "CME",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "US_TECH_100",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    }
+  },
+  "US_500": {
+    "symbol": "US_500",
+    "category": "GLOBAL_INDEX_CFD_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "CME",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "US_500",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    }
+  },
+  "JAPAN_225": {
+    "symbol": "JAPAN_225",
+    "category": "GLOBAL_INDEX_CFD_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "CME",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "JAPAN_225",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    }
+  },
+  "HONG_KONG_50": {
+    "symbol": "HONG_KONG_50",
+    "category": "GLOBAL_INDEX_CFD_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "CME",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "HONG_KONG_50",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    }
+  },
+  "XAUUSD": {
+    "symbol": "XAUUSD",
+    "category": "COMMODITY_CFD_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "COMEX",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "XAUUSD",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    },
+    "archived": false
+  },
+  "XTIUSD": {
+    "symbol": "XTIUSD",
+    "category": "COMMODITY_CFD_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "NYMEX",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "XTIUSD",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    },
+    "archived": false
+  },
+  "USDJPY": {
+    "symbol": "USDJPY",
+    "category": "FX_PROXY",
+    "role": "macro_proxy",
+    "primary_source": "CTRADER",
+    "primary_type": "1M",
+    "fallback_source": "CME",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "CTRADER",
+      "feed_type": "PROTOBUF_TCP",
+      "channel": "ProtoOASpotEvent",
+      "symbol": "USDJPY",
+      "required_depth": "TICK_AND_BAR",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "live.ctrader.com:5035"
+    }
+  },
+  "122630": {
+    "symbol": "122630",
+    "category": "KRX_ETF",
+    "role": "target",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m",
+      "1d"
+    ],
+    "is_active": true,
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "122630",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true
+    },
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ],
+    "target_scales": [
+      "10s",
+      "1m",
+      "1d"
+    ]
+  },
+  "229200": {
+    "symbol": "229200",
+    "category": "KRX_ETF",
+    "role": "target",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "229200",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true
+    },
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ]
+  },
+  "BTCUSDT-PERP": {
+    "symbol": "BTCUSDT-PERP",
+    "category": "CRYPTO_FUTURES",
+    "role": "macro_futures",
+    "primary_source": "BINANCE",
+    "primary_type": "1M_15M",
+    "fallback_source": "NONE",
+    "fallback_type": "",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "15m",
+      "1m"
+    ],
+    "is_active": true,
+    "live_connection": {
+      "provider": "BINANCE",
+      "feed_type": "WEBSOCKET",
+      "channel": "aggTrade",
+      "symbol": "btcusdt",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://fstream.binance.com/ws"
+    },
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "target_scales": [
+      "15m",
+      "10m",
+      "1d"
+    ]
+  },
+  "KRW-USDT": {
+    "symbol": "KRW-USDT",
+    "category": "CRYPTO_SPOT",
+    "role": "crypto_currency",
+    "primary_source": "UPBIT",
+    "primary_type": "1M_ARCHIVE",
+    "fallback_source": "BINANCE",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "10m",
+      "15m"
+    ],
+    "is_active": true,
+    "live_connection": {
+      "provider": "UPBIT",
+      "feed_type": "WEBSOCKET",
+      "channel": "ticker",
+      "symbol": "KRW-USDT",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://api.upbit.com/websocket/v1"
+    },
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "target_scales": [
+      "1m",
+      "10m",
+      "15m",
+      "1d"
+    ]
+  },
+  "0167A0": {
+    "symbol": "0167A0",
+    "category": "KRX_ETF",
+    "role": "leading_stock",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "0167A0",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true
+    },
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ]
+  },
+  "ES": {
+    "symbol": "ES",
+    "category": "OVERSEAS_FUTURES",
+    "role": "macro_futures",
+    "primary_source": "CME",
+    "primary_type": "1M",
+    "fallback_source": "YAHOO",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": false,
+    "live_connection": {
+      "provider": "YAHOO",
+      "feed_type": "REST_POLLING",
+      "channel": "1m_bar",
+      "symbol": "ES=F",
+      "required_depth": "BAR_1M",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "query1.finance.yahoo.com"
+    },
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "target_scales": [
+      "1m",
+      "1d"
+    ]
+  },
+  "BTCUSDT-PERP_OI": {
+    "symbol": "BTCUSDT-PERP_OI",
+    "category": "CRYPTO",
+    "role": "leading_stock",
+    "primary_source": "BINANCE",
+    "primary_type": "1M",
+    "fallback_source": "COINBASE",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m"
+    ],
+    "is_active": false,
+    "live_connection": {
+      "provider": "BINANCE",
+      "feed_type": "WEBSOCKET",
+      "channel": "trade",
+      "symbol": "btcusdtoiusdt",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://stream.binance.com:9443/ws"
+    }
+  },
+  "BTCUSDT-PERP_FUNDING_RATE": {
+    "symbol": "BTCUSDT-PERP_FUNDING_RATE",
+    "category": "CRYPTO",
+    "role": "leading_stock",
+    "primary_source": "BINANCE",
+    "primary_type": "1M",
+    "fallback_source": "COINBASE",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m"
+    ],
+    "is_active": false,
+    "live_connection": {
+      "provider": "BINANCE",
+      "feed_type": "WEBSOCKET",
+      "channel": "trade",
+      "symbol": "btcusdtfundingrateusdt",
+      "required_depth": "TICK",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "wss://stream.binance.com:9443/ws"
+    }
+  },
+  "NQ": {
+    "symbol": "NQ",
+    "category": "OVERSEAS_FUTURES",
+    "role": "macro_futures",
+    "primary_source": "CME",
+    "primary_type": "1M_TO_10Y",
+    "fallback_source": "YAHOO",
+    "fallback_type": "STREAM",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m",
+      "1d"
+    ],
+    "is_active": false,
+    "target_scales": [
+      "1m",
+      "1d"
+    ],
+    "ingestion_sources": [
+      "1M",
+      "1D"
+    ],
+    "live_connection": {
+      "provider": "YAHOO",
+      "feed_type": "REST_POLLING",
+      "channel": "1m_bar",
+      "symbol": "NQ=F",
+      "required_depth": "BAR_1M",
+      "timeout_sec": 10,
+      "is_active": true,
+      "endpoint_url": "query1.finance.yahoo.com"
+    },
+    "archived": true
+  },
+  "15000": {
+    "symbol": "15000",
+    "category": "KRX_FUTURES",
+    "role": "macro_futures",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m"
+    ],
+    "ingestion_sources": [
+      "1M"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0ZFCNT0",
+      "symbol": "15000",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "11100": {
+    "symbol": "11100",
+    "category": "KRX_FUTURES",
+    "role": "macro_futures",
+    "primary_source": "CREON",
+    "primary_type": "1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "1M",
+    "canonical_intervals": [
+      "1m"
+    ],
+    "is_active": true,
+    "target_scales": [
+      "1m"
+    ],
+    "ingestion_sources": [
+      "1M"
+    ],
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0ZFCNT0",
+      "symbol": "11100",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true,
+      "endpoint_url": "ws://ops.koreainvestment.com:21000"
+    }
+  },
+  "0197X0": {
+    "symbol": "0197X0",
+    "category": "KRX_ETF",
+    "role": "target",
+    "primary_source": "CREON",
+    "primary_type": "TICK_AND_1M",
+    "fallback_source": "KIS",
+    "fallback_type": "1M",
+    "ingestion_resolution": "TICK",
+    "canonical_intervals": [
+      "10s",
+      "1m"
+    ],
+    "is_active": true,
+    "live_connection": {
+      "provider": "KIS",
+      "feed_type": "WEBSOCKET",
+      "channel": "H0STCNT0",
+      "symbol": "0197X0",
+      "required_depth": "TICK_AND_ORDERBOOK",
+      "timeout_sec": 15,
+      "is_active": true
+    },
+    "ingestion_sources": [
+      "TICK",
+      "1M",
+      "1D"
+    ]
+  }
+}

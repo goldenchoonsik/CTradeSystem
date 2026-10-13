@@ -1,0 +1,12 @@
+{
+  "KIS_MAIN": {
+    "name": "한국투자증권 우대 위탁계좌",
+    "broker": "KIS",
+    "account_type": "GENERAL",
+    "execution": "auto",
+    "credentials_env": {
+      "acc_no": "KIS_ACC_NO",
+      "acc_code": "KIS_ACC_CODE"
+    }
+  }
+}

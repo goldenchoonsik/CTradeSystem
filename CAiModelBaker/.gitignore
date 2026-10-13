@@ -1,0 +1,19 @@
+# CAiModelBaker Git Ignore
+.venv/
+data/
+tmp_chrome/
+__pycache__/
+*.pyc
+*.joblib
+*.pkl
+*.pt
+*.onnx
+quant_engine_log.txt
+server_debug.log
+*.deb
+*.bak
+*.tmp
+logs/
+models/
+db/
+scratch/

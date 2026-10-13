@@ -1,0 +1,636 @@
+{
+  "rank": 1,
+  "trial": 1,
+  "features": [
+    "ref_us_tech_100_ret_5c",
+    "ref_us_500_ret_5c",
+    "target_is_auction",
+    "target_hour_cos",
+    "krx_session_time"
+  ],
+  "val_profit": 1.2015972583616197,
+  "val_monthly_profit": 6.01,
+  "val_days": 6,
+  "val_mdd": 0.21677613035791407,
+  "val_trades": 28,
+  "val_monthly_trades": 141.9,
+  "val_adj": 0.7515972583616197,
+  "final_profit": 1.2015972583616197,
+  "final_monthly_profit": 6.01,
+  "final_days": 6,
+  "final_mdd": 0.21677613035791407,
+  "final_trades": 28,
+  "final_monthly_trades": 141.9,
+  "final_required_trades": 10.0,
+  "final_sample_sufficient": true,
+  "final_holdout_trading_days": 6,
+  "final_standard_holdout_td": 10,
+  "final_standard_met": false,
+  "final_non_standard": true,
+  "final_pf_lossless": false,
+  "dead_features": [],
+  "dead_feature_details": {},
+  "win_rate": 85.71428571428571,
+  "profit_factor": 4.327328277246612,
+  "sharpe_ratio": 3.1681786758857764,
+  "avg_hold_mins": 1.0785714285714285,
+  "best_trade": 0.2096472392638037,
+  "worst_trade": -0.13400599356573092,
+  "passed": true,
+  "status": "PASSED",
+  "is_champion": false,
+  "best_params": {
+    "take_profit": 2.064315626327692,
+    "stop_loss": 2.2644028767984117,
+    "max_depth": 4,
+    "num_leaves": 40,
+    "learning_rate": 0.054728895362276424,
+    "min_child_samples": 38,
+    "buy_threshold": 0.5427128232460061,
+    "cooldown_minutes": 56,
+    "predict_ahead_candles": 12,
+    "max_hold_candles": 18,
+    "opt_session_id": "KODEX200_S10_NEW1",
+    "memo": "",
+    "seed": 77,
+    "train_start": "2026-07-21 09:00:00",
+    "train_end": "2026-09-08 09:00:00",
+    "opt_start": "2026-08-07 09:00:00",
+    "opt_end": "2026-09-08 09:00:00",
+    "created_at": "2026-09-27 23:46:57",
+    "optuna_score": 11.777734700387448,
+    "validation_metrics": {
+      "score": 18.44917790397312,
+      "trades": 13,
+      "required_trades": 10.0,
+      "win_rate": 76.92307692307693,
+      "mdd": 0.12054336123792445,
+      "profit_factor": 12.314296002296034,
+      "profit_factor_raw": 12.314296002296034,
+      "total_return": 0.9184889391233186
+    },
+    "training_meta": {
+      "num_boost_round": 30,
+      "tuning_objective": "binary",
+      "saved_model_objective": "binary",
+      "buy_threshold_prob_basis": "binary P(label=1)",
+      "optuna_score_note": "창별 best 점수의 평균 — 선택 편향 포함, 성과 지표로 해석 금지"
+    }
+  },
+  "feature_importance": {
+    "ref_us_tech_100_ret_5c": {
+      "gain": 13882.41,
+      "gain_pct": 39.35
+    },
+    "ref_us_500_ret_5c": {
+      "gain": 1389.31,
+      "gain_pct": 3.94
+    },
+    "target_is_auction": {
+      "gain": 0.0,
+      "gain_pct": 0.0
+    },
+    "target_hour_cos": {
+      "gain": 19739.82,
+      "gain_pct": 55.95
+    },
+    "krx_session_time": {
+      "gain": 269.73,
+      "gain_pct": 0.76
+    }
+  },
+  "trades_detail": [
+    {
+      "entry_time": "2026-09-16T09:11:00.000000",
+      "exit_time": "2026-09-16T09:11:20.000000",
+      "entry_price": 104320.0,
+      "exit_price": 104570.0,
+      "hold_mins": 0.3,
+      "prob": 0.5672142773014135,
+      "exit_type": "익절",
+      "net_return": 0.2096472392638037,
+      "mfe": 0.2684049079754601,
+      "mae": -0.033550613496932516,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0005145400736930039,
+        "ref_us_500_ret_5c": 0.0003424116314598713,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7402181274868321,
+        "krx_session_time": 1.0
+      }
+    },
+    {
+      "entry_time": "2026-09-16T10:10:00.000000",
+      "exit_time": "2026-09-16T10:11:10.000000",
+      "entry_price": 104955.0,
+      "exit_price": 105095.0,
+      "hold_mins": 1.2,
+      "prob": 0.5555804634114312,
+      "exit_type": "익절",
+      "net_return": 0.10339050069077221,
+      "mfe": 0.13339050069077224,
+      "mae": -0.04763946453241865,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00024878028554442544,
+        "ref_us_500_ret_5c": 0.00013174709827024067,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.8870108331782217,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-16T11:15:00.000000",
+      "exit_time": "2026-09-16T11:15:30.000000",
+      "entry_price": 104760.0,
+      "exit_price": 104850.0,
+      "hold_mins": 0.5,
+      "prob": 0.5555804634114312,
+      "exit_type": "익절",
+      "net_return": 0.055910652920962194,
+      "mfe": 0.0859106529209622,
+      "mae": -0.0143184421534937,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00025234542978247454,
+        "ref_us_500_ret_5c": 0.0001317505698212873,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9807852804032304,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-16T12:14:00.000000",
+      "exit_time": "2026-09-16T12:14:30.000000",
+      "entry_price": 105845.0,
+      "exit_price": 105940.0,
+      "hold_mins": 0.5,
+      "prob": 0.5501333447463508,
+      "exit_type": "익절",
+      "net_return": 0.05975388539846001,
+      "mfe": 0.08975388539846,
+      "mae": -0.04251499834663895,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00045858748159632867,
+        "ref_us_500_ret_5c": 0.00015787604099526398,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.998134798421867,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-16T13:20:00.000000",
+      "exit_time": "2026-09-16T13:20:50.000000",
+      "entry_price": 106290.0,
+      "exit_price": 106370.0,
+      "hold_mins": 0.8,
+      "prob": 0.5501333447463508,
+      "exit_type": "익절",
+      "net_return": 0.04526578229372471,
+      "mfe": 0.07526578229372471,
+      "mae": -0.04233700254022015,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00046174574349677755,
+        "ref_us_500_ret_5c": 0.00022365772474319812,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9396926207859084,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-16T14:29:00.000000",
+      "exit_time": "2026-09-16T14:29:30.000000",
+      "entry_price": 105640.0,
+      "exit_price": 105710.0,
+      "hold_mins": 0.5,
+      "prob": 0.5845002943746102,
+      "exit_type": "익절",
+      "net_return": 0.03626277925028398,
+      "mfe": 0.08046194623248769,
+      "mae": -0.08046194623248769,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0003550940482099918,
+        "ref_us_500_ret_5c": 0.0002895270181348941,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7960020025346224,
+        "krx_session_time": 3.0
+      }
+    },
+    {
+      "entry_time": "2026-09-17T09:17:00.000000",
+      "exit_time": "2026-09-17T09:18:00.000000",
+      "entry_price": 106640.0,
+      "exit_price": 106850.0,
+      "hold_mins": 1.0,
+      "prob": 0.5450428858415292,
+      "exit_type": "익절",
+      "net_return": 0.16692423105776444,
+      "mfe": 0.19692423105776444,
+      "mae": -0.018754688672168042,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0004120624411951823,
+        "ref_us_500_ret_5c": 0.00031635975376653747,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7575649843840494,
+        "krx_session_time": 1.0
+      }
+    },
+    {
+      "entry_time": "2026-09-17T10:14:00.000000",
+      "exit_time": "2026-09-17T10:14:20.000000",
+      "entry_price": 106945.0,
+      "exit_price": 107080.0,
+      "hold_mins": 0.3,
+      "prob": 0.5501333447463508,
+      "exit_type": "익절",
+      "net_return": 0.09623311047734817,
+      "mfe": 0.1309084108653981,
+      "mae": -0.04207770349244939,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00030888666948092336,
+        "ref_us_500_ret_5c": 0.00025024036245357983,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.894934361602025,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-17T11:38:00.000000",
+      "exit_time": "2026-09-17T11:39:00.000000",
+      "entry_price": 106370.0,
+      "exit_price": 106470.0,
+      "hold_mins": 1.0,
+      "prob": 0.5436985568121105,
+      "exit_type": "익절",
+      "net_return": 0.0640114693992667,
+      "mfe": 0.10811318980915671,
+      "mae": -0.04700573469963335,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0003192431534357887,
+        "ref_us_500_ret_5c": 0.00011845066529780901,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9953961983671789,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-17T12:41:00.000000",
+      "exit_time": "2026-09-17T12:44:00.000000",
+      "entry_price": 106835.0,
+      "exit_price": 106850.0,
+      "hold_mins": 3.0,
+      "prob": 0.552607753872841,
+      "exit_type": "시간만료",
+      "net_return": -0.015959657415640944,
+      "mfe": 0.05616137033743624,
+      "mae": -0.04680114194786353,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00024014710725661637,
+        "ref_us_500_ret_5c": 0.0001315824100633911,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9840406976462909,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-17T14:25:00.000000",
+      "exit_time": "2026-09-17T14:25:20.000000",
+      "entry_price": 106680.0,
+      "exit_price": 106760.0,
+      "hold_mins": 0.3,
+      "prob": 0.5845002943746102,
+      "exit_type": "익절",
+      "net_return": 0.04499062617172853,
+      "mfe": 0.07499062617172854,
+      "mae": -0.0140607424071991,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0004223567506687065,
+        "ref_us_500_ret_5c": 0.00022384915200679423,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.8064446042674825,
+        "krx_session_time": 3.0
+      }
+    },
+    {
+      "entry_time": "2026-09-18T09:14:00.000000",
+      "exit_time": "2026-09-18T09:14:40.000000",
+      "entry_price": 108825.0,
+      "exit_price": 108940.0,
+      "hold_mins": 0.7,
+      "prob": 0.5450428858415292,
+      "exit_type": "익절",
+      "net_return": 0.07567424764530209,
+      "mfe": 0.10567424764530209,
+      "mae": -0.013783597518952447,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0004048403942260581,
+        "ref_us_500_ret_5c": 0.0002227317392728967,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.748955720789002,
+        "krx_session_time": 1.0
+      }
+    },
+    {
+      "entry_time": "2026-09-18T10:45:00.000000",
+      "exit_time": "2026-09-18T10:47:30.000000",
+      "entry_price": 108715.0,
+      "exit_price": 108782.0,
+      "hold_mins": 2.5,
+      "prob": 0.5501333447463508,
+      "exit_type": "익절",
+      "net_return": 0.03162903003265419,
+      "mfe": 0.06898772018580693,
+      "mae": -0.032194269420043234,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0002723682418630524,
+        "ref_us_500_ret_5c": 0.00015725949126554895,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9469301294951056,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-18T12:04:00.000000",
+      "exit_time": "2026-09-18T12:05:00.000000",
+      "entry_price": 108890.0,
+      "exit_price": 108955.0,
+      "hold_mins": 1.0,
+      "prob": 0.5555804634114312,
+      "exit_type": "익절",
+      "net_return": 0.029693268436036358,
+      "mfe": 0.06887684819542657,
+      "mae": -0.00918357975939021,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0002822361262240225,
+        "ref_us_500_ret_5c": 0.0001309294682954043,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9998476951563913,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-18T13:42:00.000000",
+      "exit_time": "2026-09-18T13:43:10.000000",
+      "entry_price": 109370.0,
+      "exit_price": 109420.0,
+      "hold_mins": 1.2,
+      "prob": 0.5555804634114312,
+      "exit_type": "익절",
+      "net_return": 0.01571637560574197,
+      "mfe": 0.04571637560574198,
+      "mae": -0.013714912681722594,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00036973091052172613,
+        "ref_us_500_ret_5c": 0.0001307240806829313,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.902585284349861,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-18T14:44:00.000000",
+      "exit_time": "2026-09-18T14:44:50.000000",
+      "entry_price": 109600.0,
+      "exit_price": 109660.0,
+      "hold_mins": 0.8,
+      "prob": 0.5845002943746102,
+      "exit_type": "익절",
+      "net_return": 0.02474452554744526,
+      "mfe": 0.0593065693430657,
+      "mae": -0.0045620437956204385,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0003180833784515169,
+        "ref_us_500_ret_5c": 0.00015662320372755723,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7547095802227721,
+        "krx_session_time": 3.0
+      }
+    },
+    {
+      "entry_time": "2026-09-21T09:21:00.000000",
+      "exit_time": "2026-09-21T09:22:30.000000",
+      "entry_price": 110650.0,
+      "exit_price": 110825.0,
+      "hold_mins": 1.5,
+      "prob": 0.5450428858415292,
+      "exit_type": "익절",
+      "net_return": 0.12815634884771804,
+      "mfe": 0.18075011296882063,
+      "mae": -0.06326253953908721,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00038338787081837467,
+        "ref_us_500_ret_5c": 0.000195710036010599,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7688418320734595,
+        "krx_session_time": 1.0
+      }
+    },
+    {
+      "entry_time": "2026-09-21T11:02:00.000000",
+      "exit_time": "2026-09-21T11:03:10.000000",
+      "entry_price": 111407.0,
+      "exit_price": 111515.0,
+      "hold_mins": 1.2,
+      "prob": 0.5501333447463508,
+      "exit_type": "익절",
+      "net_return": 0.0669418438697748,
+      "mfe": 0.11040598885168797,
+      "mae": -0.06013984758587881,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0003425934322822677,
+        "ref_us_500_ret_5c": 0.00019554674870936317,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9681476403781076,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-21T12:01:00.000000",
+      "exit_time": "2026-09-21T12:03:00.000000",
+      "entry_price": 111730.0,
+      "exit_price": 111782.0,
+      "hold_mins": 2.0,
+      "prob": 0.5445922778342558,
+      "exit_type": "익절",
+      "net_return": 0.016540767922670722,
+      "mfe": 0.04922581222590173,
+      "mae": -0.04922581222590173,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 5.706478867573139e-05,
+        "ref_us_500_ret_5c": 6.515591811195875e-05,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9999904807207345,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-21T13:08:00.000000",
+      "exit_time": "2026-09-21T13:08:50.000000",
+      "entry_price": 111970.0,
+      "exit_price": 112025.0,
+      "hold_mins": 0.8,
+      "prob": 0.5501333447463508,
+      "exit_type": "익절",
+      "net_return": 0.019120300080378665,
+      "mfe": 0.053585781905867644,
+      "mae": -0.01786192730195588,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0004297984648136133,
+        "ref_us_500_ret_5c": 0.00022147817137185832,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9563047559630355,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-21T14:31:00.000000",
+      "exit_time": "2026-09-21T14:31:50.000000",
+      "entry_price": 111415.0,
+      "exit_price": 111505.0,
+      "hold_mins": 0.8,
+      "prob": 0.5845002943746102,
+      "exit_type": "익절",
+      "net_return": 0.05077906924561324,
+      "mfe": 0.08975452138401471,
+      "mae": -0.04308217026432706,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00030544292580758636,
+        "ref_us_500_ret_5c": 0.00015629680763762366,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7906895737438433,
+        "krx_session_time": 3.0
+      }
+    },
+    {
+      "entry_time": "2026-09-22T09:21:00.000000",
+      "exit_time": "2026-09-22T09:24:00.000000",
+      "entry_price": 114225.0,
+      "exit_price": 114125.0,
+      "hold_mins": 3.0,
+      "prob": 0.5450428858415292,
+      "exit_type": "손절",
+      "net_return": -0.11754650908295033,
+      "mfe": 0.0849201138104618,
+      "mae": -0.09192383453709783,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0002911265288230158,
+        "ref_us_500_ret_5c": 0.0001416120601980264,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.7688418320734595,
+        "krx_session_time": 1.0
+      }
+    },
+    {
+      "entry_time": "2026-09-22T10:51:00.000000",
+      "exit_time": "2026-09-22T10:51:40.000000",
+      "entry_price": 113560.0,
+      "exit_price": 113650.0,
+      "hold_mins": 0.7,
+      "prob": 0.5436985568121105,
+      "exit_type": "익절",
+      "net_return": 0.04925325818950334,
+      "mfe": 0.07925325818950335,
+      "mae": -0.06428319830926382,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0002714387562217091,
+        "ref_us_500_ret_5c": 9.012372700234472e-05,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9550199444571866,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-22T13:10:00.000000",
+      "exit_time": "2026-09-22T13:10:40.000000",
+      "entry_price": 113455.0,
+      "exit_price": 113337.0,
+      "hold_mins": 0.7,
+      "prob": 0.5436985568121105,
+      "exit_type": "손절",
+      "net_return": -0.13400599356573092,
+      "mfe": 0.030849235379665947,
+      "mae": -0.1101758406416641,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00026195068123557874,
+        "ref_us_500_ret_5c": 9.014461772238747e-05,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9537169507482269,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-22T14:21:00.000000",
+      "exit_time": "2026-09-22T14:21:40.000000",
+      "entry_price": 111850.0,
+      "exit_price": 111970.0,
+      "hold_mins": 0.7,
+      "prob": 0.5845002943746102,
+      "exit_type": "익절",
+      "net_return": 0.07728654447921322,
+      "mfe": 0.10728654447921322,
+      "mae": -0.035762181493071074,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0005280696920795247,
+        "ref_us_500_ret_5c": 0.0001674071212414141,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.816641555161679,
+        "krx_session_time": 3.0
+      }
+    },
+    {
+      "entry_time": "2026-09-23T10:24:00.000000",
+      "exit_time": "2026-09-23T10:26:10.000000",
+      "entry_price": 113350.0,
+      "exit_price": 113280.0,
+      "hold_mins": 2.2,
+      "prob": 0.5436985568121105,
+      "exit_type": "손절",
+      "net_return": -0.09175562417291575,
+      "mfe": 0.057344508160564626,
+      "mae": -0.061755624172915746,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00026351575563943186,
+        "ref_us_500_ret_5c": 0.00012876475966061562,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9135454576426008,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-23T12:40:00.000000",
+      "exit_time": "2026-09-23T12:40:30.000000",
+      "entry_price": 112390.0,
+      "exit_price": 112485.0,
+      "hold_mins": 0.5,
+      "prob": 0.5436985568121105,
+      "exit_type": "익절",
+      "net_return": 0.054527093157754246,
+      "mfe": 0.08452709315775425,
+      "mae": -0.017795177506895632,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.0002507057203231522,
+        "ref_us_500_ret_5c": 0.00010295877787913632,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.9848077530122081,
+        "krx_session_time": 2.0
+      }
+    },
+    {
+      "entry_time": "2026-09-23T14:25:00.000000",
+      "exit_time": "2026-09-23T14:25:30.000000",
+      "entry_price": 112510.0,
+      "exit_price": 112580.0,
+      "hold_mins": 0.5,
+      "prob": 0.5845002943746102,
+      "exit_type": "익절",
+      "net_return": 0.032216691849613364,
+      "mfe": 0.06221669184961337,
+      "mae": -0.02666429650697716,
+      "entry_features": {
+        "ref_us_tech_100_ret_5c": 0.00038733070556040694,
+        "ref_us_500_ret_5c": 0.00015440239838393488,
+        "target_is_auction": 0.0,
+        "target_hour_cos": -0.8064446042674825,
+        "krx_session_time": 3.0
+      }
+    }
+  ]
+}

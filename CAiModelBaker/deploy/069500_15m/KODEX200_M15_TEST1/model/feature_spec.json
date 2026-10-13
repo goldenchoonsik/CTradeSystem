@@ -1,0 +1,54 @@
+{
+    "session_id": "KODEX200_M15_TEST1",
+    "symbol": "069500",
+    "interval": "15m",
+    "seed": 42,
+    "features_order": [
+        "target_adx",
+        "target_rsi_curr",
+        "target_volatility_ratio",
+        "target_macd_hist",
+        "parkinson_rv_squeeze",
+        "mtf_ema_distance_4h",
+        "target_bb_kc_squeeze",
+        "target_mfi",
+        "ref_us_500_ret_5c"
+    ],
+    "feature_params": {
+        "target_adx": {
+            "period_bars": 14
+        },
+        "target_rsi_curr": {
+            "period_bars": 14
+        },
+        "target_volatility_ratio": {
+            "fast_period": 5,
+            "slow_period": 30
+        },
+        "target_macd_hist": {
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9
+        },
+        "parkinson_rv_squeeze": {
+            "short_bars": 6,
+            "long_bars": 36
+        },
+        "mtf_ema_distance_4h": {
+            "period": 200
+        },
+        "target_bb_kc_squeeze": {
+            "period_bars": 20
+        },
+        "target_mfi": {
+            "period_bars": 14
+        },
+        "ref_us_500_ret_5c": {
+            "candles": 6
+        }
+    },
+    "param_policy": "scale_v2",
+    "params_resolved": true,
+    "required_history_bars": 410,
+    "horizon_bars": 6
+}

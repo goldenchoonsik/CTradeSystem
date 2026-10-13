@@ -1,0 +1,212 @@
+{
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "krx_session_progress",
+            "target_atr_ratio",
+            "mtf_ema_distance_4h",
+            "target_trade_frequency",
+            "target_adx",
+            "target_obv_momentum",
+            "target_hour_cos",
+            "target_trade_bid_ratio",
+            "target_bb_kc_squeeze",
+            "target_large_trade_density",
+            "target_mfi",
+            "target_volatility_ratio",
+            "ref_us_500_ret_5c",
+            "target_macd_hist",
+            "target_cvd_absorption",
+            "target_rsi_daily",
+            "target_ofi_cumsum",
+            "ref_us_tech_100_ret_5c",
+            "target_ma_ratio",
+            "ref_10100_ret_5c",
+            "target_rv_ratio",
+            "target_vwap_disparity",
+            "parkinson_rv_squeeze",
+            "target_vwap_slope",
+            "ref_000660_ret_5c",
+            "target_kaufman_er"
+        ],
+        "active_features": [
+            "target_mfi",
+            "target_ma_ratio",
+            "target_macd_hist",
+            "target_ofi_cumsum",
+            "ref_000660_ret_5c"
+        ],
+        "feature_params": {
+            "target_ma_ratio": {
+                "period_bars": 15
+            },
+            "target_trade_bid_ratio": {
+                "window_mins": 10
+            },
+            "target_rsi_daily": {
+                "period_days": 14
+            },
+            "target_hour": {},
+            "target_rsi_curr": {
+                "period_bars": 14
+            },
+            "target_adx": {
+                "period_bars": 14
+            },
+            "target_atr_ratio": {
+                "period_bars": 14
+            },
+            "krx_session_time": {},
+            "target_hour_cos": {},
+            "target_is_auction": {},
+            "ref_us_tech_100_ret_5c": {
+                "candles": 5
+            },
+            "ref_us_500_ret_5c": {
+                "candles": 5
+            },
+            "ref_005930_ret_1c": {},
+            "ref_us_500_spread_vs_target": {},
+            "ref_us_tech_100_spread_vs_target": {},
+            "ref_10100_spread_vs_target": {},
+            "ref_000660_spread_vs_target": {},
+            "target_bb_pctb": {
+                "period_bars": 20,
+                "std_dev": 2
+            },
+            "semi_duo_lead_delta": {
+                "window_bars": 1,
+                "zscore_bars": 30,
+                "w_sam": 0.7,
+                "w_hyn": 0.3
+            },
+            "target_large_trade_density": {
+                "window_bars": 10
+            },
+            "target_large_trade_ratio": {},
+            "target_volume_spike": {
+                "period_bars": 20
+            },
+            "target_trade_price_spike": {
+                "period_bars": 20
+            },
+            "target_bb_kc_squeeze": {
+                "period_bars": 20
+            },
+            "parkinson_rv_squeeze": {
+                "short_bars": 5,
+                "long_bars": 30
+            }
+        },
+        "feature_penalties": {
+            "target_cvd_momentum": 0.3,
+            "target_trade_bid_ratio": 0.3
+        },
+        "regime_features": {
+            "target_hour_sin": true,
+            "krx_session_time": true,
+            "target_hour_cos": true,
+            "target_is_auction": true,
+            "target_hour": true
+        }
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 77,
+        "outer_trials": 15,
+        "inner_trials": 15,
+        "wfa_outer_trials": 10,
+        "wfa_inner_trials": 10,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 2
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 1.2,
+            "user_max": 4
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 1,
+            "user_max": 2.5
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08,
+            "step": 0.005
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 3,
+            "user_max": 4,
+            "step": 1
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 8,
+            "user_max": 64,
+            "step": 1
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80,
+            "step": 1
+        },
+        "buy_threshold_range": {
+            "min": 0.45,
+            "max": 0.65,
+            "user_min": 0.51,
+            "user_max": 0.58,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 1,
+            "user_max": 60,
+            "step": 1
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 2
+        },
+        "fee_upbit": 5e-05,
+        "slippage": 0.0001,
+        "min_trades": 20,
+        "min_profit_factor": 1.1,
+        "wfa_enabled": true,
+        "wfa_train_months": 0.67,
+        "wfa_opt_months": 0.14,
+        "wfa_test_months": 0.14,
+        "wfa_start_date": "2026-07-21",
+        "wfa_end_date": "2026-09-16",
+        "macro_rsi_threshold_range": {
+            "min": 5,
+            "max": 85,
+            "user_min": 10,
+            "user_max": 80,
+            "step": 10
+        },
+        "predict_ahead_range": {
+            "user_min": 4,
+            "user_max": 300,
+            "step": 2
+        },
+        "split_unit": "td"
+    }
+}

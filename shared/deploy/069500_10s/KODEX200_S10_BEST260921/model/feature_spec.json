@@ -1,0 +1,32 @@
+{
+    "session_id": "KODEX200_S10_BEST260921",
+    "symbol": "069500",
+    "interval": "10s",
+    "seed": 77,
+    "features_order": [
+        "target_vwap_disparity",
+        "target_macd_hist",
+        "overnight_gap_pct",
+        "target_ofi_cumsum",
+        "target_is_auction",
+        "target_hour_cos",
+        "krx_session_time"
+    ],
+    "feature_params": {
+        "target_vwap_disparity": {
+            "smooth_bars": 1
+        },
+        "target_macd_hist": {
+            "fast_period": 12,
+            "slow_period": 26,
+            "signal_period": 9
+        },
+        "overnight_gap_pct": {},
+        "target_ofi_cumsum": {
+            "window_bars": 10
+        },
+        "target_is_auction": {},
+        "target_hour_cos": {},
+        "krx_session_time": {}
+    }
+}

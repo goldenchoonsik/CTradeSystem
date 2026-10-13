@@ -1,0 +1,94 @@
+# ==========================================
+# Gemini / Antigravity AI Ignore Configuration
+# ==========================================
+
+# 1. Virtual Environments & Packages
+**/.venv/
+**/venv/
+**/ENV/
+**/env/
+**/node_modules/
+
+# 2. Python & C++ Build / Compilation Artifacts
+**/__pycache__/
+**/*.py[cod]
+**/*.so
+**/*.pyd
+**/*.dll
+**/*.dylib
+**/*.o
+**/*.obj
+**/*.a
+**/build/
+**/dist/
+**/*.egg-info/
+**/.eggs/
+
+# 3. Market & Tick Data (Large Datasets)
+**/data/
+DataVault/
+**/DataVault/
+shared/data_library/
+**/shared/data_library/
+**/*.parquet
+**/*.feather
+**/*.h5
+**/*.hdf5
+**/*.csv
+**/*.csv.gz
+**/*.tar.gz
+**/*.zip
+
+# 4. Machine Learning Model Binaries & Large Weights
+# Note: JSON configs (e.g., config_snapshot.json, study_records.json) are kept
+**/*.joblib
+**/*.pkl
+**/*.pickle
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.safetensors
+**/*.pb
+**/*.bin
+**/*.weights
+**/*.deb
+CAiModelBaker/deploy/**/reports/
+CAiModelBaker/deploy/**/candidates/
+CAiModelBaker/deploy_quarantine/
+**/deploy_quarantine/
+
+# 5. Logs, Runtime Dumps & Databases
+**/*.log
+**/logs/
+**/vultr_logs/
+**/*.sqlite3
+**/*.db
+**/quant_engine_log.txt
+**/server_debug.log
+**/trade_debug.log
+**/trade_history.json
+**/spike_verification_history.json
+
+# 6. Temporary, Scratch & Editor Files
+**/scratch/
+**/*.bak
+**/*.bak.*
+**/*.tmp
+**/*.temp
+**/*.swp
+**/*~
+**/.DS_Store
+**/Thumbs.db
+**/*Identifier
+**/*:Zone.Identifier
+
+# 7. Media & Screenshots
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.ico
+
+# 8. Version Control
+.git/

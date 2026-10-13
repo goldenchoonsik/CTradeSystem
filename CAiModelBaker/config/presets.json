@@ -1,0 +1,96 @@
+{
+    "KODEX_200_수급_베이시스_팩": {
+        "name": "KODEX_200_수급_베이시스_팩",
+        "description": "국내 KODEX 200 ETF 최적화 수급 & 선물 베이시스 표준 단타 팩",
+        "market": "KRX",
+        "features": [
+            "krx_session_time",
+            "kospi_basis",
+            "kospi_basis_rate",
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "target_rsi_daily",
+            "target_atr_ratio",
+            "target_bb_kc_squeeze"
+        ],
+        "created_at": "2026-08-21T10:30:00"
+    },
+    "가상자산_모멘텀_오더플로우_팩": {
+        "name": "가상자산_모멘텀_오더플로우_팩",
+        "description": "비트코인/가상자산 바이낸스 선행 틱 & 오더플로우 표준 팩",
+        "market": "CRYPTO",
+        "features": [
+            "binance_ret_5m",
+            "binance_spot_taker_ratio",
+            "kimchi_premium",
+            "binance_funding_settle_window",
+            "target_cvd_absorption",
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "target_atr_ratio",
+            "target_adx"
+        ],
+        "created_at": "2026-08-21T10:30:00"
+    },
+    "클래식_기술적분석_팩": {
+        "name": "클래식_기술적분석_팩",
+        "description": "모든 자산군 공통 추세/오실레이터/변동성 핵심 팩",
+        "market": "ALL",
+        "features": [
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "target_rsi_daily",
+            "target_macd_hist",
+            "target_bb_pctb",
+            "target_kaufman_er",
+            "target_atr_ratio"
+        ],
+        "created_at": "2026-08-21T10:30:00"
+    },
+    "First": {
+        "name": "First",
+        "description": "7개 지표 조합",
+        "market": "ALL",
+        "features": [
+            "target_rsi_daily",
+            "target_bb_pctb",
+            "target_rsi_curr",
+            "target_ma_ratio",
+            "kospi_basis_rate",
+            "target_mfi",
+            "overnight_gap_pct"
+        ],
+        "created_at": "2026-08-21 14:50:47"
+    },
+    "Best1": {
+        "name": "Best1",
+        "description": "8개 지표 조합",
+        "market": "ALL",
+        "features": [
+            "target_hour_cos",
+            "target_rsi_daily",
+            "target_bb_pctb",
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "kospi_basis_rate",
+            "kimchi_premium",
+            "target_volatility_ratio"
+        ],
+        "created_at": "2026-08-22 20:35:05"
+    },
+    "KODEX200_1분봉_BEST1": {
+        "name": "KODEX200_1분봉_BEST1",
+        "description": "7개 지표 조합",
+        "market": "ALL",
+        "features": [
+            "target_hour_cos",
+            "target_rsi_daily",
+            "target_bb_pctb",
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "kospi_basis_rate",
+            "target_volatility_ratio"
+        ],
+        "created_at": "2026-08-22 20:40:04"
+    }
+}

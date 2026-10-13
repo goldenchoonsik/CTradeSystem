@@ -1,0 +1,31 @@
+{
+    "take_profit": 1.6572207694453907,
+    "stop_loss": 1.9007203666898247,
+    "max_depth": 3,
+    "num_leaves": 37,
+    "learning_rate": 0.04442378684204008,
+    "min_child_samples": 56,
+    "buy_threshold": 0.5339023894471281,
+    "cooldown_minutes": 24,
+    "predict_ahead_candles": 6,
+    "max_hold_candles": 6,
+    "opt_session_id": "KODEX200_S10_BEST260921",
+    "memo": "",
+    "seed": 77,
+    "train_start": "2026-07-21 09:00:00",
+    "train_end": "2026-08-21 09:00:00",
+    "opt_start": "2026-08-04 09:00:00",
+    "opt_end": "2026-08-21 09:00:00",
+    "created_at": "2026-09-21 16:05:21",
+    "optuna_score": 19.752703653205447,
+    "validation_metrics": {
+        "score": 14.775222893399233,
+        "trades": 24,
+        "required_trades": 10.0,
+        "win_rate": 75.0,
+        "mdd": 0.2604274972999372,
+        "profit_factor": 9.875868071655145,
+        "profit_factor_raw": 9.875868071655145,
+        "total_return": 2.691064055245196
+    }
+}

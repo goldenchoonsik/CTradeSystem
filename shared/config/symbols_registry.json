@@ -1,0 +1,1491 @@
+{
+  "0048J0": {
+    "symbol": "0048J0",
+    "name": "KODEX 미국머니마켓액티브",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "삼성 KODEX 미국머니마켓액티브 ETF (미국 초단기 금리 및 달러 유동성 추종)"
+  },
+  "069500": {
+    "symbol": "069500",
+    "name": "KODEX 200",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "코스피 200 대표 ETF",
+    "tax_class": "KR_EQUITY_ETF",
+    "leverage": 1
+  },
+  "122630": {
+    "symbol": "122630",
+    "name": "KODEX 레버리지",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "코스피 200 레버리지 2X ETF",
+    "tax_class": "KR_OTHER_ETF",
+    "leverage": 2
+  },
+  "252670": {
+    "symbol": "252670",
+    "name": "KODEX 200선물인버스2X",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "코스피 200 선물 인버스 2X (곱버스)",
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "005930": {
+    "symbol": "005930",
+    "name": "삼성전자",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "국내 대표 반도체/전자 대형주"
+  },
+  "000660": {
+    "symbol": "000660",
+    "name": "SK하이닉스",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "글로벌 메모리 반도체 대표주",
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "TQQQ": {
+    "symbol": "TQQQ",
+    "name": "ProShares UltraPro QQQ",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "is_active": true,
+    "description": "미국 나스닥 100 3X 레버리지 ETF"
+  },
+  "SOXL": {
+    "symbol": "SOXL",
+    "name": "Direxion Semiconductor Bull 3X",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "is_active": true,
+    "description": "미국 필라델피아 반도체 지수 3X ETF"
+  },
+  "KRW-BTC": {
+    "symbol": "KRW-BTC",
+    "name": "비트코인",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "BTCUSDT",
+    "coinbase_symbol": "BTC-USD",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "가상자산 대장주",
+    "asset_id": "BTC",
+    "name_source": "UPBIT",
+    "overrides": {
+      "tick_size": 1000.0
+    }
+  },
+  "KRW-ETH": {
+    "symbol": "KRW-ETH",
+    "name": "이더리움",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "ETHUSDT",
+    "coinbase_symbol": "ETH-USD",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "스마트 컨트랙트 플랫폼 대표 가상자산",
+    "name_source": "UPBIT",
+    "asset_id": "ETH",
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "KRW-SOL": {
+    "symbol": "KRW-SOL",
+    "name": "솔라나",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "SOLUSDT",
+    "coinbase_symbol": "SOL-USD",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "고성능 레이어 1 블록체인",
+    "name_source": "UPBIT",
+    "asset_id": "SOL"
+  },
+  "KRW-XRP": {
+    "symbol": "KRW-XRP",
+    "name": "엑스알피(리플)",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "XRPUSDT",
+    "coinbase_symbol": "XRP-USD",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "국경 간 송금 결제 프로토콜",
+    "name_source": "UPBIT",
+    "asset_id": "XRP",
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "379810": {
+    "exchange": "KIS",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "379810",
+    "name": "KODEX 미국나스닥100TR",
+    "market_type": "KRX_ETF",
+    "binance_symbol": "",
+    "description": "삼성 KODEX 미국 나스닥 100 토탈리턴 ETF"
+  },
+  "QQQ": {
+    "exchange": "KIS",
+    "base_currency": "USD",
+    "is_active": true,
+    "symbol": "QQQ",
+    "name": "Invesco QQQ Trust",
+    "market_type": "US_ETF",
+    "binance_symbol": "",
+    "description": "미국 나스닥 100 대표 ETF"
+  },
+  "GOOGL": {
+    "exchange": "KIS",
+    "base_currency": "USD",
+    "is_active": true,
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc. Class A",
+    "market_type": "US_STOCK",
+    "binance_symbol": "",
+    "description": "구글 / 알파벳 Class A (글로벌 빅테크 및 AI 대표주)"
+  },
+  "396500": {
+    "exchange": "KIS",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "396500",
+    "name": "TIGER 반도체TOP10",
+    "market_type": "KRX_ETF",
+    "binance_symbol": "",
+    "description": "미래에셋 TIGER Fn반도체TOP10 ETF (삼성전자+SK하이닉스 54%)"
+  },
+  "0167A0": {
+    "exchange": "KIS",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "0167A0",
+    "name": "SOL AI반도체TOP2플러스",
+    "market_type": "KRX_ETF",
+    "binance_symbol": "",
+    "description": "신한 SOL AI반도체TOP2플러스 ETF"
+  },
+  "449190": {
+    "exchange": "KIS",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "449190",
+    "name": "KODEX 미국나스닥100(H)",
+    "market_type": "KRX_ETF",
+    "binance_symbol": "",
+    "description": "삼성 KODEX 미국 나스닥 100 환헤지 ETF"
+  },
+  "KRW-DOGE": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-DOGE",
+    "name": "도지코인",
+    "market_type": "CRYPTO",
+    "binance_symbol": "DOGEUSDT",
+    "coinbase_symbol": "DOGE-USD",
+    "description": "도지코인 (DOGE) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "DOGE",
+    "overrides": {
+      "tick_size": 0.1
+    }
+  },
+  "KRW-ADA": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-ADA",
+    "name": "에이다",
+    "market_type": "CRYPTO",
+    "binance_symbol": "ADAUSDT",
+    "coinbase_symbol": "ADA-USD",
+    "description": "에이다 (ADA) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "ADA",
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "KRW-AVAX": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-AVAX",
+    "name": "아발란체",
+    "market_type": "CRYPTO",
+    "binance_symbol": "AVAXUSDT",
+    "coinbase_symbol": "AVAX-USD",
+    "description": "아발란체 (AVAX) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "AVAX",
+    "overrides": {
+      "tick_size": 10.0
+    }
+  },
+  "KRW-DOT": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-DOT",
+    "name": "폴카닷",
+    "market_type": "CRYPTO",
+    "binance_symbol": "DOTUSDT",
+    "coinbase_symbol": "DOT-USD",
+    "description": "폴카닷 (DOT) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "DOT",
+    "overrides": {
+      "tick_size": 5.0
+    }
+  },
+  "KRW-LINK": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-LINK",
+    "name": "체인링크",
+    "market_type": "CRYPTO",
+    "binance_symbol": "LINKUSDT",
+    "coinbase_symbol": "LINK-USD",
+    "description": "체인링크 (LINK) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "LINK",
+    "overrides": {
+      "tick_size": 10.0
+    }
+  },
+  "KRW-SHIB": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-SHIB",
+    "name": "시바이누",
+    "market_type": "CRYPTO",
+    "binance_symbol": "SHIBUSDT",
+    "coinbase_symbol": "SHIB-USD",
+    "description": "시바이누 (SHIB) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "SHIB",
+    "overrides": {
+      "tick_size": 0.0001
+    }
+  },
+  "KRW-TRX": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-TRX",
+    "name": "트론",
+    "market_type": "CRYPTO",
+    "binance_symbol": "TRXUSDT",
+    "coinbase_symbol": "",
+    "description": "트론 (TRX) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "TRX",
+    "overrides": {
+      "tick_size": 0.1
+    }
+  },
+  "KRW-BCH": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-BCH",
+    "name": "비트코인캐시",
+    "market_type": "CRYPTO",
+    "binance_symbol": "BCHUSDT",
+    "coinbase_symbol": "BCH-USD",
+    "description": "비트코인캐시 (BCH) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "BCH"
+  },
+  "KRW-NEAR": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-NEAR",
+    "name": "니어프로토콜",
+    "market_type": "CRYPTO",
+    "binance_symbol": "NEARUSDT",
+    "coinbase_symbol": "NEAR-USD",
+    "description": "니어프로토콜 (NEAR) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "NEAR",
+    "overrides": {
+      "tick_size": 5.0
+    }
+  },
+  "KRW-SUI": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-SUI",
+    "name": "수이",
+    "market_type": "CRYPTO",
+    "binance_symbol": "SUIUSDT",
+    "coinbase_symbol": "SUI-USD",
+    "description": "수이 (SUI) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "SUI",
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "KRW-APT": {
+    "exchange": "UPBIT",
+    "base_currency": "KRW",
+    "is_active": true,
+    "symbol": "KRW-APT",
+    "name": "앱토스",
+    "market_type": "CRYPTO",
+    "binance_symbol": "APTUSDT",
+    "coinbase_symbol": "APT-USD",
+    "description": "앱토스 (APT) 원화마켓",
+    "name_source": "UPBIT",
+    "asset_id": "APT",
+    "overrides": {
+      "tick_size": 10.0
+    }
+  },
+  "NQ": {
+    "symbol": "NQ",
+    "name": "미국 나스닥100 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "CME",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "CME E-mini Nasdaq-100 선물 (글로벌 기술주 선행)",
+    "tradable": false,
+    "is_active": true,
+    "yahoo_ticker": "NQ=F",
+    "feature_prefix": "nq_futures"
+  },
+  "ES": {
+    "symbol": "ES",
+    "name": "미국 S&P500 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "CME",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "CME E-mini S&P 500 선물 (글로벌 시장 대표 지수)",
+    "tradable": false,
+    "is_active": true,
+    "yahoo_ticker": "ES=F",
+    "feature_prefix": "sp500_futures"
+  },
+  "US_TECH_100": {
+    "symbol": "US_TECH_100",
+    "name": "나스닥 100 CFD (대용)",
+    "market_type": "GLOBAL_INDEX_CFD",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "role": "macro_futures",
+    "default_price": 24000.0,
+    "description": "cTrader US TECH 100 (CME 나스닥 100 선물 대용 CFD)",
+    "tradable": false,
+    "is_active": true,
+    "proxy_of": "NQ"
+  },
+  "US_500": {
+    "symbol": "US_500",
+    "name": "S&P 500 CFD (대용)",
+    "market_type": "GLOBAL_INDEX_CFD",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "role": "macro_futures",
+    "default_price": 5600.0,
+    "description": "cTrader US 500 (CME S&P 500 선물 대용 CFD)",
+    "tradable": false,
+    "is_active": true,
+    "proxy_of": "ES"
+  },
+  "USDJPY": {
+    "symbol": "USDJPY",
+    "name": "달러-엔화 FX (대용)",
+    "market_type": "FX_SPOT",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "JPY",
+    "role": "macro_futures",
+    "default_price": 145.0,
+    "description": "cTrader USDJPY (CME JPY 통화선물 대용 현물 환율)",
+    "tradable": false,
+    "is_active": true
+  },
+  "XAUUSD": {
+    "symbol": "XAUUSD",
+    "name": "골드 현물 CFD (대용)",
+    "market_type": "COMMODITY_CFD",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "role": "macro_futures",
+    "default_price": 2600.0,
+    "description": "cTrader XAUUSD (COMEX 골드 선물 대용 CFD)",
+    "tradable": false,
+    "is_active": true
+  },
+  "XTIUSD": {
+    "symbol": "XTIUSD",
+    "name": "WTI 원유 현물 CFD (대용)",
+    "market_type": "COMMODITY_CFD",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "role": "macro_futures",
+    "default_price": 70.0,
+    "description": "cTrader XTIUSD (NYMEX WTI 원유 선물 대용 CFD)",
+    "tradable": false,
+    "is_active": true
+  },
+  "JAPAN_225": {
+    "symbol": "JAPAN_225",
+    "name": "닛케이 225 CFD (대용)",
+    "market_type": "GLOBAL_INDEX_CFD",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "JPY",
+    "role": "macro_futures",
+    "default_price": 38000.0,
+    "description": "cTrader JAPAN 225 (OSE 닛케이 225 선물 대용 CFD)",
+    "tradable": false,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "HONG_KONG_50": {
+    "symbol": "HONG_KONG_50",
+    "name": "항셍 50 CFD (대용)",
+    "market_type": "GLOBAL_INDEX_CFD",
+    "exchange": "CTRADER",
+    "binance_symbol": "",
+    "base_currency": "HKD",
+    "role": "macro_futures",
+    "default_price": 18000.0,
+    "description": "cTrader HONG KONG 50 (HKEX 항셍 지수 선물 대용 CFD)",
+    "tradable": false,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "NVDA-PERP": {
+    "symbol": "NVDA-PERP",
+    "name": "엔비디아 24H 무기한 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "HYPERLIQUID",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "엔비디아 24시간 무기한 선물 (국내 반도체 1등 선행)",
+    "tradable": false,
+    "is_active": false,
+    "overrides": {
+      "tick_size": 0.01
+    }
+  },
+  "229200": {
+    "symbol": "229200",
+    "name": "KODEX 코스닥150",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "코스닥 150 대표 ETF",
+    "is_active": true
+  },
+  "10100": {
+    "symbol": "10100",
+    "name": "KOSPI 200 선물",
+    "market_type": "KRX_FUTURES",
+    "exchange": "KRX",
+    "kis_futures_base": "2001",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "KRX KOSPI 200 지수 최근월 선물",
+    "tradable": false
+  },
+  "U180": {
+    "symbol": "U180",
+    "name": "KOSPI 200 현물 지수",
+    "market_type": "KRX_INDEX",
+    "exchange": "KRX",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "KOSPI 200 현물 지수",
+    "tradable": false
+  },
+  "BTCUSDT": {
+    "symbol": "BTCUSDT",
+    "name": "바이낸스 BTC/USDT",
+    "market_type": "CRYPTO_SPOT",
+    "exchange": "BINANCE",
+    "binance_symbol": "BTCUSDT",
+    "base_currency": "USDT",
+    "is_active": true,
+    "description": "바이낸스 BTC 현물",
+    "asset_id": "BTC",
+    "tradable": false
+  },
+  "BTCUSDT-PERP": {
+    "symbol": "BTCUSDT-PERP",
+    "name": "바이낸스 BTC 무기한 선물",
+    "market_type": "CRYPTO_FUTURES",
+    "exchange": "BINANCE",
+    "binance_symbol": "BTCUSDT",
+    "base_currency": "USDT",
+    "is_active": true,
+    "description": "바이낸스 BTC 무기한 선물",
+    "asset_id": "BTC",
+    "tradable": false
+  },
+  "BTCUSDT-PERP_OI": {
+    "symbol": "BTCUSDT-PERP_OI",
+    "name": "BTCUSDT-PERP Open Interest History",
+    "market_type": "CRYPTO_FUTURES",
+    "exchange": "BINANCE",
+    "binance_symbol": "BTCUSDT",
+    "base_currency": "USDT",
+    "is_active": true,
+    "description": "DataVault BINANCE 자동 탐지 자산",
+    "asset_id": "BTC",
+    "tradable": false
+  },
+  "BTCUSDT-PERP_FUNDING_RATE": {
+    "symbol": "BTCUSDT-PERP_FUNDING_RATE",
+    "name": "BTCUSDT-PERP 8h Funding Rate Ledger",
+    "market_type": "CRYPTO_FUTURES",
+    "exchange": "BINANCE",
+    "binance_symbol": "BTCUSDT",
+    "base_currency": "USDT",
+    "is_active": true,
+    "description": "DataVault BINANCE 자동 탐지 자산",
+    "asset_id": "BTC",
+    "tradable": false
+  },
+  "BTC-USD": {
+    "symbol": "BTC-USD",
+    "name": "코인베이스 BTC/USD",
+    "market_type": "CRYPTO_SPOT",
+    "exchange": "COINBASE",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "is_active": true,
+    "description": "코인베이스 BTC 현물",
+    "asset_id": "BTC",
+    "tradable": false
+  },
+  "KRW-USDT": {
+    "symbol": "KRW-USDT",
+    "name": "테더",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "업비트 KRW-USDT (김프/환율 프록시)",
+    "asset_id": "USDT",
+    "name_source": "UPBIT",
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "101SC000": {
+    "symbol": "101SC000",
+    "name": "KOSPI200 선물",
+    "market_type": "KRX_FUTURES",
+    "exchange": "KRX",
+    "kis_futures_base": "2001",
+    "base_currency": "KRW",
+    "binance_symbol": "",
+    "description": "KOSPI200 선물 (구 배포 스냅샷의 참조 코드, 10100 과 동일 상품군)",
+    "tradable": false,
+    "is_active": true
+  },
+  "ETHUSDT": {
+    "is_active": true,
+    "tradable": false,
+    "base_currency": "USDT",
+    "binance_symbol": "ETHUSDT",
+    "description": "참조 전용 (KRW-ETH 와 같은 자산 ETH 의 해외 리스팅)",
+    "symbol": "ETHUSDT",
+    "name": "바이낸스 ETH/USDT",
+    "market_type": "CRYPTO_SPOT",
+    "exchange": "BINANCE",
+    "asset_id": "ETH",
+    "name_source": "manual"
+  },
+  "ETHUSDT-PERP": {
+    "is_active": true,
+    "tradable": false,
+    "base_currency": "USDT",
+    "binance_symbol": "ETHUSDT",
+    "description": "참조 전용 (KRW-ETH 와 같은 자산 ETH 의 해외 리스팅)",
+    "symbol": "ETHUSDT-PERP",
+    "name": "바이낸스 ETH 무기한 선물",
+    "market_type": "CRYPTO_FUTURES",
+    "exchange": "BINANCE",
+    "asset_id": "ETH",
+    "name_source": "manual"
+  },
+  "ETH-USD": {
+    "is_active": true,
+    "tradable": false,
+    "base_currency": "USD",
+    "binance_symbol": "",
+    "description": "참조 전용 (KRW-ETH 와 같은 자산 ETH 의 해외 리스팅)",
+    "symbol": "ETH-USD",
+    "name": "코인베이스 ETH/USD",
+    "market_type": "CRYPTO_SPOT",
+    "exchange": "COINBASE",
+    "asset_id": "ETH",
+    "name_source": "manual"
+  },
+  "114800": {
+    "symbol": "114800",
+    "name": "KODEX 인버스",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "코스피 200 인버스 1X",
+    "catalog": true,
+    "is_active": true
+  },
+  "233740": {
+    "symbol": "233740",
+    "name": "KODEX 코스닥150레버리지",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "코스닥 150 레버리지 2X",
+    "catalog": true,
+    "is_active": true
+  },
+  "251340": {
+    "symbol": "251340",
+    "name": "KODEX 코스닥150선물인버스",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "코스닥 150 인버스 ETF",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "102110": {
+    "symbol": "102110",
+    "name": "TIGER 200",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미래에셋 코스피 200 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "379800": {
+    "symbol": "379800",
+    "name": "KODEX 미국S&P500TR",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성 KODEX 미국 S&P500 토탈리턴 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "409820": {
+    "symbol": "409820",
+    "name": "KODEX 미국나스닥100선물인버스(H)",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성 KODEX 미국 나스닥 100 인버스 ETF",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "280930": {
+    "symbol": "280930",
+    "name": "KODEX 미국나스닥100레버리지(합성)",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성 KODEX 미국 나스닥 100 2X 레버리지 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "368590": {
+    "symbol": "368590",
+    "name": "KODEX 미국S&P500선물(H)",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성 KODEX 미국 S&P 500 선물 환헤지 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "133690": {
+    "symbol": "133690",
+    "name": "TIGER 미국나스닥100",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미래에셋 TIGER 미국 나스닥 100 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "360750": {
+    "symbol": "360750",
+    "name": "TIGER 미국S&P500",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미래에셋 TIGER 미국 S&P500 지수 추종 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "364980": {
+    "symbol": "364980",
+    "name": "TIGER 미국나스닥100선물인버스(H)",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미래에셋 TIGER 미국 나스닥 100 인버스 ETF",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "402970": {
+    "symbol": "402970",
+    "name": "ACE 미국나스닥100",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "한국투자 ACE 미국 나스닥 100 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "402960": {
+    "symbol": "402960",
+    "name": "ACE 미국S&P500",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "한국투자 ACE 미국 S&P 500 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "446720": {
+    "symbol": "446720",
+    "name": "SOL 미국배당다우존스",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "신한 SOL 월배당 미국배당다우존스 (한국판 SCHD)",
+    "catalog": true,
+    "is_active": true
+  },
+  "453330": {
+    "symbol": "453330",
+    "name": "TIGER 미국배당다우존스",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미래에셋 TIGER 월배당 미국배당다우존스 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "426410": {
+    "symbol": "426410",
+    "name": "ACE 미국배당다우존스",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "한국투자 ACE 미국배당다우존스 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "453850": {
+    "symbol": "453850",
+    "name": "ACE 미국30년국채액티브(H)",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미국 장기 국채 액티브 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "482600": {
+    "symbol": "482600",
+    "name": "KODEX 미국달러SOFR금리액티브(합성)",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성 KODEX 미국 SOFR 무위험지표금리 및 달러 추종 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "305720": {
+    "symbol": "305720",
+    "name": "KODEX 2차전지산업",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "국내 2차전지 핵심 밸류체인 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "091230": {
+    "symbol": "091230",
+    "name": "TIGER 반도체",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "미래에셋 TIGER 반도체 섹터 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "091160": {
+    "symbol": "091160",
+    "name": "KODEX 반도체",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "국내 반도체 대장주 섹터 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "381180": {
+    "symbol": "381180",
+    "name": "TIGER 미국필라델피아반도체나스닥",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "글로벌 반도체 지수 추종 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "371460": {
+    "symbol": "371460",
+    "name": "TIGER 차이나전기차SOLACTIVE",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "중국 2차전지 및 전기차 테마 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "005935": {
+    "symbol": "005935",
+    "name": "삼성전자우",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성전자 우선주",
+    "catalog": true,
+    "is_active": true
+  },
+  "373220": {
+    "symbol": "373220",
+    "name": "LG에너지솔루션",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "글로벌 2차전지 배터리 선도 기업",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "207940": {
+    "symbol": "207940",
+    "name": "삼성바이오로직스",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "글로벌 바이오 의약품 CDMO 대표주",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1000.0
+    }
+  },
+  "005380": {
+    "symbol": "005380",
+    "name": "현대차",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "국내 대표 글로벌 완성차 제조사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "000270": {
+    "symbol": "000270",
+    "name": "기아",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "글로벌 완성차 대형주",
+    "catalog": true,
+    "is_active": true
+  },
+  "068270": {
+    "symbol": "068270",
+    "name": "셀트리온",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "바이오시밀러 및 신약 개발사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "035420": {
+    "symbol": "035420",
+    "name": "NAVER",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "국내 1위 인터넷 포털 및 AI 플랫폼",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "035720": {
+    "symbol": "035720",
+    "name": "카카오",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "모바일 메신저 및 플랫폼 대기업",
+    "catalog": true,
+    "is_active": true
+  },
+  "005490": {
+    "symbol": "005490",
+    "name": "POSCO홀딩스",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "철강 및 2차전지 소재 지주사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "051910": {
+    "symbol": "051910",
+    "name": "LG화학",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "석유화학 및 첨단소재 제조사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "006400": {
+    "symbol": "006400",
+    "name": "삼성SDI",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "2차전지 및 전자재료 전문사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "247540": {
+    "symbol": "247540",
+    "name": "에코프로비엠",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "코스닥 2차전지 양극재 대표주",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "086520": {
+    "symbol": "086520",
+    "name": "에코프로",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "코스닥 2차전지 지주사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "105560": {
+    "symbol": "105560",
+    "name": "KB금융",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "국내 대표 금융지주사",
+    "catalog": true,
+    "is_active": true
+  },
+  "055550": {
+    "symbol": "055550",
+    "name": "신한지주",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "종합 금융그룹",
+    "catalog": true,
+    "is_active": true
+  },
+  "012330": {
+    "symbol": "012330",
+    "name": "현대모비스",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "자동차 핵심 부품 제조사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "028260": {
+    "symbol": "028260",
+    "name": "삼성물산",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "삼성그룹 지배구조 핵심 기업",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "032830": {
+    "symbol": "032830",
+    "name": "삼성생명",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "국내 1위 생명보험사",
+    "catalog": true,
+    "is_active": true
+  },
+  "010130": {
+    "symbol": "010130",
+    "name": "고려아연",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "비철금속 제련 세계 1위 기업",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1000.0
+    }
+  },
+  "042700": {
+    "symbol": "042700",
+    "name": "한미반도체",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "HBM TC 본더 선도 장비사",
+    "catalog": true,
+    "is_active": true
+  },
+  "277810": {
+    "symbol": "277810",
+    "name": "레인보우로보틱스",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "협동로봇 및 휴머노이드 로봇 전문사",
+    "catalog": true,
+    "is_active": true
+  },
+  "018260": {
+    "symbol": "018260",
+    "name": "삼성에스디에스",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "IT 서비스 및 클라우드 전문사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "003670": {
+    "symbol": "003670",
+    "name": "포스코퓨처엠",
+    "market_type": "KRX_STOCK",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "2차전지 양극재/음극재 전문 제조사",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 500.0
+    }
+  },
+  "SQQQ": {
+    "symbol": "SQQQ",
+    "name": "ProShares UltraPro Short QQQ",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "미국 나스닥 100 -3X 인버스 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "SOXS": {
+    "symbol": "SOXS",
+    "name": "Direxion Daily Semiconductor Bear 3X",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "미국 필라델피아 반도체 지수 -3X 인버스 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "SPY": {
+    "symbol": "SPY",
+    "name": "SPDR S&P 500 ETF Trust",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "미국 S&P 500 대표 ETF",
+    "catalog": true,
+    "is_active": true
+  },
+  "NVDA": {
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "엔비디아 (글로벌 AI 반도체 선도 기업)",
+    "catalog": true,
+    "is_active": true
+  },
+  "AAPL": {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "애플 (글로벌 IT 생태계 대표 대형주)",
+    "catalog": true,
+    "is_active": true
+  },
+  "TSLA": {
+    "symbol": "TSLA",
+    "name": "Tesla Inc.",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "테슬라 (전기차 및 자율주행 선도 기업)",
+    "catalog": true,
+    "is_active": true
+  },
+  "MSFT": {
+    "symbol": "MSFT",
+    "name": "Microsoft Corporation",
+    "market_type": "US_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "마이크로소프트 (글로벌 클라우드 및 생성형 AI)",
+    "catalog": true,
+    "is_active": true
+  },
+  "KRW-XLM": {
+    "symbol": "KRW-XLM",
+    "name": "스텔라루멘",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "XLMUSDT",
+    "coinbase_symbol": "XLM-USD",
+    "base_currency": "KRW",
+    "description": "국제 송금 결제 네트워크 (Stellar Lumens)",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 1.0
+    }
+  },
+  "KRW-ETC": {
+    "symbol": "KRW-ETC",
+    "name": "이더리움클래식",
+    "market_type": "CRYPTO",
+    "exchange": "UPBIT",
+    "binance_symbol": "ETCUSDT",
+    "coinbase_symbol": "ETC-USD",
+    "base_currency": "KRW",
+    "description": "작업증명 오리지널 이더리움 (Ethereum Classic)",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 10.0
+    }
+  },
+  "US10Y": {
+    "symbol": "US10Y",
+    "name": "미국 10년물 국채 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "CBOT",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "미국 10년물 국채 선물 (시장금리 및 유동성 쇼크 방어)",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 0.015625
+    }
+  },
+  "WTI": {
+    "symbol": "WTI",
+    "name": "WTI 원유 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "NYMEX",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "WTI 원유 선물 (인플레/지정학 위기 블랙스완 필터)",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 0.01
+    }
+  },
+  "GOLD": {
+    "symbol": "GOLD",
+    "name": "골드(금) 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "COMEX",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "골드(금) 선물 (글로벌 안전자산 자금 도피/Risk-Off 경보)",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 0.1
+    }
+  },
+  "USDKRW": {
+    "symbol": "USDKRW",
+    "name": "원/달러 실시간 외환",
+    "market_type": "FX",
+    "exchange": "PYTH",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "description": "원/달러 0.4초 실시간 외환 틱 (외국인 수급 충격 감지)",
+    "catalog": true,
+    "is_active": true,
+    "overrides": {
+      "tick_size": 0.01,
+      "default_fee": 0.0,
+      "default_slippage": 0.0001
+    }
+  },
+  "YM": {
+    "symbol": "YM",
+    "name": "미국 다우존스 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "CBOT",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "CBOT E-mini Dow Jones 선물",
+    "tradable": false,
+    "is_active": false,
+    "yahoo_ticker": "YM=F"
+  },
+  "RTY": {
+    "symbol": "RTY",
+    "name": "미국 러셀2000 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "CME",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "CME E-mini Russell 2000 선물",
+    "tradable": false,
+    "is_active": false,
+    "yahoo_ticker": "RTY=F"
+  },
+  "CL": {
+    "symbol": "CL",
+    "name": "WTI 원유 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "NYMEX",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "NYMEX Crude Oil 선물",
+    "tradable": false,
+    "is_active": false,
+    "yahoo_ticker": "CL=F"
+  },
+  "GC": {
+    "symbol": "GC",
+    "name": "금 선물",
+    "market_type": "GLOBAL_FUTURES",
+    "exchange": "COMEX",
+    "binance_symbol": "",
+    "base_currency": "USD",
+    "description": "COMEX Gold 선물",
+    "tradable": false,
+    "is_active": false,
+    "yahoo_ticker": "GC=F"
+  },
+  "15000": {
+    "symbol": "15000",
+    "name": "SK하이닉스 주식선물 (연결)",
+    "market_type": "KRX_FUTURES",
+    "exchange": "KRX",
+    "underlying": "000660",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "KRX SK하이닉스 개별주식선물 최근월 연결 (Creon 마스터 '15000 SK하이닉스 연결' 확인, 승수 10주)",
+    "tradable": false
+  },
+  "11100": {
+    "symbol": "11100",
+    "name": "삼성전자 주식선물 (연결)",
+    "market_type": "KRX_FUTURES",
+    "exchange": "KRX",
+    "underlying": "005930",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "KRX 삼성전자 개별주식선물 최근월 연결 (Creon 마스터 '11100 삼성전자 연결' 확인, 승수 10주)",
+    "tradable": false
+  },
+  "0197X0": {
+    "symbol": "0197X0",
+    "name": "SOL SK하이닉스선물단일종목인버스2X",
+    "market_type": "KRX_ETF",
+    "exchange": "KIS",
+    "binance_symbol": "",
+    "base_currency": "KRW",
+    "is_active": true,
+    "description": "신한 SOL SK하이닉스선물단일종목인버스2X ETF (단일종목 파생형: 매매차익 보유기간과세 15.4%, 기본예탁금 3천만원 현금)"
+  }
+}

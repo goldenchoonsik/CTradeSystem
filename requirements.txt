@@ -1,0 +1,37 @@
+# Core Data & ML
+numpy>=2.0.0
+pandas>=2.2.0
+scipy>=1.14.0
+lightgbm>=4.3.0
+optuna>=4.0.0
+numba>=0.60.0
+pyarrow>=16.0.0
+
+# Web & API Framework (CTrade & CCommander)
+fastapi>=0.110.0
+uvicorn>=0.30.0
+websockets>=12.0
+requests>=2.31.0
+httpx>=0.27.0
+aiohttp>=3.9.0
+python-dotenv>=1.0.0
+pydantic>=2.7.0
+PyJWT>=2.8.0
+psutil>=5.9.0
+pybind11>=2.12.0
+setuptools>=68.0.0
+wheel>=0.40.0
+
+# GUI & Baker Visualization (CAiModelBaker)
+PyQt6>=6.7.0
+PyQt6-WebEngine>=6.7.0
+matplotlib>=3.8.0
+plotly>=5.20.0
+streamlit>=1.35.0
+tqdm>=4.66.0
+
+# Testing & Performance
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+anyio>=4.0.0
+cython>=3.0.0

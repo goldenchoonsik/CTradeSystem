@@ -1,0 +1,40 @@
+{
+    "session_id": "SOLAI_M1_TEST1",
+    "symbol": "0167A0",
+    "interval": "1m",
+    "seed": 42,
+    "features_order": [
+        "ref_10100_ret_1c",
+        "ref_000660_ret_1c",
+        "target_ma_ratio",
+        "target_rsi_curr",
+        "target_adx",
+        "target_mfi",
+        "target_bb_kc_squeeze",
+        "ref_10100_spread_vs_target",
+        "target_rsi_daily"
+    ],
+    "feature_params": {
+        "ref_10100_ret_1c": {},
+        "ref_000660_ret_1c": {},
+        "target_ma_ratio": {
+            "period_bars": 15
+        },
+        "target_rsi_curr": {
+            "period_bars": 14
+        },
+        "target_adx": {
+            "period_bars": 14
+        },
+        "target_mfi": {
+            "period_bars": 14
+        },
+        "target_bb_kc_squeeze": {
+            "period_bars": 20
+        },
+        "ref_10100_spread_vs_target": {},
+        "target_rsi_daily": {
+            "period_days": 14
+        }
+    }
+}

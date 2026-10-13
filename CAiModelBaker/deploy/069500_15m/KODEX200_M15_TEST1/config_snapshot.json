@@ -1,0 +1,385 @@
+{
+    "SYMBOL_UPBIT": "069500",
+    "SYMBOL_BINANCE": "",
+    "INTERVAL": "15m",
+    "FEE_UPBIT": 5e-05,
+    "SLIPPAGE": 0.0001,
+    "ARCHIVE_START_YM": "2020-01",
+    "ARCHIVE_END_YM": "2026-10",
+    "FEE_RATE": 5e-05,
+    "BACKTEST_DAYS": 40,
+    "COOLDOWN_MINUTES": 2,
+    "TRAIN_START": "2025-06-25",
+    "TRAIN_END": "2026-08-03",
+    "OPT_START": "2026-08-04",
+    "OPT_END": "2026-10-06",
+    "TEST_START": "2026-03-01",
+    "TEST_END": "2026-03-31",
+    "ACTIVE_SESSION_ID": "KODEX200_M15_TEST1",
+    "INTRADAY_SQUARE_OFF": true,
+    "USE_MACRO_FILTER": true,
+    "MACRO_RSI_FILTER_THRESHOLD": 50.0,
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "target_rsi_daily",
+            "ref_usdjpy_ret_5c",
+            "ref_us_500_ret_5c",
+            "top2_lead_momentum",
+            "target_volatility_ratio",
+            "target_adx",
+            "mtf_ema_distance_4h",
+            "ref_005930_ret_5c",
+            "target_kaufman_er",
+            "target_mfi",
+            "parkinson_rv_squeeze",
+            "target_vwap_disparity",
+            "ref_us_tech_100_ret_5c",
+            "target_atr_ratio",
+            "target_bb_kc_squeeze",
+            "target_macd_hist",
+            "target_vwap_slope",
+            "ref_15000_ret_5c",
+            "target_ma_ratio",
+            "semi_duo_lead_delta",
+            "target_volume_spike"
+        ],
+        "active_features": [
+            "target_rsi_daily",
+            "ref_usdjpy_ret_5c",
+            "ref_us_500_ret_5c",
+            "top2_lead_momentum",
+            "target_volatility_ratio",
+            "target_adx",
+            "mtf_ema_distance_4h",
+            "ref_005930_ret_5c",
+            "target_kaufman_er",
+            "target_mfi",
+            "parkinson_rv_squeeze",
+            "target_vwap_disparity",
+            "ref_us_tech_100_ret_5c",
+            "target_atr_ratio",
+            "target_bb_kc_squeeze",
+            "target_macd_hist",
+            "target_vwap_slope",
+            "ref_15000_ret_5c",
+            "target_ma_ratio",
+            "semi_duo_lead_delta",
+            "target_volume_spike"
+        ],
+        "feature_params": {
+            "target_ma_ratio": {
+                "period_bars": 15
+            },
+            "target_trade_bid_ratio": {
+                "window_mins": 10
+            },
+            "target_rsi_daily": {
+                "period_days": 14
+            },
+            "target_hour": {},
+            "target_rsi_curr": {
+                "period_bars": 14
+            },
+            "target_adx": {
+                "period_bars": 14
+            },
+            "target_atr_ratio": {
+                "period_bars": 14
+            },
+            "target_ofi_cumsum": {
+                "window_bars": 10
+            },
+            "target_large_trade_density": {
+                "window_bars": 10
+            },
+            "target_cvd_momentum": {
+                "window_mins": 30
+            },
+            "target_trade_frequency": {},
+            "target_large_trade_ratio": {},
+            "target_avg_trade_size_change": {
+                "window_mins": 20
+            },
+            "target_obv_momentum": {
+                "window_mins": 30
+            },
+            "target_trade_price_spike": {
+                "period_bars": 20
+            },
+            "target_cvd_absorption": {
+                "candles": 3
+            },
+            "stock_basis": {},
+            "stock_basis_rate": {},
+            "stock_basis_z": {
+                "window": 60
+            },
+            "target_volume_spike": {
+                "period_bars": 20
+            },
+            "target_bb_kc_squeeze": {
+                "period_bars": 20
+            },
+            "target_hour_cos": {},
+            "parkinson_rv_squeeze": {
+                "short_bars": 5,
+                "long_bars": 30
+            }
+        },
+        "feature_penalties": {
+            "target_cvd_momentum": 0.3,
+            "target_trade_bid_ratio": 0.3
+        },
+        "regime_features": {
+            "target_hour": true,
+            "target_hour_cos": true
+        },
+        "param_policy": "scale_v2"
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 42,
+        "outer_trials": 25,
+        "inner_trials": 25,
+        "wfa_outer_trials": 2,
+        "wfa_inner_trials": 2,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 1.2,
+            "user_max": 3.5
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 1,
+            "user_max": 2.5
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08,
+            "step": 0.005
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 3,
+            "user_max": 4,
+            "step": 1
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 16,
+            "user_max": 63,
+            "step": 1
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80,
+            "step": 1
+        },
+        "buy_threshold_range": {
+            "min": 0.5,
+            "max": 0.65,
+            "user_min": 0.52,
+            "user_max": 0.6,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 2,
+            "user_max": 24,
+            "step": 1
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "fee_upbit": 5e-05,
+        "slippage": 0.0001,
+        "min_trades": 5,
+        "min_profit_factor": 0.5,
+        "wfa_enabled": true,
+        "wfa_train_months": 3.905,
+        "wfa_opt_months": 1,
+        "wfa_test_months": 1,
+        "wfa_start_date": "2025-06-25",
+        "wfa_end_date": "2026-08-03",
+        "buy_quantile_range": {
+            "min": 0.8,
+            "max": 0.995,
+            "step": 0.005,
+            "user_min": 0.85,
+            "user_max": 0.995
+        },
+        "wfa_window_count": 8,
+        "holdout_td": 42,
+        "split_unit": "td",
+        "wfa_input_values": {
+            "unit": "td",
+            "train": 82,
+            "opt": 21,
+            "test": 21
+        }
+    },
+    "AUTOLAB_CONFIG": {
+        "min_profit": 0.0,
+        "min_trades": 8,
+        "max_mdd": 10.0,
+        "max_trials": 15,
+        "seed": 42,
+        "holdout_start": "2026-08-04",
+        "holdout_end": "2026-10-06",
+        "ic_threshold": 0.02,
+        "min_features": 2,
+        "max_features": 10,
+        "complexity_penalty": 0.15,
+        "final_test_ratio": 67,
+        "holdout_mode": "split",
+        "final_test_td": 14,
+        "use_all_features": false
+    },
+    "PROJECT_META": {
+        "memo": "",
+        "created_at": "2026-10-07 20:07:10",
+        "created_from": "defaults"
+    },
+    "TARGET_HORIZON_CONFIG": {
+        "mode": "locked",
+        "locked_predict_ahead": 6,
+        "locked_max_hold": 6,
+        "candidate_horizons": [
+            6,
+            9,
+            12
+        ]
+    },
+    "reference_symbols": [
+        {
+            "symbol": "10100",
+            "key": "10100",
+            "name": "KOSPI 200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "key": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "key": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "key": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "USDJPY",
+            "key": "usdjpy",
+            "name": "달러-엔화 FX (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "11100",
+            "key": "11100",
+            "name": "삼성전자 주식선물 (연결)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "15000",
+            "key": "15000",
+            "name": "SK하이닉스 주식선물 (연결)",
+            "role": "macro_futures"
+        }
+    ],
+    "REFERENCE_SYMBOLS": [
+        {
+            "symbol": "10100",
+            "key": "10100",
+            "name": "KOSPI 200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "key": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "key": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "key": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "USDJPY",
+            "key": "usdjpy",
+            "name": "달러-엔화 FX (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "11100",
+            "key": "11100",
+            "name": "삼성전자 주식선물 (연결)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "15000",
+            "key": "15000",
+            "name": "SK하이닉스 주식선물 (연결)",
+            "role": "macro_futures"
+        }
+    ],
+    "champion_features": [
+        "target_adx",
+        "target_rsi_curr",
+        "target_volatility_ratio",
+        "target_macd_hist",
+        "parkinson_rv_squeeze",
+        "mtf_ema_distance_4h",
+        "target_bb_kc_squeeze",
+        "target_mfi",
+        "ref_us_500_ret_5c"
+    ]
+}

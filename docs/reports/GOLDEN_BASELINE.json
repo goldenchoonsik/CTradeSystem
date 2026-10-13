@@ -1,0 +1,829 @@
+{
+  "frozen_at": "2026-09-15 00:36:21",
+  "project_root": "CTradeSystem",
+  "hash_included": true,
+  "note": "데이터 파이프라인 리팩터링 전 회귀 기준선. 본 파일은 학습 데이터셋/배포 모델/백테스트 성과의 지문이며, 리팩터링 후 scripts/freeze_golden_baseline.py --check 로 동일성을 검증한다.",
+  "snapshots": [
+    {
+      "path": "CAiModelBaker/data/069500/data_snapshot_10s.csv",
+      "size": 40876279,
+      "sha256": "7498c77ee7c1e5c9cb023dae9736a8325e0869f1357a77c08447610b9a444173",
+      "symbol": "069500",
+      "interval": "10s",
+      "meta": {
+        "path": "CAiModelBaker/data/069500/data_snapshot_10s.meta.json",
+        "size": 7635,
+        "sha256": "3ca1dcaa590fa16e8d172b30cee23023a114733aa2712fe6cd1d1acd7534d6fb"
+      },
+      "rows": 88958,
+      "columns": [
+        "timestamp",
+        "upbit_open",
+        "upbit_high",
+        "upbit_low",
+        "upbit_close",
+        "upbit_volume",
+        "upbit_trade_price",
+        "target_large_trade_count",
+        "bid_vol",
+        "target_trade_count",
+        "cvd",
+        "bid",
+        "ask",
+        "spread",
+        "mid_price",
+        "target_trade_bid_ratio",
+        "target_avg_trade_size",
+        "futures_close",
+        "spot_close",
+        "nq_futures_daily_close",
+        "nq_futures_close",
+        "nq_futures_volume",
+        "sp500_futures_daily_close",
+        "sp500_futures_close",
+        "sp500_futures_volume",
+        "ref_hynix_close",
+        "ref_hynix_volume",
+        "ref_hynix_bid_vol",
+        "ref_samsung_close",
+        "ref_samsung_volume",
+        "ref_samsung_bid_vol",
+        "ref_379810_close",
+        "ref_379810_volume",
+        "ref_379810_bid_vol",
+        "ref_449190_close",
+        "ref_449190_volume",
+        "ref_449190_bid_vol",
+        "ref_es_close",
+        "ref_es_volume",
+        "ref_es_bid_vol",
+        "ref_nq_close",
+        "ref_nq_volume",
+        "ref_nq_bid_vol",
+        "nav",
+        "target_open",
+        "target_high",
+        "target_low",
+        "target_close",
+        "target_volume",
+        "target_trade_price",
+        "upbit_trade_bid_ratio",
+        "upbit_trade_count",
+        "upbit_large_trade_count",
+        "upbit_avg_trade_size"
+      ],
+      "timestamp_min": "2026-07-21 09:00:00",
+      "timestamp_max": "2026-09-11 15:30:00",
+      "built_at": "2026-09-12 04:19:20"
+    },
+    {
+      "path": "CAiModelBaker/data/069500/data_snapshot_1m.csv",
+      "size": 77626332,
+      "sha256": "8d89bba77f0d15f186da5f62ff3be0d4d211c2cd642cfd3cb5a5d8026392d156",
+      "symbol": "069500",
+      "interval": "1m",
+      "meta": {
+        "path": "CAiModelBaker/data/069500/data_snapshot_1m.meta.json",
+        "size": 8834,
+        "sha256": "0f9d6a5ce422d8babf833e70fc28c39501ff0d6345877ecadab3e6957a3347e3"
+      },
+      "rows": 196524,
+      "columns": [
+        "timestamp",
+        "upbit_open",
+        "upbit_high",
+        "upbit_low",
+        "upbit_close",
+        "upbit_volume",
+        "upbit_trade_price",
+        "cvd",
+        "futures_close",
+        "spot_close",
+        "nq_futures_daily_close",
+        "nq_futures_close",
+        "nq_futures_volume",
+        "sp500_futures_daily_close",
+        "sp500_futures_close",
+        "sp500_futures_volume",
+        "ref_hynix_close",
+        "ref_hynix_volume",
+        "ref_hynix_bid_vol",
+        "ref_samsung_close",
+        "ref_samsung_volume",
+        "ref_samsung_bid_vol",
+        "ref_379810_close",
+        "ref_379810_volume",
+        "ref_379810_bid_vol",
+        "ref_449190_close",
+        "ref_449190_volume",
+        "ref_449190_bid_vol",
+        "ref_es_close",
+        "ref_es_volume",
+        "ref_es_bid_vol",
+        "ref_nq_close",
+        "ref_nq_volume",
+        "ref_nq_bid_vol",
+        "target_trade_count",
+        "target_large_trade_count",
+        "target_trade_bid_ratio",
+        "target_avg_trade_size",
+        "nav",
+        "target_open",
+        "target_high",
+        "target_low",
+        "target_close",
+        "target_volume",
+        "target_trade_price",
+        "upbit_trade_bid_ratio",
+        "upbit_trade_count",
+        "upbit_large_trade_count",
+        "upbit_avg_trade_size"
+      ],
+      "timestamp_min": "2024-07-26 09:01:00",
+      "timestamp_max": "2026-09-11 15:30:00",
+      "built_at": "2026-09-12 00:09:19"
+    },
+    {
+      "path": "CAiModelBaker/data/379810/data_snapshot_1m.csv",
+      "size": 47521826,
+      "sha256": "e695e169aa8627be0d9c7bd19784bfff0e366d16e3b8a2d624bc217118efef3d",
+      "symbol": "379810",
+      "interval": "1m",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/396500/data_snapshot_1m.csv",
+      "size": 56073761,
+      "sha256": "af646e4d66ea0d12622019247218f03136fd49980e8229d2ea06e8b49cd2c696",
+      "symbol": "396500",
+      "interval": "1m",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/BTC/data_snapshot_10m.csv",
+      "size": 32110545,
+      "sha256": "c76e6ce62857fa24eb23377ba0fb1fe96223f507e0db92489ee32382d7b0c134",
+      "symbol": "BTC",
+      "interval": "10m",
+      "meta": {
+        "path": "CAiModelBaker/data/BTC/data_snapshot_10m.meta.json",
+        "size": 11725,
+        "sha256": "858e8c8133f53e87ceea7c23facde056760da0047277be2f57161db660d7e6f0"
+      },
+      "rows": 66960,
+      "columns": [
+        "timestamp",
+        "upbit_open",
+        "upbit_close",
+        "upbit_high",
+        "upbit_low",
+        "upbit_volume",
+        "upbit_trade_price",
+        "upbit_trade_bid_ratio",
+        "upbit_trade_count",
+        "upbit_large_trade_count",
+        "upbit_avg_trade_size",
+        "upbit_avg_trade_amount",
+        "binance_spot_open",
+        "binance_spot_close",
+        "binance_spot_high",
+        "binance_spot_low",
+        "binance_spot_volume",
+        "binance_spot_quote_volume",
+        "binance_spot_trade_count",
+        "binance_spot_taker_ratio",
+        "binance_spot_taker_quote_ratio",
+        "binance_futures_oi",
+        "binance_futures_oi_value",
+        "binance_usdc_volume",
+        "binance_eth_close",
+        "coinbase_spot_close",
+        "upbit_usdt_close",
+        "benchmark_btc_close",
+        "binance_funding_rate",
+        "target_open",
+        "target_high",
+        "target_low",
+        "target_close",
+        "target_volume",
+        "target_trade_price",
+        "target_trade_bid_ratio",
+        "target_trade_count",
+        "target_large_trade_count",
+        "target_avg_trade_size"
+      ],
+      "timestamp_min": "2025-06-01 09:00:00",
+      "timestamp_max": "2026-09-09 08:50:00",
+      "built_at": "2026-09-10 01:24:27"
+    },
+    {
+      "path": "CAiModelBaker/data/BTC/data_snapshot_10s.csv",
+      "size": 364095984,
+      "sha256": "4202cdd8236606039b9f3089cd5a8b2d59296339601505a742d1e67cc76b5107",
+      "symbol": "BTC",
+      "interval": "10s",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/BTC/data_snapshot_15m.csv",
+      "size": 54618619,
+      "sha256": "e3273ca82dea3f5a27a1b792f40eded17206617b6e93687f6871cdc51d267d25",
+      "symbol": "BTC",
+      "interval": "15m",
+      "meta": {
+        "path": "CAiModelBaker/data/BTC/data_snapshot_15m.meta.json",
+        "size": 11775,
+        "sha256": "ef0e7db4a1f8c765f38f324361f13360972f3c47c1c4a1c2834cc178561a819e"
+      },
+      "rows": 114816,
+      "columns": [
+        "timestamp",
+        "upbit_open",
+        "upbit_close",
+        "upbit_high",
+        "upbit_low",
+        "upbit_volume",
+        "upbit_trade_price",
+        "upbit_trade_bid_ratio",
+        "upbit_trade_count",
+        "upbit_large_trade_count",
+        "upbit_avg_trade_size",
+        "upbit_avg_trade_amount",
+        "binance_spot_open",
+        "binance_spot_close",
+        "binance_spot_high",
+        "binance_spot_low",
+        "binance_spot_volume",
+        "binance_spot_quote_volume",
+        "binance_spot_trade_count",
+        "binance_spot_taker_ratio",
+        "binance_spot_taker_quote_ratio",
+        "binance_futures_oi",
+        "binance_futures_oi_value",
+        "binance_usdc_volume",
+        "benchmark_btc_close",
+        "binance_eth_close",
+        "coinbase_spot_close",
+        "upbit_usdt_close",
+        "binance_funding_rate",
+        "target_open",
+        "target_high",
+        "target_low",
+        "target_close",
+        "target_volume",
+        "target_trade_price",
+        "target_trade_bid_ratio",
+        "target_trade_count",
+        "target_large_trade_count",
+        "target_avg_trade_size"
+      ],
+      "timestamp_min": "2023-06-01 09:00:00",
+      "timestamp_max": "2026-09-09 08:45:00",
+      "built_at": "2026-09-10 00:10:00"
+    },
+    {
+      "path": "CAiModelBaker/data/BTC/data_snapshot_1m.csv",
+      "size": 28909779,
+      "sha256": "b31cf5919a1c7d8e4bf536d01e66220dd195444ada1f5e0bbf8b2b85b08feae8",
+      "symbol": "BTC",
+      "interval": "1m",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/BTC/data_snapshot_30m.csv",
+      "size": 25408226,
+      "sha256": "aeaeda2e9db47c3092fabf39ff80eeaf00d2413cb6f96a8b88cfac0378f147dc",
+      "symbol": "BTC",
+      "interval": "30m",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/ETH/data_snapshot_10m.csv",
+      "size": 78570573,
+      "sha256": "dba03439395776fdac8a4ec38770ae1f5c70e2048978e12fe3749b3169fac12e",
+      "symbol": "ETH",
+      "interval": "10m",
+      "meta": {
+        "path": "CAiModelBaker/data/ETH/data_snapshot_10m.meta.json",
+        "size": 11758,
+        "sha256": "8de68a8b8c8b057175198bef3196ee5f11878f822bd42ae98eb4a8a42c54235f"
+      },
+      "rows": 172080,
+      "columns": [
+        "timestamp",
+        "upbit_open",
+        "upbit_close",
+        "upbit_high",
+        "upbit_low",
+        "upbit_volume",
+        "upbit_trade_price",
+        "upbit_trade_bid_ratio",
+        "upbit_trade_count",
+        "upbit_large_trade_count",
+        "upbit_avg_trade_size",
+        "upbit_avg_trade_amount",
+        "binance_spot_open",
+        "binance_spot_close",
+        "binance_spot_high",
+        "binance_spot_low",
+        "binance_spot_volume",
+        "binance_spot_quote_volume",
+        "binance_spot_trade_count",
+        "binance_spot_taker_ratio",
+        "binance_spot_taker_quote_ratio",
+        "binance_futures_oi",
+        "binance_futures_oi_value",
+        "binance_usdc_volume",
+        "binance_eth_close",
+        "coinbase_spot_close",
+        "upbit_usdt_close",
+        "benchmark_btc_close",
+        "binance_funding_rate",
+        "target_open",
+        "target_high",
+        "target_low",
+        "target_close",
+        "target_volume",
+        "target_trade_price",
+        "target_trade_bid_ratio",
+        "target_trade_count",
+        "target_large_trade_count",
+        "target_avg_trade_size"
+      ],
+      "timestamp_min": "2023-06-01 09:00:00",
+      "timestamp_max": "2026-09-08 08:50:00",
+      "built_at": "2026-09-09 19:08:31"
+    },
+    {
+      "path": "CAiModelBaker/data/GOOGL/data_snapshot_1m.csv",
+      "size": 769329,
+      "sha256": "901199c42df2be72e7cb09a895cfc719048ac86bfda024c2cb1235ac8d6f5eb5",
+      "symbol": "GOOGL",
+      "interval": "1m",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/GOOGL/data_snapshot_5m.csv",
+      "size": 1494187,
+      "sha256": "0ce6b79c1dfb0ad6bbb2a57463a5b7e3f11c5f8a77402ec3d6833fef0f95d654",
+      "symbol": "GOOGL",
+      "interval": "5m",
+      "meta": null
+    },
+    {
+      "path": "CAiModelBaker/data/QQQ/data_snapshot_1m.csv",
+      "size": 799432,
+      "sha256": "61a3e1c0571ed90827f5d8bee7067812a8c21081e91eeebbcd32b1d109f966cb",
+      "symbol": "QQQ",
+      "interval": "1m",
+      "meta": null
+    }
+  ],
+  "models": [
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1/model/best_params_10s.json",
+      "size": 938,
+      "sha256": "b79cf0b288bf1a2b39b07cfcccd55483841f0b1e4db3e23bd6bf689004b1e15d",
+      "session": "KODEX200_S10_BEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1/model/candidate_detail.json",
+      "size": 2357,
+      "sha256": "8a6c79853579d9623690e2ef200e2380e8d8c43c025349385e42867c547fc768",
+      "session": "KODEX200_S10_BEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1/model/feature_spec.json",
+      "size": 4060,
+      "sha256": "c39cabc0bd5176e3cafefdb15df2f2728729480f54704cfbe9832dfe706be060",
+      "session": "KODEX200_S10_BEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1/model/model_10s.txt",
+      "size": 51728,
+      "sha256": "274bfbb6d8772158833806a026814120337e1f075c4c05fed4a03e46ee13dc5a",
+      "session": "KODEX200_S10_BEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1____/model/best_params_10s.json",
+      "size": 937,
+      "sha256": "1cff4bf409c367929f84f7e6597ed42e80315068cf79c2e9e6c6c9b22dee7915",
+      "session": "KODEX200_S10_BEST1____",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1____/model/feature_spec.json",
+      "size": 5647,
+      "sha256": "cf96afa8e531d9ed5e938af9881756b7ad3236b5c36125501f38e0d21abed8c2",
+      "session": "KODEX200_S10_BEST1____",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1____/model/model_10s.txt",
+      "size": 48252,
+      "sha256": "a58aafc6b89f67488940280611804fc729beece3b6a2365f8143b5dee87f66d0",
+      "session": "KODEX200_S10_BEST1____",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_TEST1/model/best_params_10s.json",
+      "size": 662,
+      "sha256": "c043352948c7535dccbfd8974dc2a570c949f11b2fdd50f7b5799ae808933b27",
+      "session": "KODEX200_S10_TEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_TEST1/model/feature_spec.json",
+      "size": 4485,
+      "sha256": "23742ca7034892e15181b79da9ebe30663f2ad199004b6e92edc3430ea94241d",
+      "session": "KODEX200_S10_TEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_TEST1/model/model_10s.txt",
+      "size": 33980,
+      "sha256": "0cbfb62af2664892f0181cf70a711ec2f3901302e581280053ce8cffd0fbf6d2",
+      "session": "KODEX200_S10_TEST1",
+      "model_bundle": "069500_10s"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST1/model/best_params_1m.json",
+      "size": 919,
+      "sha256": "dedad77c5b060b49b3f0561fa649966765d4d5c3fd69cd20c23edbc997e6f45c",
+      "session": "KODEX200_M1_BEST1",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST1/model/feature_spec.json",
+      "size": 870,
+      "sha256": "e5f7a4794aab7c232042447d6dad457daa38258743830a38a83ad3c05c2eb94e",
+      "session": "KODEX200_M1_BEST1",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST1/model/model_1m.txt",
+      "size": 34498,
+      "sha256": "886811250207f9aacbf4f27d126f7a5f120bf3c2952278c56b926b3b57abb260",
+      "session": "KODEX200_M1_BEST1",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST7/model/best_params_1m.json",
+      "size": 636,
+      "sha256": "72d724cff1e3c30cefc0275ea24cc76dd821902a49ff34b93e697f0fa2c0df62",
+      "session": "KODEX200_M1_BEST7",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST7/model/feature_spec.json",
+      "size": 4173,
+      "sha256": "cfb3da675fafab875a193faac5a5b247f507da24a41cc8534f54fd608865e890",
+      "session": "KODEX200_M1_BEST7",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST7/model/model_1m.txt",
+      "size": 55102,
+      "sha256": "3bd3156fa1466110fddefe8be8cf46013bf67bcd5e5f80c77be5d0f63aa4048b",
+      "session": "KODEX200_M1_BEST7",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KOSPI200_M1_TEST1/model/best_params_1m.json",
+      "size": 607,
+      "sha256": "daa88b94b407d6f8764e0c038106c7167e20c2a60cfb823e96433304d305b583",
+      "session": "KOSPI200_M1_TEST1",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KOSPI200_M1_TEST1/model/feature_spec.json",
+      "size": 673,
+      "sha256": "6067cff92ace95ddcfdb232830054a2665c349ab600f700eace6fb299af23d36",
+      "session": "KOSPI200_M1_TEST1",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KOSPI200_M1_TEST1/model/model_1m.txt",
+      "size": 33564,
+      "sha256": "33e2e2811c2991eacd68fdbb0b1d83a581cbb467157d5088033e43628b031943",
+      "session": "KOSPI200_M1_TEST1",
+      "model_bundle": "069500_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST1/model/best_params_10m.json",
+      "size": 941,
+      "sha256": "4542d156a05f890e0431c1045d3e3612f9a7d7f51e421d563eb2c94de2a51d6b",
+      "session": "BTC_M10_BEST1",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST1/model/candidate_detail.json",
+      "size": 17048,
+      "sha256": "54e11c0731ac268bf0e6ef095b98b421eda5b75d5d6501328f3f13736a07fa66",
+      "session": "BTC_M10_BEST1",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST1/model/feature_spec.json",
+      "size": 816,
+      "sha256": "83ff197e02952dedeee0aa69fd07533a2644ba1552c37aa30e131297df8a1dc8",
+      "session": "BTC_M10_BEST1",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST1/model/model_10m.txt",
+      "size": 34374,
+      "sha256": "611640f1d7570e32e511675298585428048520f018afad7412c572d9f40d39b7",
+      "session": "BTC_M10_BEST1",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST2/model/best_params_10m.json",
+      "size": 921,
+      "sha256": "ee33e92adfd7adb17fac0dfcc12561a2f3ebba994b875fe6352e5b3b118f9bb2",
+      "session": "BTC_M10_BEST2",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST2/model/feature_spec.json",
+      "size": 2498,
+      "sha256": "e935c7598f6258961aca8bb40e6d465a47053d310ea1fdb3855537bdb9f11aea",
+      "session": "BTC_M10_BEST2",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST2/model/model_10m.txt",
+      "size": 99094,
+      "sha256": "3c64d6a1b46ac4ee8dd994ff792802e8c00a4cf6cbe141201a24aa4046b99a86",
+      "session": "BTC_M10_BEST2",
+      "model_bundle": "BTC_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_15m/BTC_M15_BEST1/model/best_params_15m.json",
+      "size": 919,
+      "sha256": "d83aa086768d2d7da49bf22d3233bc100603ef5d762e53e663a2dd614fe25751",
+      "session": "BTC_M15_BEST1",
+      "model_bundle": "BTC_15m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_15m/BTC_M15_BEST1/model/feature_spec.json",
+      "size": 904,
+      "sha256": "4974e587ab7eae5136bdc1a595e2d9eb797e7e295ee56fdc0c6df61abed9c113",
+      "session": "BTC_M15_BEST1",
+      "model_bundle": "BTC_15m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_15m/BTC_M15_BEST1/model/model_15m.txt",
+      "size": 53532,
+      "sha256": "111c28af7cbc5bcb7e1b851c4bf052d3f880ca6e59adc240878b589639a3515c",
+      "session": "BTC_M15_BEST1",
+      "model_bundle": "BTC_15m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/ETH_10m/ETH_M10_BEST1/model/best_params_10m.json",
+      "size": 922,
+      "sha256": "a8e23fbd393aff90597aa3bfe8349079d06e5b510ad13d523d78053b80330934",
+      "session": "ETH_M10_BEST1",
+      "model_bundle": "ETH_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/ETH_10m/ETH_M10_BEST1/model/feature_spec.json",
+      "size": 4298,
+      "sha256": "f45626c43286fab7fc7465501fb17b02b9d77f865f128a4576f983689f34f35f",
+      "session": "ETH_M10_BEST1",
+      "model_bundle": "ETH_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/ETH_10m/ETH_M10_BEST1/model/model_10m.txt",
+      "size": 34290,
+      "sha256": "26cb3713bd8295e0e1dc9630aa731c506115c9ef33f3a4ff630a0335bc6f2244",
+      "session": "ETH_M10_BEST1",
+      "model_bundle": "ETH_10m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/GOOGL_1m/GOOGL_M1_BEST1/model/best_params_1m.json",
+      "size": 507,
+      "sha256": "5c2899af376c98252620f2cc0db22ac32fb4df244502c6271542083b71866139",
+      "session": "GOOGL_M1_BEST1",
+      "model_bundle": "GOOGL_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/GOOGL_1m/GOOGL_M1_BEST1/model/feature_spec.json",
+      "size": 3600,
+      "sha256": "7970774fe11b2af86cec2f0f6368a4d528fdce71e3ded4c652ffa93ba7c07da5",
+      "session": "GOOGL_M1_BEST1",
+      "model_bundle": "GOOGL_1m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/GOOGL_5m/GOOGL_M5_BEST1/model/best_params_5m.json",
+      "size": 938,
+      "sha256": "d30f4085f8b8119c4edf37a7a7540a1fea97c35a55f3e704958b28691da6f59e",
+      "session": "GOOGL_M5_BEST1",
+      "model_bundle": "GOOGL_5m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/GOOGL_5m/GOOGL_M5_BEST1/model/feature_spec.json",
+      "size": 3796,
+      "sha256": "d11822100a5bba03a6079b2a07686a410d9a904bc799c874097fde756124cd5d",
+      "session": "GOOGL_M5_BEST1",
+      "model_bundle": "GOOGL_5m"
+    },
+    {
+      "path": "CAiModelBaker/deploy/GOOGL_5m/GOOGL_M5_BEST1/model/model_5m.txt",
+      "size": 29208,
+      "sha256": "e5abfe61a5d6f611de26c3dfff8bf5d5fcd83e65cdb86779cae1c3842c34272c",
+      "session": "GOOGL_M5_BEST1",
+      "model_bundle": "GOOGL_5m"
+    }
+  ],
+  "backtests": [
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1/reports/test_trades.csv",
+      "size": 32778,
+      "sha256": "d27c213635d490985192c588ef51fe270c0160f1064ad182903aaf1aa09dfbe6",
+      "session": "KODEX200_S10_BEST1",
+      "model_bundle": "069500_10s",
+      "trade_rows": 285,
+      "net_return_mean": 0.03465828257678707,
+      "net_return_sum": 9.877610534384313,
+      "win_rate": 0.5578947368421052,
+      "exit_type_counts": {
+        "시간만료": 141,
+        "손절": 67,
+        "익절": 60,
+        "비상손절": 17
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_BEST1____/reports/test_trades.csv",
+      "size": 8527,
+      "sha256": "dc61ed2be77538321e3233479fa685eae0766a27bdc5c67fb2655dfef753d0bc",
+      "session": "KODEX200_S10_BEST1____",
+      "model_bundle": "069500_10s",
+      "trade_rows": 75,
+      "net_return_mean": -0.017807645823654367,
+      "net_return_sum": -1.3355734367740775,
+      "win_rate": 0.49333333333333335,
+      "exit_type_counts": {
+        "시간만료": 37,
+        "익절": 23,
+        "손절": 14,
+        "비상손절": 1
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_10s/KODEX200_S10_TEST1/reports/test_trades.csv",
+      "size": 157828,
+      "sha256": "1b67c5675e2e5019a85f488a136ef9f8ddc38b9a3da345224361b70ccdc2e0ea",
+      "session": "KODEX200_S10_TEST1",
+      "model_bundle": "069500_10s",
+      "trade_rows": 1381,
+      "net_return_mean": 0.004967891715583159,
+      "net_return_sum": 6.860658459220343,
+      "win_rate": 0.5286024619840695,
+      "exit_type_counts": {
+        "시간만료": 717,
+        "익절": 517,
+        "손절": 117,
+        "비상손절": 30
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST1/reports/test_trades.csv",
+      "size": 26497,
+      "sha256": "61bcba89efc8c95e0b527f81ce5771a7739d6384a3b898e02eb5fd24fbf48b9e",
+      "session": "KODEX200_M1_BEST1",
+      "model_bundle": "069500_1m",
+      "trade_rows": 233,
+      "net_return_mean": 0.11667720935903805,
+      "net_return_sum": 27.185789780655867,
+      "win_rate": 0.5622317596566524,
+      "exit_type_counts": {
+        "시간만료": 187,
+        "익절": 29,
+        "손절": 17
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KODEX200_M1_BEST7/reports/test_trades.csv",
+      "size": 26338,
+      "sha256": "bc13ff63b35cd7e475a39929343bf2d201f4da4e30a8f4c318cc7e63492674f9",
+      "session": "KODEX200_M1_BEST7",
+      "model_bundle": "069500_1m",
+      "trade_rows": 233,
+      "net_return_mean": -0.04048729511017302,
+      "net_return_sum": -9.433539760670314,
+      "win_rate": 0.4206008583690987,
+      "exit_type_counts": {
+        "시간만료": 133,
+        "손절": 54,
+        "익절": 40,
+        "비상손절": 6
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/069500_1m/KOSPI200_M1_TEST1/reports/test_trades.csv",
+      "size": 27285,
+      "sha256": "16fca3693cb5082bd1872e89d883bf8fc9b09b059ece1672ee850664d267c27a",
+      "session": "KOSPI200_M1_TEST1",
+      "model_bundle": "069500_1m",
+      "trade_rows": 240,
+      "net_return_mean": -0.05550959238285351,
+      "net_return_sum": -13.322302171884843,
+      "win_rate": 0.425,
+      "exit_type_counts": {
+        "시간만료": 186,
+        "손절": 44,
+        "익절": 10
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST1/reports/test_trades.csv",
+      "size": 46023,
+      "sha256": "9b85609d66b74c352be1d081fcf2d120aad9f49e9f2ed4f66e0bec841a22070f",
+      "session": "BTC_M10_BEST1",
+      "model_bundle": "BTC_10m",
+      "trade_rows": 393,
+      "net_return_mean": 0.17860176467281355,
+      "net_return_sum": 70.19049351641573,
+      "win_rate": 0.6946564885496184,
+      "exit_type_counts": {
+        "익절": 230,
+        "시간만료": 120,
+        "손절": 31,
+        "비상손절": 12
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_10m/BTC_M10_BEST2/reports/test_trades.csv",
+      "size": 10175,
+      "sha256": "f30c89657410ef0a156c74f83434112974d4f119bfef8962e7048a504aca27e4",
+      "session": "BTC_M10_BEST2",
+      "model_bundle": "BTC_10m",
+      "trade_rows": 83,
+      "net_return_mean": 0.005257580055194287,
+      "net_return_sum": 0.4363791445811258,
+      "win_rate": 0.43373493975903615,
+      "exit_type_counts": {
+        "시간만료": 73,
+        "익절": 6,
+        "손절": 3,
+        "비상손절": 1
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/BTC_15m/BTC_M15_BEST1/reports/test_trades.csv",
+      "size": 25415,
+      "sha256": "80e70534b1ddc513d7c0b6804721e37e37f2984368ae8d392c7a99a5e5de8c88",
+      "session": "BTC_M15_BEST1",
+      "model_bundle": "BTC_15m",
+      "trade_rows": 216,
+      "net_return_mean": -0.2451806004690903,
+      "net_return_sum": -52.9590097013235,
+      "win_rate": 0.3472222222222222,
+      "exit_type_counts": {
+        "손절": 86,
+        "익절": 83,
+        "비상손절": 26,
+        "시간만료": 21
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/ETH_10m/ETH_M10_BEST1/reports/test_trades.csv",
+      "size": 73786,
+      "sha256": "30c80c1ea78a6d6bf9b902a874c63370ac1d8a37fddc08622369d3bf902fdb46",
+      "session": "ETH_M10_BEST1",
+      "model_bundle": "ETH_10m",
+      "trade_rows": 649,
+      "net_return_mean": 0.25152880038939607,
+      "net_return_sum": 163.24219145271803,
+      "win_rate": 0.7103235747303543,
+      "exit_type_counts": {
+        "익절": 393,
+        "시간만료": 179,
+        "손절": 47,
+        "비상손절": 30
+      }
+    },
+    {
+      "path": "CAiModelBaker/deploy/GOOGL_5m/GOOGL_M5_BEST1/reports/test_trades.csv",
+      "size": 3822,
+      "sha256": "b64904f03f00e59948c25a3a3fb9851df3694ee2bdd1b24dfa1805fb884a4dbb",
+      "session": "GOOGL_M5_BEST1",
+      "model_bundle": "GOOGL_5m",
+      "trade_rows": 29,
+      "net_return_mean": -0.06906628752212199,
+      "net_return_sum": -2.0029223381415378,
+      "win_rate": 0.4482758620689655,
+      "exit_type_counts": {
+        "손절": 15,
+        "익절": 10,
+        "시간만료": 4
+      }
+    }
+  ]
+}

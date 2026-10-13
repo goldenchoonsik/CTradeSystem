@@ -1,0 +1,38 @@
+{
+    "take_profit": 2.36181242137657,
+    "stop_loss": 2.008672215558283,
+    "max_depth": 4,
+    "num_leaves": 29,
+    "learning_rate": 0.05474302746577804,
+    "min_child_samples": 66,
+    "buy_threshold": 0.552965721139621,
+    "cooldown_minutes": 38,
+    "predict_ahead_candles": 12,
+    "max_hold_candles": 18,
+    "opt_session_id": "KODEX200_S10_BEST260921B",
+    "memo": "",
+    "seed": 77,
+    "train_start": "2026-07-21 09:00:00",
+    "train_end": "2026-08-21 09:00:00",
+    "opt_start": "2026-08-04 09:00:00",
+    "opt_end": "2026-08-21 09:00:00",
+    "created_at": "2026-09-23 16:11:55",
+    "optuna_score": 20.466919754863735,
+    "validation_metrics": {
+        "score": 29.910535052452005,
+        "trades": 10,
+        "required_trades": 10.0,
+        "win_rate": 90.0,
+        "mdd": 0.2982164918266526,
+        "profit_factor": 20.0,
+        "profit_factor_raw": 3738.8792689975903,
+        "total_return": 2.2341773631634476
+    },
+    "training_meta": {
+        "num_boost_round": 30,
+        "tuning_objective": "binary",
+        "saved_model_objective": "binary",
+        "buy_threshold_prob_basis": "binary P(label=1)",
+        "optuna_score_note": "창별 best 점수의 평균 — 선택 편향 포함, 성과 지표로 해석 금지"
+    }
+}

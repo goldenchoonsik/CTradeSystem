@@ -1,0 +1,333 @@
+{
+    "SYMBOL_UPBIT": "KRW-ETH",
+    "SYMBOL_BINANCE": "ETHUSDT",
+    "INTERVAL": "15m",
+    "FEE_UPBIT": 0.0005,
+    "SLIPPAGE": 0.0006,
+    "ARCHIVE_START_YM": "2020-01",
+    "ARCHIVE_END_YM": "2026-10",
+    "FEE_RATE": 0.0005,
+    "BACKTEST_DAYS": 40,
+    "COOLDOWN_MINUTES": 2,
+    "TRAIN_START": "2025-09-28",
+    "TRAIN_END": "2026-09-20",
+    "OPT_START": "2026-09-21",
+    "OPT_END": "2026-10-04",
+    "TEST_START": "2026-03-01",
+    "TEST_END": "2026-03-31",
+    "ACTIVE_SESSION_ID": "ETH_M15_TEST1",
+    "INTRADAY_SQUARE_OFF": false,
+    "USE_MACRO_FILTER": true,
+    "MACRO_RSI_FILTER_THRESHOLD": 50.0,
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "target_ma_ratio",
+            "target_bb_pctb",
+            "target_rsi_curr",
+            "crypto_0900_open_sync",
+            "target_vwap_slope",
+            "target_macd_hist",
+            "target_large_trade_density",
+            "target_large_trade_ratio",
+            "target_volume_spike",
+            "target_trade_price_spike",
+            "target_bb_kc_squeeze",
+            "target_hour_cos",
+            "target_is_weekend",
+            "parkinson_rv_squeeze",
+            "binance_spot_quote_spike",
+            "binance_funding_settle_window"
+        ],
+        "active_features": [
+            "target_ma_ratio",
+            "target_bb_pctb",
+            "target_rsi_curr",
+            "crypto_0900_open_sync",
+            "target_vwap_slope",
+            "target_macd_hist",
+            "target_large_trade_density",
+            "target_large_trade_ratio",
+            "target_volume_spike",
+            "target_trade_price_spike",
+            "target_bb_kc_squeeze",
+            "target_hour_cos",
+            "target_is_weekend",
+            "parkinson_rv_squeeze",
+            "binance_spot_quote_spike",
+            "binance_funding_settle_window"
+        ],
+        "feature_params": {
+            "target_ma_ratio": {
+                "period_bars": 15
+            },
+            "target_trade_bid_ratio": {
+                "window_mins": 10
+            },
+            "target_rsi_daily": {
+                "period_days": 14
+            },
+            "target_hour": {},
+            "target_rsi_curr": {
+                "period_bars": 14
+            },
+            "target_adx": {
+                "period_bars": 14
+            },
+            "target_atr_ratio": {
+                "period_bars": 14
+            },
+            "target_bb_pctb": {
+                "period_bars": 20,
+                "std_dev": 2
+            },
+            "crypto_0900_open_sync": {},
+            "target_vwap_slope": {
+                "window_bars": 5
+            },
+            "target_macd_hist": {
+                "fast_period": 12,
+                "slow_period": 26,
+                "signal_period": 9
+            },
+            "target_large_trade_density": {
+                "window_bars": 10
+            },
+            "target_large_trade_ratio": {},
+            "target_volume_spike": {
+                "period_bars": 20
+            },
+            "target_trade_price_spike": {
+                "period_bars": 20
+            },
+            "target_bb_kc_squeeze": {
+                "period_bars": 20
+            },
+            "target_hour_cos": {},
+            "target_is_weekend": {},
+            "parkinson_rv_squeeze": {
+                "short_bars": 5,
+                "long_bars": 30
+            },
+            "binance_spot_quote_spike": {
+                "period_bars": 20
+            },
+            "binance_funding_settle_window": {}
+        },
+        "feature_penalties": {},
+        "regime_features": {
+            "target_hour_cos": true,
+            "target_is_weekend": true,
+            "binance_funding_settle_window": true
+        }
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 42,
+        "outer_trials": 25,
+        "inner_trials": 25,
+        "wfa_outer_trials": 2,
+        "wfa_inner_trials": 2,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 3.8,
+            "user_max": 5.8
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 2,
+            "user_max": 3.5
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08,
+            "step": 0.005
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 4,
+            "user_max": 7,
+            "step": 1
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 31,
+            "user_max": 63,
+            "step": 1
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80,
+            "step": 1
+        },
+        "buy_threshold_range": {
+            "min": 0.5,
+            "max": 0.65,
+            "user_min": 0.52,
+            "user_max": 0.6,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 2,
+            "user_max": 24,
+            "step": 1
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "fee_upbit": 0.0005,
+        "slippage": 0.0006,
+        "min_trades": 5,
+        "min_profit_factor": 0.5,
+        "wfa_enabled": true,
+        "wfa_train_months": 0.92,
+        "wfa_opt_months": 0.23,
+        "wfa_test_months": 0.23,
+        "wfa_start_date": "2025-09-28",
+        "wfa_end_date": "2026-09-20",
+        "buy_quantile_range": {
+            "min": 0.8,
+            "max": 0.995,
+            "step": 0.005,
+            "user_min": 0.8,
+            "user_max": 0.995
+        },
+        "split_unit": "td",
+        "wfa_window_count": 20,
+        "holdout_td": 14,
+        "wfa_input_values": {
+            "unit": "td",
+            "train": 64,
+            "opt": 14,
+            "test": 14
+        }
+    },
+    "AUTOLAB_CONFIG": {
+        "min_profit": 0.0,
+        "min_trades": 8,
+        "max_mdd": 10.0,
+        "max_trials": 5,
+        "seed": 42,
+        "holdout_start": "2026-09-21",
+        "holdout_end": "2026-10-04",
+        "ic_threshold": 0.015,
+        "min_features": 3,
+        "max_features": 10,
+        "complexity_penalty": 0.15,
+        "final_test_ratio": 100,
+        "holdout_mode": "full",
+        "final_test_td": 5,
+        "use_all_features": false
+    },
+    "PROJECT_META": {
+        "memo": "",
+        "created_at": "2026-10-05 18:12:43",
+        "created_from": "defaults"
+    },
+    "REFERENCE_SYMBOLS": [
+        {
+            "symbol": "BTCUSDT-PERP",
+            "key": "btcusdt_perp",
+            "name": "바이낸스 BTC 무기한 선물",
+            "role": ""
+        },
+        {
+            "symbol": "BTCUSDT",
+            "key": "btcusdt",
+            "name": "바이낸스 BTC/USDT",
+            "role": ""
+        },
+        {
+            "symbol": "BTC-USD",
+            "key": "btc_usd",
+            "name": "코인베이스 BTC/USD",
+            "role": ""
+        },
+        {
+            "symbol": "KRW-USDT",
+            "key": "krw_usdt",
+            "name": "테더",
+            "role": ""
+        }
+    ],
+    "reference_symbols": [
+        {
+            "symbol": "BTCUSDT-PERP",
+            "key": "btcusdt_perp",
+            "name": "바이낸스 BTC 무기한 선물",
+            "role": ""
+        },
+        {
+            "symbol": "BTCUSDT",
+            "key": "btcusdt",
+            "name": "바이낸스 BTC/USDT",
+            "role": ""
+        },
+        {
+            "symbol": "BTC-USD",
+            "key": "btc_usd",
+            "name": "코인베이스 BTC/USD",
+            "role": ""
+        },
+        {
+            "symbol": "KRW-USDT",
+            "key": "krw_usdt",
+            "name": "테더",
+            "role": ""
+        }
+    ],
+    "TARGET_HORIZON_CONFIG": {
+        "interval": "15m",
+        "mode": "locked",
+        "locked_predict_ahead": 15,
+        "locked_max_hold": 15,
+        "candidate_horizons": [
+            15,
+            22,
+            30
+        ],
+        "candidate_details": [
+            {
+                "candles": 2,
+                "minutes": 30,
+                "name": "초단기 펄스 (30분)"
+            },
+            {
+                "candles": 4,
+                "minutes": 60,
+                "name": "표준 모멘텀 (1시간, 추천★)"
+            },
+            {
+                "candles": 8,
+                "minutes": 120,
+                "name": "세션 파동 (2시간)"
+            },
+            {
+                "candles": 16,
+                "minutes": 240,
+                "name": "일중 거시 추세 (4시간)"
+            }
+        ]
+    }
+}

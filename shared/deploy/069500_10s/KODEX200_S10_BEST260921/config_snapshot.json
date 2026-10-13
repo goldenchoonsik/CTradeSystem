@@ -1,0 +1,580 @@
+{
+    "SYMBOL_UPBIT": "069500",
+    "SYMBOL_BINANCE": "",
+    "INTERVAL": "10s",
+    "FEE_UPBIT": 5e-05,
+    "SLIPPAGE": 0.0001,
+    "ARCHIVE_START_YM": "2024-03",
+    "ARCHIVE_END_YM": "2026-09",
+    "FEE_RATE": 5e-05,
+    "BACKTEST_DAYS": 40,
+    "COOLDOWN_MINUTES": 3,
+    "TRAIN_START": "2026-07-21",
+    "TRAIN_END": "2026-08-25",
+    "OPT_START": "2026-08-27",
+    "OPT_END": "2026-09-02",
+    "TEST_START": "2026-08-12",
+    "TEST_END": "2026-08-26",
+    "ACTIVE_SESSION_ID": "KODEX200_S10_BEST260921",
+    "INTRADAY_SQUARE_OFF": true,
+    "USE_MACRO_FILTER": false,
+    "MACRO_RSI_FILTER_THRESHOLD": 50,
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "target_vwap_disparity",
+            "target_bb_pctb",
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "target_vwap_slope",
+            "target_macd_hist",
+            "target_mfi",
+            "target_trade_frequency",
+            "overnight_gap_pct",
+            "target_large_trade_density",
+            "mtf_ema_distance_4h",
+            "target_ofi_cumsum",
+            "target_is_auction",
+            "target_large_trade_ratio",
+            "target_volume_spike",
+            "target_trade_price_spike",
+            "target_bb_kc_squeeze",
+            "target_hour_cos",
+            "parkinson_rv_squeeze",
+            "krx_session_time"
+        ],
+        "active_features": [
+            "target_vwap_disparity",
+            "target_bb_pctb",
+            "target_ma_ratio",
+            "target_rsi_curr",
+            "target_vwap_slope",
+            "target_macd_hist",
+            "target_mfi",
+            "target_trade_frequency",
+            "overnight_gap_pct",
+            "target_large_trade_density",
+            "mtf_ema_distance_4h",
+            "target_ofi_cumsum",
+            "target_is_auction",
+            "target_large_trade_ratio",
+            "target_volume_spike",
+            "target_trade_price_spike",
+            "target_bb_kc_squeeze",
+            "target_hour_cos",
+            "parkinson_rv_squeeze",
+            "krx_session_time"
+        ],
+        "feature_params": {
+            "binance_ret_5m": {
+                "window_mins": 15,
+                "candles": 5
+            },
+            "target_ma_ratio": {
+                "period_bars": 15,
+                "period": 36
+            },
+            "target_trade_bid_ratio": {
+                "window_mins": 10,
+                "window": 7
+            },
+            "kimchi_premium": {
+                "window_mins": 1440,
+                "window": 3180
+            },
+            "target_rsi_daily": {
+                "period_days": 14
+            },
+            "binance_spot_taker_ratio": {
+                "window_mins": 10,
+                "window": 13
+            },
+            "target_hour": {},
+            "target_is_weekend": {},
+            "target_rsi_curr": {
+                "period_bars": 14,
+                "period_candles": 28
+            },
+            "target_adx": {
+                "period_bars": 14,
+                "period_candles": 21
+            },
+            "target_atr_ratio": {
+                "period_bars": 14,
+                "period_candles": 12
+            },
+            "target_macd_hist": {
+                "fast_period": 12,
+                "slow_period": 26,
+                "signal_period": 9
+            },
+            "target_mfi": {
+                "period": 16,
+                "period_bars": 14
+            },
+            "target_bb_pctb": {
+                "period": 36,
+                "std_dev": 2,
+                "period_bars": 20
+            },
+            "binance_oi_ma_ratio": {
+                "period": 120,
+                "period_bars": 120
+            },
+            "binance_oi_change_ratio": {
+                "candles": 5,
+                "window_mins": 30
+            },
+            "binance_cvd_divergence": {
+                "fast_period": 15,
+                "slow_period": 120
+            },
+            "binance_cvd_momentum": {
+                "candles": 15,
+                "window_mins": 30
+            },
+            "target_volatility_ratio": {
+                "fast_period": 5,
+                "slow_period": 30
+            },
+            "binance_futures_spot_vol_ratio": {
+                "candles": 15,
+                "window_mins": 60
+            },
+            "binance_usdc_volume_share": {
+                "candles": 15,
+                "window_mins": 60
+            },
+            "target_trade_frequency": {},
+            "target_large_trade_ratio": {},
+            "target_avg_trade_size_change": {
+                "candles": 10,
+                "window_mins": 20
+            },
+            "binance_oi_value_ma_ratio": {
+                "period": 120,
+                "period_bars": 120
+            },
+            "binance_leading_momentum": {
+                "candles": 5,
+                "window_mins": 20
+            },
+            "target_volume_spike": {
+                "period": 20,
+                "period_bars": 20
+            },
+            "target_candle_body_ratio": {},
+            "target_obv_momentum": {
+                "candles": 15,
+                "window_mins": 30
+            },
+            "target_trade_price_spike": {
+                "period": 20,
+                "period_bars": 20
+            },
+            "binance_spot_quote_spike": {
+                "period": 20,
+                "period_bars": 20
+            },
+            "binance_spot_trade_frequency": {},
+            "binance_spot_taker_quote_ratio": {},
+            "target_cvd_momentum": {
+                "candles": 15,
+                "window_mins": 30
+            },
+            "binance_funding_rate": {
+                "mode": "raw",
+                "window": 480,
+                "candles": 16
+            },
+            "target_bb_kc_squeeze": {
+                "bb_period": 20,
+                "period_bars": 20
+            },
+            "target_kaufman_er": {
+                "period": 10,
+                "period_bars": 10
+            },
+            "target_cvd_absorption": {
+                "candles": 3
+            },
+            "mtf_ema_distance_4h": {
+                "period": 200
+            },
+            "kospi_basis": {},
+            "kospi_basis_rate": {},
+            "etf_nav_disparity": {},
+            "overnight_gap_pct": {},
+            "krx_session_time": {},
+            "coinbase_premium_index": {
+                "candles": 1,
+                "window_mins": 10
+            },
+            "eth_btc_relative_momentum": {
+                "candles": 5,
+                "window_mins": 20
+            },
+            "binance_liq_cascade_ratio": {
+                "window": 3,
+                "window_mins": 30
+            },
+            "crypto_usdt_return": {
+                "candles": 2
+            },
+            "binance_funding_settle_window": {},
+            "crypto_0900_open_sync": {},
+            "target_hour_cos": {},
+            "global_lead_lag_divergence": {
+                "candles": 5
+            },
+            "target_hour_sin": {},
+            "nq_futures_ret_curr": {
+                "candles": 5
+            },
+            "sp500_futures_ret_curr": {
+                "candles": 5
+            },
+            "nq_futures_rsi_daily": {
+                "period_days": 14
+            },
+            "krx_session_progress": {},
+            "nvda_futures_ret_curr": {
+                "candles": 5
+            },
+            "us10y_futures_ret_curr": {
+                "candles": 5
+            },
+            "wti_futures_ret_curr": {
+                "candles": 5
+            },
+            "gold_futures_ret_curr": {
+                "candles": 5
+            },
+            "usdkrw_ret_curr": {
+                "candles": 5
+            },
+            "ref_hynix_ret_5c": {
+                "candles": 5
+            },
+            "ref_samsung_ret_5c": {
+                "candles": 5
+            },
+            "ref_379810_ret_5c": {
+                "candles": 5
+            },
+            "ref_449190_ret_5c": {
+                "candles": 5
+            },
+            "ref_es_ret_5c": {
+                "candles": 5
+            },
+            "ref_nq_ret_5c": {
+                "candles": 5
+            },
+            "ref_0048j0_ret_5c": {
+                "candles": 5
+            },
+            "ref_nq_spread_vs_target": {},
+            "ref_es_spread_vs_target": {},
+            "ref_samsung_spread_vs_target": {},
+            "ref_hynix_spread_vs_target": {},
+            "target_vwap_disparity": {
+                "smooth_bars": 1
+            },
+            "target_vwap_slope": {
+                "window_bars": 5
+            },
+            "target_ofi_cumsum": {
+                "window_bars": 10
+            },
+            "target_rv_ratio": {
+                "short_bars": 5,
+                "long_bars": 30
+            },
+            "target_large_trade_density": {
+                "window_bars": 10
+            },
+            "target_is_auction": {},
+            "kospi_basis_z": {
+                "window": 60
+            },
+            "parkinson_rv_squeeze": {
+                "short_bars": 5,
+                "long_bars": 30
+            },
+            "ref_futures_ret_5c": {
+                "candles": 5
+            },
+            "krx_opening_decay": {},
+            "ref_futures_ret_1c": {},
+            "ref_futures_spread_vs_target": {},
+            "ref_futures_intensity": {},
+            "ref_hynix_ret_1c": {},
+            "ref_hynix_intensity": {},
+            "ref_samsung_ret_1c": {},
+            "ref_samsung_intensity": {},
+            "ref_379810_ret_1c": {},
+            "ref_379810_spread_vs_target": {},
+            "ref_379810_intensity": {},
+            "ref_449190_ret_1c": {},
+            "ref_449190_spread_vs_target": {},
+            "ref_449190_intensity": {},
+            "ref_es_ret_1c": {},
+            "ref_es_intensity": {},
+            "ref_nq_ret_1c": {},
+            "ref_nq_intensity": {},
+            "ref_0048j0_ret_1c": {},
+            "ref_0048j0_spread_vs_target": {},
+            "ref_0048j0_intensity": {},
+            "ref_005930_ret_5c": {
+                "candles": 5
+            },
+            "ref_sk_ret_5c": {
+                "candles": 5
+            },
+            "ref_us_tech_100_ret_5c": {
+                "candles": 5
+            },
+            "ref_sk_spread_vs_target": {},
+            "ref_sk_intensity": {},
+            "ref_005930_spread_vs_target": {},
+            "ref_005930_intensity": {},
+            "ref_us_tech_100_spread_vs_target": {},
+            "ref_us_tech_100_intensity": {},
+            "ref_sk_ret_1c": {},
+            "ref_005930_ret_1c": {},
+            "ref_us_tech_100_ret_1c": {},
+            "ref_us_500_ret_5c": {
+                "candles": 5
+            },
+            "ref_us_500_ret_1c": {},
+            "ref_us_500_spread_vs_target": {},
+            "ref_us_500_intensity": {}
+        },
+        "feature_penalties": {},
+        "regime_features": {
+            "target_hour_sin": true,
+            "krx_session_time": true,
+            "target_hour_cos": true,
+            "target_is_auction": true,
+            "target_hour": true
+        }
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 77,
+        "outer_trials": 15,
+        "inner_trials": 15,
+        "wfa_outer_trials": 10,
+        "wfa_inner_trials": 10,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 2
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 1.2,
+            "user_max": 4
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 1,
+            "user_max": 2.5
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08,
+            "step": 0.005
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 3,
+            "user_max": 4,
+            "step": 1
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 8,
+            "user_max": 64,
+            "step": 1
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80,
+            "step": 1
+        },
+        "buy_threshold_range": {
+            "min": 0.45,
+            "max": 0.65,
+            "user_min": 0.51,
+            "user_max": 0.58,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 1,
+            "user_max": 60,
+            "step": 1
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 2
+        },
+        "fee_upbit": 5e-05,
+        "slippage": 0.0001,
+        "min_trades": 20,
+        "min_profit_factor": 1.1,
+        "wfa_enabled": true,
+        "wfa_train_months": 0.48,
+        "wfa_opt_months": 0.1,
+        "wfa_test_months": 0.1,
+        "wfa_start_date": "2026-07-21",
+        "wfa_end_date": "2026-08-25",
+        "macro_rsi_threshold_range": {
+            "min": 5,
+            "max": 85,
+            "user_min": 10,
+            "user_max": 80,
+            "step": 10
+        },
+        "predict_ahead_range": {
+            "user_min": 4,
+            "user_max": 300,
+            "step": 2
+        },
+        "split_unit": "td"
+    },
+    "AUTOLAB_CONFIG": {
+        "min_profit": 0,
+        "min_trades": 20,
+        "max_mdd": 10,
+        "max_trials": 50,
+        "seed": 77,
+        "holdout_start": "2026-08-27",
+        "holdout_end": "2026-09-02",
+        "align_mode": "",
+        "ic_threshold": 0.02,
+        "min_features": 2,
+        "max_features": 6,
+        "complexity_penalty": 0.15,
+        "final_test_ratio": 20,
+        "holdout_mode": "full",
+        "final_test_td": 3,
+        "use_all_features": false
+    },
+    "reference_symbols": [
+        {
+            "symbol": "101SC000",
+            "alias": "futures",
+            "name": "KOSPI200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "000660",
+            "alias": "sk",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "alias": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "alias": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "alias": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
+        }
+    ],
+    "REFERENCE_SYMBOLS": [
+        {
+            "symbol": "101SC000",
+            "alias": "futures",
+            "name": "KOSPI200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "000660",
+            "alias": "sk",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "alias": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "alias": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "alias": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
+        }
+    ],
+    "TARGET_HORIZON_CONFIG": {
+        "mode": "locked",
+        "locked_predict_ahead": 6,
+        "locked_max_hold": 6,
+        "candidate_horizons": [
+            6,
+            12,
+            18
+        ]
+    },
+    "PHYSICS_CONSTRAINTS": {
+        "method": "empirical_sampling",
+        "roundtrip_friction_pct": 0.03,
+        "mean_atr_pct": 0.1528,
+        "friction_ratio": 5.09,
+        "friction_status": "HEALTHY",
+        "recommendation": "공략 양호: 실측 MFE 기반 권장 사정거리 12봉(120단위) 최적화.",
+        "tp_pct_min": 0.153,
+        "tp_atr_min": 1.0,
+        "tp_atr_max": 2.2,
+        "sl_pct_min": 0.153,
+        "sl_atr_min": 1.0,
+        "sl_atr_max": 1.8,
+        "min_horizon_candles": 6,
+        "rec_horizon_candles": 12,
+        "max_hold_candles": 18
+    },
+    "champion_features": [
+        "target_vwap_disparity",
+        "target_macd_hist",
+        "overnight_gap_pct",
+        "target_ofi_cumsum",
+        "target_is_auction",
+        "target_hour_cos",
+        "krx_session_time"
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "session_id": "KODEX200_M1_1004A",
+    "symbol": "069500",
+    "interval": "1m",
+    "seed": 42,
+    "features_order": [
+        "target_rsi_curr",
+        "target_bb_kc_squeeze",
+        "target_mfi",
+        "target_rsi_daily",
+        "ref_10100_ret_5c",
+        "ref_000660_ret_5c",
+        "target_adx",
+        "ref_005930_ret_5c"
+    ],
+    "feature_params": {
+        "target_rsi_curr": {
+            "period_bars": 14
+        },
+        "target_bb_kc_squeeze": {
+            "period_bars": 20
+        },
+        "target_mfi": {
+            "period_bars": 14
+        },
+        "target_rsi_daily": {
+            "period_days": 14
+        },
+        "ref_10100_ret_5c": {
+            "candles": 5
+        },
+        "ref_000660_ret_5c": {
+            "candles": 5
+        },
+        "target_adx": {
+            "period_bars": 14
+        },
+        "ref_005930_ret_5c": {
+            "candles": 5
+        }
+    }
+}

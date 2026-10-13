@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTrade | Performance Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+    <style>
+        :root {
+            --bg-deep: #0a0a0c;
+            --bg-panel: #16161a;
+            --accent: #3b82f6;
+            --dim: #94a3b8;
+            --main: #e2e8f0;
+        }
+        body {
+            background-color: var(--bg-deep);
+            color: var(--main);
+            font-family: 'Inter', sans-serif;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .card { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.05); }
+        .btn-active { background: var(--accent); color: white; }
+        .btn-inactive { background: rgba(255,255,255,0.05); color: var(--dim); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    </style>
+</head>
+<body class="p-6">
+    <header class="mb-8 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tighter">PERFORMANCE <span class="text-blue-500">ANALYTICS</span></h1>
+            <p class="text-dim text-sm mt-1">Detailed trade execution analysis and equity curve.</p>
+        </div>
+        <div class="flex gap-4">
+            <select id="version-filter" onchange="refreshData()" class="bg-[#16161a] border border-white/10 rounded px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+                <option value="ALL">ALL VERSIONS</option>
+            </select>
+            <select id="symbol-filter" onchange="refreshData()" class="bg-[#16161a] border border-white/10 rounded px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+                <option value="ALL">ALL SYMBOLS</option>
+            </select>
+            <button onclick="loadHistory()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded text-sm font-bold transition-all">REFRESH DATA</button>
+        </div>
+    </header>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="card p-6 rounded-xl">
+            <div class="text-dim text-xs font-bold uppercase mb-2">Total Realized PnL</div>
+            <div id="stat-pnl" class="text-3xl font-bold mono">₩0</div>
+        </div>
+        <div class="card p-6 rounded-xl">
+            <div class="text-dim text-xs font-bold uppercase mb-2">Win Rate</div>
+            <div id="stat-winrate" class="text-3xl font-bold text-green-400">0%</div>
+        </div>
+        <div class="card p-6 rounded-xl">
+            <div class="text-dim text-xs font-bold uppercase mb-2">Profit Factor</div>
+            <div id="stat-pf" class="text-3xl font-bold">0.00</div>
+        </div>
+        <div class="card p-6 rounded-xl">
+            <div class="text-dim text-xs font-bold uppercase mb-2">Total Trades</div>
+            <div id="stat-trades" class="text-3xl font-bold mono">0</div>
+        </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="card p-8 rounded-xl mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-bold">EQUITY CURVE</h2>
+            <div class="text-xs text-dim">Cumulative profit over time (Closed trades only)</div>
+        </div>
+        <div class="h-[400px]">
+            <canvas id="equityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Trade List -->
+    <div class="card rounded-xl overflow-hidden">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <h2 class="text-lg font-bold">TRADE EXECUTION LOG</h2>
+            <button onclick="exportCSV()" class="text-xs text-blue-400 hover:underline">EXPORT TO CSV</button>
+        </div>
+        <div class="overflow-x-auto max-h-[600px]">
+            <table class="w-full text-left text-sm">
+                <thead class="sticky top-0 bg-[#1c1c22] text-dim uppercase text-[10px] font-bold">
+                    <tr>
+                        <th class="p-4 border-b border-white/5">Time</th>
+                        <th class="p-4 border-b border-white/5">Version</th>
+                        <th class="p-4 border-b border-white/5">Symbol</th>
+                        <th class="p-4 border-b border-white/5">Type</th>
+                        <th class="p-4 border-b border-white/5">Reason</th>
+                        <th class="p-4 border-b border-white/5 text-right">Price</th>
+                        <th class="p-4 border-b border-white/5 text-right">Qty</th>
+                        <th class="p-4 border-b border-white/5 text-right">Fee</th>
+                        <th class="p-4 border-b border-white/5 text-right">Profit</th>
+                        <th class="p-4 border-b border-white/5 text-right">ROI</th>
+                        <th class="p-4 border-b border-white/5 text-right">Hold</th>
+                    </tr>
+                </thead>
+                <tbody id="trade-table-body">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allHistory = [];
+        let equityChart = null;
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/history');
+                allHistory = await res.json();
+                
+                // Populate version filter
+                const versions = [...new Set(allHistory.map(h => h.version || 'v1.3.0'))];
+                const verFilter = document.getElementById('version-filter');
+                const currentVer = verFilter.value;
+                verFilter.innerHTML = '<option value="ALL">ALL VERSIONS</option>' +
+                    versions.sort().reverse().map(v => `<option value="${v}">${v}</option>`).join('');
+                verFilter.value = currentVer || 'ALL';
+
+                // Populate symbol filter
+                const symbols = [...new Set(allHistory.map(h => h.symbol))];
+                const filter = document.getElementById('symbol-filter');
+                const currentVal = filter.value;
+                filter.innerHTML = '<option value="ALL">ALL SYMBOLS</option>' + 
+                    symbols.sort().map(s => `<option value="${s}">${s}</option>`).join('');
+                filter.value = currentVal || 'ALL';
+
+                refreshData();
+            } catch (e) {
+                console.error("Failed to load history:", e);
+            }
+        }
+
+        function refreshData() {
+            const version = document.getElementById('version-filter').value;
+            const symbol = document.getElementById('symbol-filter').value;
+            
+            let filtered = allHistory;
+            if (version !== 'ALL') {
+                filtered = filtered.filter(h => (h.version || 'v1.3.0') === version);
+            }
+            if (symbol !== 'ALL') {
+                filtered = filtered.filter(h => h.symbol === symbol);
+            }
+            
+            renderStats(filtered);
+            renderChart(filtered);
+            renderTable(filtered);
+        }
+
+        function renderStats(data) {
+            const sells = data.filter(h => h.type === 'SELL');
+            const totalPnL = sells.reduce((acc, h) => acc + (h.profit || 0), 0);
+            const wins = sells.filter(h => h.profit > 0).length;
+            const losses = sells.filter(h => h.profit < 0).length;
+            const winRate = sells.length > 0 ? (wins / sells.length * 100) : 0;
+            
+            const grossProfit = sells.filter(h => h.profit > 0).reduce((acc, h) => acc + h.profit, 0);
+            const grossLoss = Math.abs(sells.filter(h => h.profit < 0).reduce((acc, h) => acc + h.profit, 0));
+            const pf = grossLoss > 0 ? (grossProfit / grossLoss) : (grossProfit > 0 ? 99.99 : 0);
+
+            document.getElementById('stat-pnl').innerText = `₩${Math.floor(totalPnL).toLocaleString()}`;
+            document.getElementById('stat-pnl').className = `text-3xl font-bold mono ${totalPnL >= 0 ? 'text-red-400' : 'text-blue-400'}`;
+            document.getElementById('stat-winrate').innerText = `${winRate.toFixed(1)}%`;
+            document.getElementById('stat-pf').innerText = pf.toFixed(2);
+            document.getElementById('stat-trades').innerText = sells.length;
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            const sells = data.filter(h => h.type === 'SELL').sort((a, b) => (a.exit_time || a.time) - (b.exit_time || b.time));
+            
+            let cumulative = 0;
+            const chartData = sells.map(h => {
+                cumulative += (h.profit || 0);
+                return { x: new Date((h.exit_time || h.time) * 1000), y: cumulative };
+            });
+
+            if (equityChart) equityChart.destroy();
+
+            equityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Cumulative Profit',
+                        data: chartData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'minute', displayFormats: { minute: 'HH:mm' } },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { 
+                                color: '#64748b',
+                                callback: val => '₩' + val.toLocaleString()
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `PnL: ₩${context.parsed.y.toLocaleString()}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('trade-table-body');
+            tbody.innerHTML = data.slice().reverse().map(h => {
+                const isBuy = h.type === 'BUY';
+                const time = isBuy ? h.time : h.exit_time;
+                const timeStr = new Date(time * 1000).toLocaleString('ko-KR', { hour12: false });
+                const price = isBuy ? h.price : h.sell_price;
+                const pnl = isBuy ? '-' : `₩${Math.floor(h.profit).toLocaleString()}`;
+                const roi = isBuy ? '-' : `${h.profit_rate.toFixed(2)}%`;
+                const pnlClass = isBuy ? '' : (h.profit >= 0 ? 'text-red-400' : 'text-blue-400');
+                const version = h.version || 'v1.3.0';
+                
+                let reasonBadge = '-';
+                if (!isBuy && h.reason) {
+                    const r = h.reason;
+                    let color = 'bg-gray-500/20 text-gray-400';
+                    if (r === 'PROFIT') color = 'bg-red-500/20 text-red-400';
+                    if (r === 'LOSS') color = 'bg-blue-500/20 text-blue-400';
+                    if (r === 'TIMEOUT') color = 'bg-yellow-500/20 text-yellow-500';
+                    reasonBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${color}">${r}</span>`;
+                }
+
+                return `
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="p-4 text-dim mono text-xs">${timeStr}</td>
+                        <td class="p-4 text-dim mono text-xs">${version}</td>
+                        <td class="p-4 font-bold">${h.symbol}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isBuy ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'}">${h.type}</span>
+                        </td>
+                        <td class="p-4">${reasonBadge}</td>
+                        <td class="p-4 text-right mono">₩${Math.floor(price).toLocaleString()}</td>
+                        <td class="p-4 text-right mono text-dim">${h.qty.toFixed(6)}</td>
+                        <td class="p-4 text-right mono text-dim">₩${Math.floor(h.fee || 0).toLocaleString()}</td>
+                        <td class="p-4 text-right mono font-bold ${pnlClass}">${pnl}</td>
+                        <td class="p-4 text-right mono font-bold ${pnlClass}">${roi}</td>
+                        <td class="p-4 text-right mono text-dim">${h.holding_time ? Math.round(h.holding_time) + 's' : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportCSV() {
+            const symbol = document.getElementById('symbol-filter').value;
+            const data = symbol === 'ALL' ? allHistory : allHistory.filter(h => h.symbol === symbol);
+            
+            let csv = 'Time,Symbol,Type,Price,Qty,Total,Fee,Profit,ROI\n';
+            data.forEach(h => {
+                const time = new Date((h.exit_time || h.time) * 1000).toISOString();
+                const price = h.type === 'BUY' ? h.price : h.sell_price;
+                csv += `${time},${h.symbol},${h.type},${price},${h.qty},${h.amount || 0},${h.fee || 0},${h.profit || 0},${h.profit_rate || 0}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `trade_history_${symbol}_${new Date().getTime()}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Time scale provider for Chart.js
+        document.write('<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"><\/script>');
+        
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>

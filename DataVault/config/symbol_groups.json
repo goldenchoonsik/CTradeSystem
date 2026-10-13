@@ -1,0 +1,66 @@
+{
+  "KRX_SEMI_LEADERS": {
+    "id": "KRX_SEMI_LEADERS",
+    "name": "반도체 대장주 팩",
+    "category": "SECTOR",
+    "default_role": "leading_stock",
+    "description": "국내 시가총액 1·2위 반도체 주도주",
+    "members": [
+      {
+        "symbol": "000660"
+      },
+      {
+        "symbol": "005930"
+      }
+    ]
+  },
+  "KRX_INDEX_FUTURES": {
+    "id": "KRX_INDEX_FUTURES",
+    "name": "KOSPI 200 지수·선물 팩",
+    "category": "INDEX",
+    "default_role": "kospi_futures",
+    "description": "KOSPI 200 지수선물 및 차익거래 베이시스 추적",
+    "members": [
+      {
+        "symbol": "10100",
+        "default_price": 360.0
+      },
+      {
+        "symbol": "U180",
+        "role": "index_benchmark"
+      }
+    ]
+  },
+  "GLOBAL_MACRO_US": {
+    "id": "GLOBAL_MACRO_US",
+    "name": "미국 2대 지수 CFD 팩",
+    "category": "MACRO",
+    "default_role": "macro_futures",
+    "description": "나스닥 100 및 S&P 500 CFD 야간 시그널",
+    "members": [
+      {
+        "symbol": "US_TECH_100",
+        "default_price": 24000.0
+      },
+      {
+        "symbol": "US_500",
+        "default_price": 5600.0
+      }
+    ]
+  },
+  "CRYPTO_MAJORS": {
+    "id": "CRYPTO_MAJORS",
+    "name": "가상자산 메이저 팩",
+    "category": "CRYPTO",
+    "default_role": "leading_crypto",
+    "description": "비트코인, 이더리움 가상자산 메이저",
+    "members": [
+      {
+        "symbol": "KRW-BTC"
+      },
+      {
+        "symbol": "KRW-ETH"
+      }
+    ]
+  }
+}

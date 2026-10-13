@@ -1,0 +1,219 @@
+{
+    "GLOBAL_STRATEGY": {
+        "VERSION": "v1.3.0_opt007",
+        "SIMULATION_MODE": true,
+        "SIMULATION_INITIAL_BALANCE": 10000000,
+        "INVEST_AMOUNT": 1000000,
+        "UI_FOCUS_SYMBOL": "005930",
+        "EXCHANGE_RATE_MODE": "USDT",
+        "EMERGENCY_EXIT_TIMEOUT": 120,
+        "MAX_ACTIVE_TARGETS": 10,
+        "DETECTOR_ENTRY_RVOL": 750,
+        "DETECTOR_ENTRY_VBP": 65,
+        "DETECTOR_ENTRY_TPS": 2,
+        "DETECTOR_EXIT_RVOL": 100,
+        "DETECTOR_EXIT_VBP": 50,
+        "DETECTOR_EXIT_TPS": 0.5,
+        "SPREAD_FILTER_MAX_PCT": 0.15,
+        "SPREAD_FILTER_MULT": 1.5,
+        "BASIS_VELOCITY_MIN_LIMIT": 0.02,
+        "SIMULTANEOUS_SPIKE_LIMIT": 2,
+        "MIN_PRICE_SLOPE_3S": 0.1,
+        "REENTRY_COOLDOWN_SEC": 40,
+        "DETECTOR_MIN_TRADE_VAL_1M": 100000000,
+        "DETECTOR_KIMCHI_DELTA_MIN": 0.05,
+        "KIMCHI_PREMIUM_EMA_ALPHA": 0.002,
+        "ENTRY_CONFIRM_SEC": 5,
+        "ENTRY_CONFIRM_PCT": 0.08,
+        "ENTRY_CANCEL_PCT": -0.05,
+        "ENABLE_PARITY_LOGGING": true,
+        "RADAR_ACTIVE": false,
+        "TRADING_ACTIVE": true,
+        "SERVER_ACTIVE": true,
+        "TEST_MODE": false,
+        "TEST_LEVEL": 0,
+        "TEST_BUY_THRESHOLD": 0.505,
+        "TEST_COOLDOWN_MINUTES": 2
+    },
+    "GLOBAL_BINANCE_ALWAYS_ON": [
+        "BTCUSDT_PERP",
+        "BTCUSDT"
+    ],
+    "GLOBAL_LEAD_LAG_POOL": [
+        {
+            "symbol": "KRW-SUI",
+            "leader_exchange": "BINANCE",
+            "leader_symbol": "SUIUSDT_PERP",
+            "lead_threshold_z_score": 6,
+            "max_lag_delay_ms": 1500,
+            "max_entry_slippage_pct": 0.15
+        },
+        {
+            "symbol": "KRW-SOL",
+            "leader_exchange": "BINANCE",
+            "leader_symbol": "SOLUSDT_PERP",
+            "lead_threshold_z_score": 6,
+            "max_lag_delay_ms": 1500,
+            "max_entry_slippage_pct": 0.1
+        },
+        {
+            "symbol": "KRW-XRP",
+            "leader_exchange": "BINANCE",
+            "leader_symbol": "XRPUSDT_PERP",
+            "lead_threshold_z_score": 6,
+            "max_lag_delay_ms": 1500,
+            "max_entry_slippage_pct": 0.1
+        }
+    ],
+    "UNLISTED_ASSET_PENALTY": {
+        "RVOL_MULTIPLIER": 2,
+        "TPS_MULTIPLIER": 1.8,
+        "VBP_MIN_LIMIT": 75,
+        "BUDGET_CUT_RATIO": 0.3,
+        "INTENSITY_MIN_LIMIT": 180,
+        "TPS_MIN_LIMIT": 3
+    },
+    "PROFILING_STRATEGY": {
+        "MIN_RVOL_FLOOR": 150,
+        "MIN_TPS_FLOOR": 1,
+        "Z_SCORE_THRESHOLD": 5
+    },
+    "INDICATORS": {
+        "history_tick_limit": 1000,
+        "rsi_period": 14,
+        "imbalance_decay_rate": 0.9,
+        "intensity_time_bucket": 0.25,
+        "intensity_time_window": 240
+    },
+    "STRATEGY_TEMPLATES": {
+        "ai_baker": {
+            "type": "AI_BAKER",
+            "deploy_base": "../shared/deploy/069500_10s",
+            "deploy_session": "KODEX200_S10_BEST260921",
+            "budget_per_trade": 1000000,
+            "orderbook_level": 0,
+            "reference_market": "BINANCE"
+        },
+        "default_scalping": {
+            "budget_per_trade": 6000,
+            "orderbook_level": 0,
+            "buy_conditions": {
+                "logic": "AND",
+                "rules": [
+                    {
+                        "target": "local_time_intensity",
+                        "operator": ">=",
+                        "value": 130
+                    },
+                    {
+                        "target": "local_imbalance",
+                        "operator": ">=",
+                        "value": 5
+                    },
+                    {
+                        "target": "cumulative_delta_10s",
+                        "operator": ">=",
+                        "value": 0
+                    },
+                    {
+                        "target": "up_tick_ratio_5t",
+                        "operator": ">=",
+                        "value": 0.6
+                    },
+                    {
+                        "target": "ask_wall_resistance",
+                        "operator": "<=",
+                        "value": 5
+                    }
+                ]
+            },
+            "sell_conditions": {
+                "logic": "OR",
+                "rules": [
+                    {
+                        "target": "profit_rate",
+                        "operator": ">=",
+                        "value": 0.4
+                    },
+                    {
+                        "target": "profit_rate",
+                        "operator": "<=",
+                        "value": -0.2
+                    }
+                ]
+            },
+            "reference_market": "BINANCE"
+        },
+        "ai_kodex200": {
+            "budget_per_trade": 1000000,
+            "orderbook_level": 0,
+            "reference_market": "BINANCE",
+            "buy_conditions": {
+                "logic": "AND",
+                "rules": [
+                    {
+                        "target": "local_time_intensity",
+                        "operator": ">=",
+                        "value": 140
+                    }
+                ]
+            },
+            "sell_conditions": {
+                "logic": "OR",
+                "rules": [
+                    {
+                        "target": "profit_rate",
+                        "operator": ">=",
+                        "value": 0.4
+                    },
+                    {
+                        "target": "profit_rate",
+                        "operator": "<=",
+                        "value": -0.2
+                    }
+                ]
+            },
+            "type": "AI_BAKER",
+            "deploy_base": "../shared/deploy/069500_10s",
+            "deploy_session": "KODEX200_S10_BEST260921B"
+        },
+        "ai_samsung": {
+            "type": "AI_BAKER",
+            "deploy_base": "../shared/deploy/005930_1m",
+            "deploy_session": "SAMSUNG_M1_BEST1",
+            "budget_per_trade": 1000000,
+            "orderbook_level": 0,
+            "reference_market": "KIS"
+        }
+    },
+    "SCALPING_TARGETS": [
+        {
+            "symbol": "005930",
+            "exchange": "KIS",
+            "active": true,
+            "auto_trade": true,
+            "strategy_name": "ai_samsung",
+            "budget_per_trade": 1000000
+        },
+        {
+            "symbol": "069500",
+            "exchange": "KIS",
+            "active": false,
+            "auto_trade": false,
+            "strategy_name": "ai_kodex200",
+            "budget_per_trade": 120000
+        },
+        {
+            "symbol": "KRW-BTC",
+            "exchange": "UPBIT",
+            "active": false,
+            "auto_trade": false,
+            "pinned": true,
+            "strategy_name": "ai_baker",
+            "budget_per_trade": 100000
+        }
+    ],
+    "ACC_WINDOW": 60,
+    "UPDATE_INTERVAL": 0.15,
+    "MAX_UNITS": 8
+}

@@ -1,0 +1,18 @@
+{
+    "session_id": "SOLAI_M1_20261004",
+    "symbol": "0167A0",
+    "interval": "1m",
+    "seed": 42,
+    "features_order": [
+        "target_adx",
+        "target_bb_kc_squeeze"
+    ],
+    "feature_params": {
+        "target_adx": {
+            "period_bars": 14
+        },
+        "target_bb_kc_squeeze": {
+            "period_bars": 20
+        }
+    }
+}

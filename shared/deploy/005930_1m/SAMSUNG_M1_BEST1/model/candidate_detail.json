@@ -1,0 +1,1974 @@
+{
+  "rank": 1,
+  "trial": 3,
+  "features": [
+    "ref_10100_spread_vs_target",
+    "target_vwap_disparity",
+    "target_bb_pctb",
+    "ref_10100_ret_1c"
+  ],
+  "val_profit": 3.108813754668094,
+  "val_monthly_profit": 4.44,
+  "val_days": 21,
+  "val_mdd": 1.5905646046206554,
+  "val_trades": 103,
+  "val_monthly_trades": 149.1,
+  "val_adj": 2.808813754668094,
+  "final_profit": 3.108813754668094,
+  "final_monthly_profit": 4.44,
+  "final_days": 21,
+  "final_mdd": 1.5905646046206554,
+  "final_trades": 103,
+  "final_monthly_trades": 149.1,
+  "final_required_trades": 10.0,
+  "final_sample_sufficient": true,
+  "final_holdout_trading_days": 21,
+  "final_standard_holdout_td": 21,
+  "final_standard_met": true,
+  "final_non_standard": false,
+  "final_pf_lossless": false,
+  "dead_features": [],
+  "dead_feature_details": {},
+  "wfa_windows": 5,
+  "wfa_valid_windows": 5,
+  "wfa_robust": true,
+  "win_rate": 57.28155339805825,
+  "profit_factor": 1.2593785728859563,
+  "sharpe_ratio": 0.9354516654457693,
+  "avg_hold_mins": 11.514563106796116,
+  "best_trade": 0.855925925925926,
+  "worst_trade": -0.6255555555555556,
+  "passed": true,
+  "status": "PASSED",
+  "is_champion": false,
+  "best_params": {
+    "take_profit": 2.524134417655333,
+    "stop_loss": 1.9516502683470653,
+    "max_depth": 5,
+    "num_leaves": 41,
+    "learning_rate": 0.046815074274422316,
+    "min_child_samples": 52,
+    "buy_quantile": 0.9530837168319133,
+    "cooldown_minutes": 13,
+    "predict_ahead_candles": 6,
+    "max_hold_candles": 12,
+    "buy_threshold": 0.5231278522114489,
+    "opt_session_id": "SAMSUNG_M1_BEST1",
+    "memo": "",
+    "seed": 42,
+    "train_start": "2026-04-06 09:01:00",
+    "train_end": "2026-08-19 09:01:00",
+    "opt_start": "2026-06-08 09:03:00",
+    "opt_end": "2026-08-19 09:01:00",
+    "created_at": "2026-10-05 22:34:31",
+    "optuna_score": 1.6748618094450745,
+    "validation_metrics": {
+      "score": 1.6586405225300687,
+      "trades": 73,
+      "required_trades": 10.0,
+      "win_rate": 49.31506849315068,
+      "mdd": 3.9701174766672813,
+      "profit_factor": 1.15147526925768,
+      "profit_factor_raw": 1.15147526925768,
+      "total_return": 2.4339878514653135
+    },
+    "training_meta": {
+      "num_boost_round": 30,
+      "tuning_objective": "binary",
+      "saved_model_objective": "binary",
+      "buy_threshold_prob_basis": "binary P(label=1)",
+      "optuna_score_note": "창별 best 점수의 평균 — 선택 편향 포함, 성과 지표로 해석 금지",
+      "dataset": {
+        "path": "/home/kuzimo/projects/CTradeSystem/DataVault/features/005930/data_snapshot_1m.csv",
+        "sha256": "5cdc62541d4111c5f0e0dd246eb094723d3e4e7f6c445fcef89aeb45553010b3",
+        "byte_size": 32776402,
+        "manifest_sha256": "5cdc62541d4111c5f0e0dd246eb094723d3e4e7f6c445fcef89aeb45553010b3",
+        "manifest_created_at": "2026-10-05T01:32:12.617637+09:00",
+        "matches_manifest": true,
+        "row_count": 200841,
+        "first_timestamp": "2024-08-09 09:01:00",
+        "last_timestamp": "2026-10-02 20:00:00"
+      },
+      "wfa_windows": 5,
+      "wfa_valid_windows": 5,
+      "wfa_oos_total_pct": 28.799401199590875,
+      "wfa_robust": true
+    }
+  },
+  "feature_importance": {
+    "ref_10100_spread_vs_target": {
+      "gain": 4316.64,
+      "gain_pct": 42.21
+    },
+    "target_vwap_disparity": {
+      "gain": 2170.92,
+      "gain_pct": 21.23
+    },
+    "target_bb_pctb": {
+      "gain": 1072.61,
+      "gain_pct": 10.49
+    },
+    "ref_10100_ret_1c": {
+      "gain": 2665.41,
+      "gain_pct": 26.07
+    }
+  },
+  "trades_detail": [
+    {
+      "entry_time": "2026-09-03T09:13:00.000000",
+      "exit_time": "2026-09-03T09:25:00.000000",
+      "entry_price": 252500.0,
+      "exit_price": 253000.0,
+      "hold_mins": 12,
+      "prob": 0.5348401995167478,
+      "exit_type": "시간만료",
+      "net_return": 0.12801980198019802,
+      "mfe": 0.5940594059405941,
+      "mae": -0.39603960396039606,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002121158270522172,
+        "target_vwap_disparity": -0.27899762988090515,
+        "target_bb_pctb": -0.0966872313075139,
+        "ref_10100_ret_1c": -0.0018236149050202544
+      }
+    },
+    {
+      "entry_time": "2026-09-03T09:51:00.000000",
+      "exit_time": "2026-09-03T10:03:00.000000",
+      "entry_price": 252750.0,
+      "exit_price": 252500.0,
+      "hold_mins": 12,
+      "prob": 0.5247645374182246,
+      "exit_type": "시간만료",
+      "net_return": -0.16891196834817013,
+      "mfe": 0.09891196834817012,
+      "mae": -0.4945598417408506,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0016592042158000142,
+        "target_vwap_disparity": -0.0850788876414299,
+        "target_bb_pctb": 0.7433362926066525,
+        "ref_10100_ret_1c": 0.0006710619233099013
+      }
+    },
+    {
+      "entry_time": "2026-09-03T11:40:00.000000",
+      "exit_time": "2026-09-03T11:52:00.000000",
+      "entry_price": 253500.0,
+      "exit_price": 253500.0,
+      "hold_mins": 12,
+      "prob": 0.5440102723195666,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.39447731755424065,
+      "mae": -0.39447731755424065,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018250634450291958,
+        "target_vwap_disparity": -0.2147999405860901,
+        "target_bb_pctb": 0.08481047671957223,
+        "ref_10100_ret_1c": -0.0001434404919786747
+      }
+    },
+    {
+      "entry_time": "2026-09-03T12:31:00.000000",
+      "exit_time": "2026-09-03T12:43:00.000000",
+      "entry_price": 253500.0,
+      "exit_price": 253500.0,
+      "hold_mins": 12,
+      "prob": 0.5388411286796168,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.19723865877712032,
+      "mae": -0.19723865877712032,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0022255505687746036,
+        "target_vwap_disparity": -0.10663174092769623,
+        "target_bb_pctb": 0.6369306393762721,
+        "ref_10100_ret_1c": 0.0012403288938978019
+      }
+    },
+    {
+      "entry_time": "2026-09-03T13:27:00.000000",
+      "exit_time": "2026-09-03T13:39:00.000000",
+      "entry_price": 253250.0,
+      "exit_price": 252500.0,
+      "hold_mins": 12,
+      "prob": 0.5369022390964896,
+      "exit_type": "시간만료",
+      "net_return": -0.36615004935834156,
+      "mfe": 0.19743336623889438,
+      "mae": -0.29615004935834155,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001779695749586807,
+        "target_vwap_disparity": -0.09155676513910294,
+        "target_bb_pctb": 0.07088735951051542,
+        "ref_10100_ret_1c": -0.00019074760016690728
+      }
+    },
+    {
+      "entry_time": "2026-09-04T09:55:00.000000",
+      "exit_time": "2026-09-04T10:01:00.000000",
+      "entry_price": 255000.0,
+      "exit_price": 253750.0,
+      "hold_mins": 6,
+      "prob": 0.5289117891127899,
+      "exit_type": "손절",
+      "net_return": -0.5601960784313725,
+      "mfe": 0.19607843137254902,
+      "mae": -0.5882352941176471,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014076305885661888,
+        "target_vwap_disparity": -0.17884819209575653,
+        "target_bb_pctb": 0.6507957615522744,
+        "ref_10100_ret_1c": 0.0004281986590852771
+      }
+    },
+    {
+      "entry_time": "2026-09-04T10:39:00.000000",
+      "exit_time": "2026-09-04T10:51:00.000000",
+      "entry_price": 254250.0,
+      "exit_price": 253500.0,
+      "hold_mins": 12,
+      "prob": 0.5512357548236327,
+      "exit_type": "시간만료",
+      "net_return": -0.36498525073746313,
+      "mfe": 0.2949852507374631,
+      "mae": -0.4916420845624385,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008120914977414184,
+        "target_vwap_disparity": -0.06084790825843811,
+        "target_bb_pctb": 0.5390184045987793,
+        "ref_10100_ret_1c": 0.0008120914977414184
+      }
+    },
+    {
+      "entry_time": "2026-09-04T11:12:00.000000",
+      "exit_time": "2026-09-04T11:15:00.000000",
+      "entry_price": 254250.0,
+      "exit_price": 255250.0,
+      "hold_mins": 3,
+      "prob": 0.5435724461770445,
+      "exit_type": "익절",
+      "net_return": 0.32331366764995084,
+      "mfe": 0.4916420845624385,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0016986848931924703,
+        "target_vwap_disparity": -0.06142929941415787,
+        "target_bb_pctb": 0.6857965253636326,
+        "ref_10100_ret_1c": 0.0007163666220726395
+      }
+    },
+    {
+      "entry_time": "2026-09-04T13:07:00.000000",
+      "exit_time": "2026-09-04T13:14:00.000000",
+      "entry_price": 255250.0,
+      "exit_price": 256500.0,
+      "hold_mins": 7,
+      "prob": 0.5381783055049272,
+      "exit_type": "익절",
+      "net_return": 0.4197159647404506,
+      "mfe": 0.48971596474045054,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001141622239279716,
+        "target_vwap_disparity": -0.057467445731163025,
+        "target_bb_pctb": 0.8858232719217944,
+        "ref_10100_ret_1c": 0.001141622239279716
+      }
+    },
+    {
+      "entry_time": "2026-09-04T13:39:00.000000",
+      "exit_time": "2026-09-04T13:51:00.000000",
+      "entry_price": 256000.0,
+      "exit_price": 256500.0,
+      "hold_mins": 12,
+      "prob": 0.5273768664135908,
+      "exit_type": "시간만료",
+      "net_return": 0.1253125,
+      "mfe": 0.390625,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001973935565449114,
+        "target_vwap_disparity": -0.18245944380760193,
+        "target_bb_pctb": 0.10693170037234723,
+        "ref_10100_ret_1c": -0.0009471939379588346
+      }
+    },
+    {
+      "entry_time": "2026-09-04T14:04:00.000000",
+      "exit_time": "2026-09-04T14:16:00.000000",
+      "entry_price": 257000.0,
+      "exit_price": 257750.0,
+      "hold_mins": 12,
+      "prob": 0.5341228027278009,
+      "exit_type": "시간만료",
+      "net_return": 0.22182879377431905,
+      "mfe": 0.3891050583657587,
+      "mae": -0.19455252918287935,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008520134755181097,
+        "target_vwap_disparity": -0.010570866987109184,
+        "target_bb_pctb": 0.8829097778324694,
+        "ref_10100_ret_1c": 0.0008520134755181097
+      }
+    },
+    {
+      "entry_time": "2026-09-04T14:37:00.000000",
+      "exit_time": "2026-09-04T14:49:00.000000",
+      "entry_price": 257500.0,
+      "exit_price": 256750.0,
+      "hold_mins": 12,
+      "prob": 0.5390180445678033,
+      "exit_type": "시간만료",
+      "net_return": -0.36126213592233014,
+      "mfe": 0.3883495145631068,
+      "mae": -0.3883495145631068,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0026214710736356395,
+        "target_vwap_disparity": -0.1945914775133133,
+        "target_bb_pctb": 0.09261849391267277,
+        "ref_10100_ret_1c": -0.0002826915594718038
+      }
+    },
+    {
+      "entry_time": "2026-09-07T09:26:00.000000",
+      "exit_time": "2026-09-07T09:38:00.000000",
+      "entry_price": 265500.0,
+      "exit_price": 265500.0,
+      "hold_mins": 12,
+      "prob": 0.5380244683355137,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.5649717514124294,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002317512111029929,
+        "target_vwap_disparity": -0.12857270240783691,
+        "target_bb_pctb": 0.0893424870601481,
+        "ref_10100_ret_1c": 0.0013767783386875454
+      }
+    },
+    {
+      "entry_time": "2026-09-07T10:03:00.000000",
+      "exit_time": "2026-09-07T10:15:00.000000",
+      "entry_price": 264250.0,
+      "exit_price": 265000.0,
+      "hold_mins": 12,
+      "prob": 0.5294591015499632,
+      "exit_type": "시간만료",
+      "net_return": 0.21382213812677386,
+      "mfe": 0.4730368968779565,
+      "mae": -0.0946073793755913,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0011986436081401486,
+        "target_vwap_disparity": -0.06483589112758636,
+        "target_bb_pctb": 0.13305903841168898,
+        "ref_10100_ret_1c": 0.0011986436081401486
+      }
+    },
+    {
+      "entry_time": "2026-09-07T13:13:00.000000",
+      "exit_time": "2026-09-07T13:25:00.000000",
+      "entry_price": 267500.0,
+      "exit_price": 268000.0,
+      "hold_mins": 12,
+      "prob": 0.5283583632225624,
+      "exit_type": "시간만료",
+      "net_return": 0.1169158878504673,
+      "mfe": 0.3738317757009346,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018256503879507946,
+        "target_vwap_disparity": -0.004298880696296692,
+        "target_bb_pctb": 0.8145764348029689,
+        "ref_10100_ret_1c": 0.0018256503879507946
+      }
+    },
+    {
+      "entry_time": "2026-09-07T14:13:00.000000",
+      "exit_time": "2026-09-07T14:25:00.000000",
+      "entry_price": 267500.0,
+      "exit_price": 268750.0,
+      "hold_mins": 12,
+      "prob": 0.5622538309687956,
+      "exit_type": "시간만료",
+      "net_return": 0.39728971962616816,
+      "mfe": 0.5607476635514019,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001343013785849001,
+        "target_vwap_disparity": -0.16971148550510406,
+        "target_bb_pctb": -0.10166100733048068,
+        "ref_10100_ret_1c": 0.0004093069697892471
+      }
+    },
+    {
+      "entry_time": "2026-09-08T09:45:00.000000",
+      "exit_time": "2026-09-08T09:57:00.000000",
+      "entry_price": 272500.0,
+      "exit_price": 274750.0,
+      "hold_mins": 12,
+      "prob": 0.5306616895939272,
+      "exit_type": "익절",
+      "net_return": 0.7556880733944954,
+      "mfe": 0.9174311926605504,
+      "mae": -0.1834862385321101,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008495739848262129,
+        "target_vwap_disparity": -0.015388457104563713,
+        "target_bb_pctb": 0.5051727699006671,
+        "ref_10100_ret_1c": 0.0008495739848262129
+      }
+    },
+    {
+      "entry_time": "2026-09-08T10:46:00.000000",
+      "exit_time": "2026-09-08T10:58:00.000000",
+      "entry_price": 276500.0,
+      "exit_price": 277250.0,
+      "hold_mins": 12,
+      "prob": 0.5341228027278009,
+      "exit_type": "시간만료",
+      "net_return": 0.20124773960216996,
+      "mfe": 0.3616636528028933,
+      "mae": -0.18083182640144665,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008420433021472107,
+        "target_vwap_disparity": -0.02482566237449646,
+        "target_bb_pctb": 0.9739654087182182,
+        "ref_10100_ret_1c": 0.0008420433021472107
+      }
+    },
+    {
+      "entry_time": "2026-09-08T11:45:00.000000",
+      "exit_time": "2026-09-08T11:57:00.000000",
+      "entry_price": 276000.0,
+      "exit_price": 276250.0,
+      "hold_mins": 12,
+      "prob": 0.5482426581716261,
+      "exit_type": "시간만료",
+      "net_return": 0.020579710144927536,
+      "mfe": 0.36231884057971014,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002162902676907885,
+        "target_vwap_disparity": -0.18500491976737976,
+        "target_bb_pctb": -0.05738957609103285,
+        "ref_10100_ret_1c": 0.0003545844128933773
+      }
+    },
+    {
+      "entry_time": "2026-09-08T12:10:00.000000",
+      "exit_time": "2026-09-08T12:22:00.000000",
+      "entry_price": 277000.0,
+      "exit_price": 277750.0,
+      "hold_mins": 12,
+      "prob": 0.5306616895939272,
+      "exit_type": "시간만료",
+      "net_return": 0.2007581227436823,
+      "mfe": 0.36101083032490977,
+      "mae": -0.18050541516245489,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008400665663437223,
+        "target_vwap_disparity": 0.0008664334891363978,
+        "target_bb_pctb": 0.8253083014593673,
+        "ref_10100_ret_1c": 0.0008400665663437223
+      }
+    },
+    {
+      "entry_time": "2026-09-08T12:46:00.000000",
+      "exit_time": "2026-09-08T12:58:00.000000",
+      "entry_price": 278000.0,
+      "exit_price": 278250.0,
+      "hold_mins": 12,
+      "prob": 0.536145613434529,
+      "exit_type": "시간만료",
+      "net_return": 0.01992805755395684,
+      "mfe": 0.17985611510791366,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001603067614121767,
+        "target_vwap_disparity": -0.09279869496822357,
+        "target_bb_pctb": 0.48067572322295044,
+        "ref_10100_ret_1c": 0.0007045950175359472
+      }
+    },
+    {
+      "entry_time": "2026-09-08T13:25:00.000000",
+      "exit_time": "2026-09-08T13:36:00.000000",
+      "entry_price": 278250.0,
+      "exit_price": 277000.0,
+      "hold_mins": 11,
+      "prob": 0.5255105063525395,
+      "exit_type": "손절",
+      "net_return": -0.5192362982929021,
+      "mfe": 0.2695417789757412,
+      "mae": -0.6289308176100629,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002190140039651345,
+        "target_vwap_disparity": -0.08742395043373108,
+        "target_bb_pctb": 0.2849379516601392,
+        "ref_10100_ret_1c": 0.0003964180665572137
+      }
+    },
+    {
+      "entry_time": "2026-09-08T14:13:00.000000",
+      "exit_time": "2026-09-08T14:22:00.000000",
+      "entry_price": 274000.0,
+      "exit_price": 276000.0,
+      "hold_mins": 9,
+      "prob": 0.5360432141956143,
+      "exit_type": "익절",
+      "net_return": 0.65992700729927,
+      "mfe": 0.9124087591240876,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002670005196782399,
+        "target_vwap_disparity": -0.10012592375278473,
+        "target_bb_pctb": 0.1689325445734917,
+        "ref_10100_ret_1c": 0.0008485115720100467
+      }
+    },
+    {
+      "entry_time": "2026-09-08T14:48:00.000000",
+      "exit_time": "2026-09-08T15:00:00.000000",
+      "entry_price": 273000.0,
+      "exit_price": 272000.0,
+      "hold_mins": 12,
+      "prob": 0.5371056785758884,
+      "exit_type": "시간만료",
+      "net_return": -0.4363003663003663,
+      "mfe": 0.36630036630036633,
+      "mae": -0.7326007326007327,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.000896137627136584,
+        "target_vwap_disparity": -0.12847940623760223,
+        "target_bb_pctb": 0.2951724138236042,
+        "ref_10100_ret_1c": 0.000896137627136584
+      }
+    },
+    {
+      "entry_time": "2026-09-09T09:43:00.000000",
+      "exit_time": "2026-09-09T09:53:00.000000",
+      "entry_price": 270000.0,
+      "exit_price": 272500.0,
+      "hold_mins": 10,
+      "prob": 0.532418551712586,
+      "exit_type": "익절",
+      "net_return": 0.855925925925926,
+      "mfe": 1.1111111111111112,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001556277799280248,
+        "target_vwap_disparity": -0.1647503525018692,
+        "target_bb_pctb": 0.5217366075113107,
+        "ref_10100_ret_1c": 0.000631208419076712
+      }
+    },
+    {
+      "entry_time": "2026-09-09T10:22:00.000000",
+      "exit_time": "2026-09-09T10:34:00.000000",
+      "entry_price": 272750.0,
+      "exit_price": 273500.0,
+      "hold_mins": 12,
+      "prob": 0.5275169243066108,
+      "exit_type": "시간만료",
+      "net_return": 0.2049770852428964,
+      "mfe": 0.27497708524289644,
+      "mae": -0.27497708524289644,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0015420185343735238,
+        "target_vwap_disparity": -0.08926945924758911,
+        "target_bb_pctb": 0.6839054173526362,
+        "ref_10100_ret_1c": 0.0006262676186226113
+      }
+    },
+    {
+      "entry_time": "2026-09-09T11:55:00.000000",
+      "exit_time": "2026-09-09T12:06:00.000000",
+      "entry_price": 273500.0,
+      "exit_price": 272250.0,
+      "hold_mins": 11,
+      "prob": 0.5327339313607727,
+      "exit_type": "손절",
+      "net_return": -0.527038391224863,
+      "mfe": 0.3656307129798903,
+      "mae": -0.5484460694698354,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014918129161751725,
+        "target_vwap_disparity": -0.14370544254779816,
+        "target_bb_pctb": -0.043571223075896226,
+        "ref_10100_ret_1c": 0.0005785709070427192
+      }
+    },
+    {
+      "entry_time": "2026-09-09T12:33:00.000000",
+      "exit_time": "2026-09-09T12:45:00.000000",
+      "entry_price": 271500.0,
+      "exit_price": 271750.0,
+      "hold_mins": 12,
+      "prob": 0.5232096354481162,
+      "exit_type": "시간만료",
+      "net_return": 0.02208103130755065,
+      "mfe": 0.3683241252302026,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014116489546972533,
+        "target_vwap_disparity": -0.13687317073345184,
+        "target_bb_pctb": 0.2154549085102545,
+        "ref_10100_ret_1c": 0.0004916857532253349
+      }
+    },
+    {
+      "entry_time": "2026-09-09T13:01:00.000000",
+      "exit_time": "2026-09-09T13:13:00.000000",
+      "entry_price": 270000.0,
+      "exit_price": 269250.0,
+      "hold_mins": 12,
+      "prob": 0.5385829257379053,
+      "exit_type": "시간만료",
+      "net_return": -0.3477777777777778,
+      "mfe": 0.37037037037037035,
+      "mae": -0.37037037037037035,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0022288576429702056,
+        "target_vwap_disparity": -0.02550460398197174,
+        "target_bb_pctb": 0.302261258838594,
+        "ref_10100_ret_1c": 0.0013037882627666697
+      }
+    },
+    {
+      "entry_time": "2026-09-09T13:33:00.000000",
+      "exit_time": "2026-09-09T13:45:00.000000",
+      "entry_price": 270000.0,
+      "exit_price": 271000.0,
+      "hold_mins": 12,
+      "prob": 0.5419511297613778,
+      "exit_type": "시간만료",
+      "net_return": 0.3003703703703704,
+      "mfe": 0.46296296296296297,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001345955462982218,
+        "target_vwap_disparity": -0.07248076051473618,
+        "target_bb_pctb": 0.6150265804024871,
+        "ref_10100_ret_1c": 0.001345955462982218
+      }
+    },
+    {
+      "entry_time": "2026-09-09T14:10:00.000000",
+      "exit_time": "2026-09-09T14:20:00.000000",
+      "entry_price": 270000.0,
+      "exit_price": 268500.0,
+      "hold_mins": 10,
+      "prob": 0.5337481026712652,
+      "exit_type": "손절",
+      "net_return": -0.6255555555555556,
+      "mfe": 0.37037037037037035,
+      "mae": -0.5555555555555556,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0011198208286673506,
+        "target_vwap_disparity": -0.12258288264274597,
+        "target_bb_pctb": 0.11709022216821342,
+        "ref_10100_ret_1c": 0.0011198208286673506
+      }
+    },
+    {
+      "entry_time": "2026-09-10T09:13:00.000000",
+      "exit_time": "2026-09-10T09:25:00.000000",
+      "entry_price": 267000.0,
+      "exit_price": 267250.0,
+      "hold_mins": 12,
+      "prob": 0.5396705576915418,
+      "exit_type": "시간만료",
+      "net_return": 0.023632958801498127,
+      "mfe": 0.4681647940074906,
+      "mae": -0.18726591760299624,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002367138312009076,
+        "target_vwap_disparity": -0.21287919580936432,
+        "target_bb_pctb": -0.0192907868895003,
+        "ref_10100_ret_1c": -0.002292693934030088
+      }
+    },
+    {
+      "entry_time": "2026-09-10T09:58:00.000000",
+      "exit_time": "2026-09-10T10:10:00.000000",
+      "entry_price": 265000.0,
+      "exit_price": 264250.0,
+      "hold_mins": 12,
+      "prob": 0.5265377962318255,
+      "exit_type": "시간만료",
+      "net_return": -0.3530188679245283,
+      "mfe": 0.3773584905660377,
+      "mae": -0.3773584905660377,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0024743585271977953,
+        "target_vwap_disparity": -0.0129115404561162,
+        "target_bb_pctb": 0.05886624654237843,
+        "ref_10100_ret_1c": 0.000591119355823011
+      }
+    },
+    {
+      "entry_time": "2026-09-10T14:22:00.000000",
+      "exit_time": "2026-09-10T14:34:00.000000",
+      "entry_price": 269000.0,
+      "exit_price": 269500.0,
+      "hold_mins": 12,
+      "prob": 0.5326365411468271,
+      "exit_type": "시간만료",
+      "net_return": 0.11587360594795537,
+      "mfe": 0.3717472118959108,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002572453375834338,
+        "target_vwap_disparity": -0.1349477618932724,
+        "target_bb_pctb": 0.4502610983903833,
+        "ref_10100_ret_1c": 0.000717165806261022
+      }
+    },
+    {
+      "entry_time": "2026-09-11T09:13:00.000000",
+      "exit_time": "2026-09-11T09:25:00.000000",
+      "entry_price": 258500.0,
+      "exit_price": 260000.0,
+      "hold_mins": 12,
+      "prob": 0.5255105063525395,
+      "exit_type": "시간만료",
+      "net_return": 0.5102707930367505,
+      "mfe": 0.7736943907156674,
+      "mae": -0.19342359767891684,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0023012381807915316,
+        "target_vwap_disparity": -0.13457301259040833,
+        "target_bb_pctb": 0.17902963061681423,
+        "ref_10100_ret_1c": 0.000370736250289605
+      }
+    },
+    {
+      "entry_time": "2026-09-14T09:21:00.000000",
+      "exit_time": "2026-09-14T09:33:00.000000",
+      "entry_price": 250250.0,
+      "exit_price": 252500.0,
+      "hold_mins": 12,
+      "prob": 0.5340107408766399,
+      "exit_type": "시간만료",
+      "net_return": 0.8291008991008992,
+      "mfe": 0.8991008991008992,
+      "mae": -0.0999000999000999,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.00204420482937151,
+        "target_vwap_disparity": -0.058762650936841965,
+        "target_bb_pctb": 0.2040723728086213,
+        "ref_10100_ret_1c": 0.0010462008373555154
+      }
+    },
+    {
+      "entry_time": "2026-09-14T09:48:00.000000",
+      "exit_time": "2026-09-14T10:00:00.000000",
+      "entry_price": 251750.0,
+      "exit_price": 251000.0,
+      "hold_mins": 12,
+      "prob": 0.5419511297613778,
+      "exit_type": "시간만료",
+      "net_return": -0.36791459781529295,
+      "mfe": 0.09930486593843099,
+      "mae": -0.496524329692155,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0013276665851706948,
+        "target_vwap_disparity": -0.06900498270988464,
+        "target_bb_pctb": 0.5747275923058119,
+        "ref_10100_ret_1c": 0.0013276665851706948
+      }
+    },
+    {
+      "entry_time": "2026-09-14T10:36:00.000000",
+      "exit_time": "2026-09-14T10:48:00.000000",
+      "entry_price": 249500.0,
+      "exit_price": 250500.0,
+      "hold_mins": 12,
+      "prob": 0.5282834237671015,
+      "exit_type": "시간만료",
+      "net_return": 0.3308016032064128,
+      "mfe": 0.40080160320641284,
+      "mae": -0.20040080160320642,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002477965668195359,
+        "target_vwap_disparity": 0.014952135272324085,
+        "target_bb_pctb": 0.41275219494348137,
+        "ref_10100_ret_1c": 0.0014769646671943804
+      }
+    },
+    {
+      "entry_time": "2026-09-14T11:28:00.000000",
+      "exit_time": "2026-09-14T11:40:00.000000",
+      "entry_price": 253250.0,
+      "exit_price": 253500.0,
+      "hold_mins": 12,
+      "prob": 0.5413786281206789,
+      "exit_type": "시간만료",
+      "net_return": 0.02871668311944718,
+      "mfe": 0.49358341559723595,
+      "mae": -0.09871668311944719,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0020668777457274468,
+        "target_vwap_disparity": -0.05394916236400604,
+        "target_bb_pctb": 0.640682858467787,
+        "ref_10100_ret_1c": 0.0010806844518418401
+      }
+    },
+    {
+      "entry_time": "2026-09-14T12:19:00.000000",
+      "exit_time": "2026-09-14T12:31:00.000000",
+      "entry_price": 252250.0,
+      "exit_price": 252750.0,
+      "hold_mins": 12,
+      "prob": 0.5334029708306796,
+      "exit_type": "시간만료",
+      "net_return": 0.12821605550049553,
+      "mfe": 0.29732408325074333,
+      "mae": -0.09910802775024778,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0016957489296711703,
+        "target_vwap_disparity": -0.05462227761745453,
+        "target_bb_pctb": -0.016138873059565212,
+        "ref_10100_ret_1c": 0.0007056499197701793
+      }
+    },
+    {
+      "entry_time": "2026-09-14T13:28:00.000000",
+      "exit_time": "2026-09-14T13:40:00.000000",
+      "entry_price": 251000.0,
+      "exit_price": 250750.0,
+      "hold_mins": 12,
+      "prob": 0.5460388554627543,
+      "exit_type": "시간만료",
+      "net_return": -0.169601593625498,
+      "mfe": 0.199203187250996,
+      "mae": -0.199203187250996,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002176917907268705,
+        "target_vwap_disparity": -0.16678908467292786,
+        "target_bb_pctb": 0.0696802435811606,
+        "ref_10100_ret_1c": 0.0001888463366921389
+      }
+    },
+    {
+      "entry_time": "2026-09-15T09:12:00.000000",
+      "exit_time": "2026-09-15T09:24:00.000000",
+      "entry_price": 248500.0,
+      "exit_price": 250000.0,
+      "hold_mins": 12,
+      "prob": 0.540814706611257,
+      "exit_type": "시간만료",
+      "net_return": 0.5336217303822938,
+      "mfe": 0.8048289738430583,
+      "mae": -0.20120724346076457,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002916945824811057,
+        "target_vwap_disparity": 0.007151416968554258,
+        "target_bb_pctb": 0.4450877893616269,
+        "ref_10100_ret_1c": 0.0009089136962969757
+      }
+    },
+    {
+      "entry_time": "2026-09-15T10:17:00.000000",
+      "exit_time": "2026-09-15T10:29:00.000000",
+      "entry_price": 250500.0,
+      "exit_price": 251250.0,
+      "hold_mins": 12,
+      "prob": 0.5246313762189008,
+      "exit_type": "시간만료",
+      "net_return": 0.22940119760479044,
+      "mfe": 0.5988023952095809,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002994892746949973,
+        "target_vwap_disparity": -0.19621305167675018,
+        "target_bb_pctb": 0.5346687622640856,
+        "ref_10100_ret_1c": 0.0019978837738692246
+      }
+    },
+    {
+      "entry_time": "2026-09-15T11:10:00.000000",
+      "exit_time": "2026-09-15T11:22:00.000000",
+      "entry_price": 250000.0,
+      "exit_price": 250250.0,
+      "hold_mins": 12,
+      "prob": 0.5273444348385917,
+      "exit_type": "시간만료",
+      "net_return": 0.030000000000000002,
+      "mfe": 0.19999999999999998,
+      "mae": -0.19999999999999998,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0009045301702010899,
+        "target_vwap_disparity": -0.025185655802488327,
+        "target_bb_pctb": 0.47551025776476474,
+        "ref_10100_ret_1c": 0.0009045301702010899
+      }
+    },
+    {
+      "entry_time": "2026-09-15T12:18:00.000000",
+      "exit_time": "2026-09-15T12:30:00.000000",
+      "entry_price": 250250.0,
+      "exit_price": 250250.0,
+      "hold_mins": 12,
+      "prob": 0.5313106809235799,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.2997002997002997,
+      "mae": -0.0999000999000999,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0023268525500013126,
+        "target_vwap_disparity": -0.07490888237953186,
+        "target_bb_pctb": -0.04435995901365517,
+        "ref_10100_ret_1c": 0.00033283460383981556
+      }
+    },
+    {
+      "entry_time": "2026-09-15T12:57:00.000000",
+      "exit_time": "2026-09-15T13:09:00.000000",
+      "entry_price": 249500.0,
+      "exit_price": 249500.0,
+      "hold_mins": 12,
+      "prob": 0.528305324916748,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.3006012024048096,
+      "mae": -0.20040080160320642,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0010947241683171294,
+        "target_vwap_disparity": -0.19019867479801178,
+        "target_bb_pctb": -0.1177209980516303,
+        "ref_10100_ret_1c": -0.0009052758316828724
+      }
+    },
+    {
+      "entry_time": "2026-09-16T09:19:00.000000",
+      "exit_time": "2026-09-16T09:31:00.000000",
+      "entry_price": 248500.0,
+      "exit_price": 249500.0,
+      "hold_mins": 12,
+      "prob": 0.5283313739657749,
+      "exit_type": "시간만료",
+      "net_return": 0.3324144869215292,
+      "mfe": 0.6036217303822937,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0006708368367809303,
+        "target_vwap_disparity": -0.19136348366737366,
+        "target_bb_pctb": 0.4262121548084995,
+        "ref_10100_ret_1c": 0.0006708368367809303
+      }
+    },
+    {
+      "entry_time": "2026-09-16T09:45:00.000000",
+      "exit_time": "2026-09-16T09:57:00.000000",
+      "entry_price": 251000.0,
+      "exit_price": 250750.0,
+      "hold_mins": 12,
+      "prob": 0.536932582242511,
+      "exit_type": "시간만료",
+      "net_return": -0.169601593625498,
+      "mfe": 0.199203187250996,
+      "mae": -0.398406374501992,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018981061094152096,
+        "target_vwap_disparity": -0.14156822860240936,
+        "target_bb_pctb": 0.8544067404709076,
+        "ref_10100_ret_1c": 0.0009030812337933458
+      }
+    },
+    {
+      "entry_time": "2026-09-16T10:48:00.000000",
+      "exit_time": "2026-09-16T11:00:00.000000",
+      "entry_price": 250000.0,
+      "exit_price": 249000.0,
+      "hold_mins": 12,
+      "prob": 0.5243055756159685,
+      "exit_type": "시간만료",
+      "net_return": -0.47000000000000003,
+      "mfe": 0.3,
+      "mae": -0.6,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014767384456505495,
+        "target_vwap_disparity": -0.05527742579579353,
+        "target_bb_pctb": 0.3922185181671851,
+        "ref_10100_ret_1c": 0.0004777374466495843
+      }
+    },
+    {
+      "entry_time": "2026-09-16T11:24:00.000000",
+      "exit_time": "2026-09-16T11:36:00.000000",
+      "entry_price": 250000.0,
+      "exit_price": 250750.0,
+      "hold_mins": 12,
+      "prob": 0.525038142451073,
+      "exit_type": "시간만료",
+      "net_return": 0.22999999999999998,
+      "mfe": 0.39999999999999997,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001429041284652155,
+        "target_vwap_disparity": -0.09325695037841797,
+        "target_bb_pctb": 0.5089635406449148,
+        "ref_10100_ret_1c": 0.0004300402856511898
+      }
+    },
+    {
+      "entry_time": "2026-09-16T11:49:00.000000",
+      "exit_time": "2026-09-16T12:01:00.000000",
+      "entry_price": 250750.0,
+      "exit_price": 251500.0,
+      "hold_mins": 12,
+      "prob": 0.5352193073445176,
+      "exit_type": "시간만료",
+      "net_return": 0.22910269192422733,
+      "mfe": 0.4985044865403789,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0007626049439932725,
+        "target_vwap_disparity": -0.06758340448141098,
+        "target_bb_pctb": 0.5,
+        "ref_10100_ret_1c": 0.0007626049439932725
+      }
+    },
+    {
+      "entry_time": "2026-09-16T12:33:00.000000",
+      "exit_time": "2026-09-16T12:45:00.000000",
+      "entry_price": 252000.0,
+      "exit_price": 252750.0,
+      "hold_mins": 12,
+      "prob": 0.525422406497067,
+      "exit_type": "시간만료",
+      "net_return": 0.22761904761904758,
+      "mfe": 0.3968253968253968,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001980198019801982,
+        "target_vwap_disparity": -0.10563036799430847,
+        "target_bb_pctb": -0.004444531850447488,
+        "ref_10100_ret_1c": 0.0
+      }
+    },
+    {
+      "entry_time": "2026-09-16T12:58:00.000000",
+      "exit_time": "2026-09-16T13:10:00.000000",
+      "entry_price": 253000.0,
+      "exit_price": 253500.0,
+      "hold_mins": 12,
+      "prob": 0.5388411286796168,
+      "exit_type": "시간만료",
+      "net_return": 0.12762845849802368,
+      "mfe": 0.39525691699604737,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018382537475656324,
+        "target_vwap_disparity": -0.12457189708948135,
+        "target_bb_pctb": 0.5461409152892636,
+        "ref_10100_ret_1c": 0.0008510869163711465
+      }
+    },
+    {
+      "entry_time": "2026-09-16T13:26:00.000000",
+      "exit_time": "2026-09-16T13:32:00.000000",
+      "entry_price": 253500.0,
+      "exit_price": 252500.0,
+      "hold_mins": 6,
+      "prob": 0.525038142451073,
+      "exit_type": "손절",
+      "net_return": -0.46447731755424065,
+      "mfe": 0.19723865877712032,
+      "mae": -0.39447731755424065,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0013628882463488923,
+        "target_vwap_disparity": -0.08337421715259552,
+        "target_bb_pctb": 0.4817872596622282,
+        "ref_10100_ret_1c": 0.0003776665714720906
+      }
+    },
+    {
+      "entry_time": "2026-09-16T14:45:00.000000",
+      "exit_time": "2026-09-16T14:57:00.000000",
+      "entry_price": 252250.0,
+      "exit_price": 252000.0,
+      "hold_mins": 12,
+      "prob": 0.5579272047452936,
+      "exit_type": "시간만료",
+      "net_return": -0.16910802775024777,
+      "mfe": 0.29732408325074333,
+      "mae": -0.09910802775024778,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001138103558972814,
+        "target_vwap_disparity": -0.060609426349401474,
+        "target_bb_pctb": 0.6675830643879666,
+        "ref_10100_ret_1c": 0.001138103558972814
+      }
+    },
+    {
+      "entry_time": "2026-09-17T09:13:00.000000",
+      "exit_time": "2026-09-17T09:25:00.000000",
+      "entry_price": 255000.0,
+      "exit_price": 254500.0,
+      "hold_mins": 12,
+      "prob": 0.5250903268958904,
+      "exit_type": "시간만료",
+      "net_return": -0.26607843137254905,
+      "mfe": 0.39215686274509803,
+      "mae": -0.5882352941176471,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002333122077678218,
+        "target_vwap_disparity": -0.19962424039840698,
+        "target_bb_pctb": 0.23188742784681748,
+        "ref_10100_ret_1c": 0.0003761749152515481
+      }
+    },
+    {
+      "entry_time": "2026-09-17T10:28:00.000000",
+      "exit_time": "2026-09-17T10:40:00.000000",
+      "entry_price": 254750.0,
+      "exit_price": 254750.0,
+      "hold_mins": 12,
+      "prob": 0.5470018381394878,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.29440628066732094,
+      "mae": -0.29440628066732094,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018713503450180635,
+        "target_vwap_disparity": -0.0030342552345246077,
+        "target_bb_pctb": 0.2873419514905527,
+        "ref_10100_ret_1c": 0.0008909581881553219
+      }
+    },
+    {
+      "entry_time": "2026-09-18T09:52:00.000000",
+      "exit_time": "2026-09-18T10:04:00.000000",
+      "entry_price": 259250.0,
+      "exit_price": 259250.0,
+      "hold_mins": 12,
+      "prob": 0.5360432141956143,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.2892960462873674,
+      "mae": -0.1928640308582449,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0017935188388823464,
+        "target_vwap_disparity": -0.0838717371225357,
+        "target_bb_pctb": 0.20792311278368164,
+        "ref_10100_ret_1c": 0.0008301277020807962
+      }
+    },
+    {
+      "entry_time": "2026-09-18T10:29:00.000000",
+      "exit_time": "2026-09-18T10:41:00.000000",
+      "entry_price": 258000.0,
+      "exit_price": 259000.0,
+      "hold_mins": 12,
+      "prob": 0.5274970920265813,
+      "exit_type": "시간만료",
+      "net_return": 0.31759689922480616,
+      "mfe": 0.5813953488372093,
+      "mae": -0.1937984496124031,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0023508960024422043,
+        "target_vwap_disparity": -0.1158771961927414,
+        "target_bb_pctb": 0.1024806249460247,
+        "ref_10100_ret_1c": 0.00041666002565299287
+      }
+    },
+    {
+      "entry_time": "2026-09-18T13:09:00.000000",
+      "exit_time": "2026-09-18T13:21:00.000000",
+      "entry_price": 260500.0,
+      "exit_price": 260000.0,
+      "hold_mins": 12,
+      "prob": 0.5250697374187457,
+      "exit_type": "시간만료",
+      "net_return": -0.26193857965451056,
+      "mfe": 0.3838771593090211,
+      "mae": -0.19193857965451055,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0019614125441322905,
+        "target_vwap_disparity": -0.16205556690692902,
+        "target_bb_pctb": 0.26753941979700857,
+        "ref_10100_ret_1c": 4.570373187173793e-05
+      }
+    },
+    {
+      "entry_time": "2026-09-18T13:44:00.000000",
+      "exit_time": "2026-09-18T13:56:00.000000",
+      "entry_price": 260250.0,
+      "exit_price": 260500.0,
+      "hold_mins": 12,
+      "prob": 0.5389309966324886,
+      "exit_type": "시간만료",
+      "net_return": 0.02606147934678194,
+      "mfe": 0.4803073967339097,
+      "mae": -0.09606147934678194,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0009633475487385024,
+        "target_vwap_disparity": -0.0765676498413086,
+        "target_bb_pctb": 0.5584153774432636,
+        "ref_10100_ret_1c": 0.0009633475487385024
+      }
+    },
+    {
+      "entry_time": "2026-09-18T14:49:00.000000",
+      "exit_time": "2026-09-18T14:57:00.000000",
+      "entry_price": 260750.0,
+      "exit_price": 259500.0,
+      "hold_mins": 8,
+      "prob": 0.525422406497067,
+      "exit_type": "손절",
+      "net_return": -0.549386385426654,
+      "mfe": 0.19175455417066153,
+      "mae": -0.47938638542665385,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0020513046373453747,
+        "target_vwap_disparity": -0.07558233290910721,
+        "target_bb_pctb": 0.019476558555385392,
+        "ref_10100_ret_1c": 0.00013742903925928474
+      }
+    },
+    {
+      "entry_time": "2026-09-21T09:17:00.000000",
+      "exit_time": "2026-09-21T09:29:00.000000",
+      "entry_price": 269500.0,
+      "exit_price": 270500.0,
+      "hold_mins": 12,
+      "prob": 0.5495155074630554,
+      "exit_type": "시간만료",
+      "net_return": 0.3010575139146568,
+      "mfe": 0.5565862708719852,
+      "mae": -0.3710575139146568,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.00022654160567125992,
+        "target_vwap_disparity": -0.1827378123998642,
+        "target_bb_pctb": 0.5663682291418806,
+        "ref_10100_ret_1c": 0.00022654160567125992
+      }
+    },
+    {
+      "entry_time": "2026-09-21T09:44:00.000000",
+      "exit_time": "2026-09-21T09:56:00.000000",
+      "entry_price": 269500.0,
+      "exit_price": 269750.0,
+      "hold_mins": 12,
+      "prob": 0.5323070557057971,
+      "exit_type": "시간만료",
+      "net_return": 0.022764378478664193,
+      "mfe": 0.3710575139146568,
+      "mae": -0.1855287569573284,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0009064950168777841,
+        "target_vwap_disparity": -0.052625350654125214,
+        "target_bb_pctb": 0.41183787643785547,
+        "ref_10100_ret_1c": 0.0009064950168777841
+      }
+    },
+    {
+      "entry_time": "2026-09-21T10:52:00.000000",
+      "exit_time": "2026-09-21T11:04:00.000000",
+      "entry_price": 271500.0,
+      "exit_price": 271500.0,
+      "hold_mins": 12,
+      "prob": 0.5346422883355381,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.1841620626151013,
+      "mae": -0.3683241252302026,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014599709055086452,
+        "target_vwap_disparity": -0.10510488599538803,
+        "target_bb_pctb": 0.39286353581951877,
+        "ref_10100_ret_1c": 0.0005400077040367268
+      }
+    },
+    {
+      "entry_time": "2026-09-21T11:46:00.000000",
+      "exit_time": "2026-09-21T11:58:00.000000",
+      "entry_price": 272250.0,
+      "exit_price": 272750.0,
+      "hold_mins": 12,
+      "prob": 0.5590015413922941,
+      "exit_type": "시간만료",
+      "net_return": 0.11365472910927457,
+      "mfe": 0.27548209366391185,
+      "mae": -0.09182736455463729,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0017721210658647735,
+        "target_vwap_disparity": -0.042516350746154785,
+        "target_bb_pctb": 0.649161551730095,
+        "ref_10100_ret_1c": 0.0008546898732042507
+      }
+    },
+    {
+      "entry_time": "2026-09-21T12:39:00.000000",
+      "exit_time": "2026-09-21T12:51:00.000000",
+      "entry_price": 273000.0,
+      "exit_price": 273750.0,
+      "hold_mins": 12,
+      "prob": 0.5374047745312901,
+      "exit_type": "시간만료",
+      "net_return": 0.20472527472527474,
+      "mfe": 0.36630036630036633,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0025468463992663892,
+        "target_vwap_disparity": -0.1599634885787964,
+        "target_bb_pctb": -0.05730321517168478,
+        "ref_10100_ret_1c": 0.0007186928343669852
+      }
+    },
+    {
+      "entry_time": "2026-09-21T13:18:00.000000",
+      "exit_time": "2026-09-21T13:30:00.000000",
+      "entry_price": 273500.0,
+      "exit_price": 274500.0,
+      "hold_mins": 12,
+      "prob": 0.525422406497067,
+      "exit_type": "시간만료",
+      "net_return": 0.2956307129798903,
+      "mfe": 0.5484460694698354,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0020039852349819087,
+        "target_vwap_disparity": -0.14198458194732666,
+        "target_bb_pctb": 0.05643213486109767,
+        "ref_10100_ret_1c": 0.00017916771673376353
+      }
+    },
+    {
+      "entry_time": "2026-09-21T13:49:00.000000",
+      "exit_time": "2026-09-21T13:57:00.000000",
+      "entry_price": 274250.0,
+      "exit_price": 273500.0,
+      "hold_mins": 8,
+      "prob": 0.5296365079140982,
+      "exit_type": "손절",
+      "net_return": -0.3434731084776664,
+      "mfe": 0.09115770282588878,
+      "mae": -0.27347310847766637,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014484928426805599,
+        "target_vwap_disparity": -0.07933536916971207,
+        "target_bb_pctb": 0.318379210683765,
+        "ref_10100_ret_1c": 0.0005377460302944392
+      }
+    },
+    {
+      "entry_time": "2026-09-21T14:18:00.000000",
+      "exit_time": "2026-09-21T14:30:00.000000",
+      "entry_price": 272500.0,
+      "exit_price": 272250.0,
+      "hold_mins": 12,
+      "prob": 0.525054236730358,
+      "exit_type": "시간만료",
+      "net_return": -0.16174311926605506,
+      "mfe": 0.3669724770642202,
+      "mae": -0.1834862385321101,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0006464099096145093,
+        "target_vwap_disparity": -0.07527540624141693,
+        "target_bb_pctb": -0.09905258008999152,
+        "ref_10100_ret_1c": -0.00027018037452852806
+      }
+    },
+    {
+      "entry_time": "2026-09-21T14:43:00.000000",
+      "exit_time": "2026-09-21T14:55:00.000000",
+      "entry_price": 272500.0,
+      "exit_price": 273500.0,
+      "hold_mins": 12,
+      "prob": 0.5389251873534887,
+      "exit_type": "시간만료",
+      "net_return": 0.2969724770642202,
+      "mfe": 0.3669724770642202,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014567438613994899,
+        "target_vwap_disparity": -0.14162300527095795,
+        "target_bb_pctb": 0.40826475960280467,
+        "ref_10100_ret_1c": 0.0005401535772564525
+      }
+    },
+    {
+      "entry_time": "2026-09-22T09:27:00.000000",
+      "exit_time": "2026-09-22T09:32:00.000000",
+      "entry_price": 279750.0,
+      "exit_price": 281500.0,
+      "hold_mins": 5,
+      "prob": 0.5418268908378687,
+      "exit_type": "익절",
+      "net_return": 0.5555585344057195,
+      "mfe": 0.6255585344057194,
+      "mae": -0.08936550491510277,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0019487020029355095,
+        "target_vwap_disparity": -0.07342594116926193,
+        "target_bb_pctb": 0.018640137658878033,
+        "ref_10100_ret_1c": 0.0010558448600783699
+      }
+    },
+    {
+      "entry_time": "2026-09-22T09:57:00.000000",
+      "exit_time": "2026-09-22T10:09:00.000000",
+      "entry_price": 280000.0,
+      "exit_price": 280250.0,
+      "hold_mins": 12,
+      "prob": 0.5369022390964896,
+      "exit_type": "시간만료",
+      "net_return": 0.019285714285714285,
+      "mfe": 0.35714285714285715,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0024954412216878774,
+        "target_vwap_disparity": -0.13756051659584045,
+        "target_bb_pctb": 0.018640137658851058,
+        "ref_10100_ret_1c": -0.00017597462871288272
+      }
+    },
+    {
+      "entry_time": "2026-09-23T09:20:00.000000",
+      "exit_time": "2026-09-23T09:32:00.000000",
+      "entry_price": 283500.0,
+      "exit_price": 284500.0,
+      "hold_mins": 12,
+      "prob": 0.5241859803182658,
+      "exit_type": "시간만료",
+      "net_return": 0.2827336860670194,
+      "mfe": 0.3527336860670194,
+      "mae": -0.1763668430335097,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0005737703239954151,
+        "target_vwap_disparity": -0.08888740837574005,
+        "target_bb_pctb": 0.2310735628997542,
+        "ref_10100_ret_1c": 0.0005737703239954151
+      }
+    },
+    {
+      "entry_time": "2026-09-23T10:39:00.000000",
+      "exit_time": "2026-09-23T10:51:00.000000",
+      "entry_price": 282500.0,
+      "exit_price": 282000.0,
+      "hold_mins": 12,
+      "prob": 0.5307207169296587,
+      "exit_type": "시간만료",
+      "net_return": -0.24699115044247788,
+      "mfe": 0.17699115044247787,
+      "mae": -0.17699115044247787,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008011237466685195,
+        "target_vwap_disparity": -0.1268971711397171,
+        "target_bb_pctb": 0.04448822767215696,
+        "ref_10100_ret_1c": 0.0008011237466685195
+      }
+    },
+    {
+      "entry_time": "2026-09-23T13:47:00.000000",
+      "exit_time": "2026-09-23T13:59:00.000000",
+      "entry_price": 283500.0,
+      "exit_price": 283750.0,
+      "hold_mins": 12,
+      "prob": 0.5232096354481162,
+      "exit_type": "시간만료",
+      "net_return": 0.018183421516754845,
+      "mfe": 0.1763668430335097,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0013269284914033674,
+        "target_vwap_disparity": -0.12734028697013855,
+        "target_bb_pctb": 0.1645898033749194,
+        "ref_10100_ret_1c": 0.00044587122268091584
+      }
+    },
+    {
+      "entry_time": "2026-09-23T14:14:00.000000",
+      "exit_time": "2026-09-23T14:26:00.000000",
+      "entry_price": 283750.0,
+      "exit_price": 284000.0,
+      "hold_mins": 12,
+      "prob": 0.5235308104709309,
+      "exit_type": "시간만료",
+      "net_return": 0.0181057268722467,
+      "mfe": 0.2643171806167401,
+      "mae": -0.08810572687224669,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0012813434265553925,
+        "target_vwap_disparity": -0.07270129024982452,
+        "target_bb_pctb": 0.42052365533250463,
+        "ref_10100_ret_1c": 0.0004010617364145208
+      }
+    },
+    {
+      "entry_time": "2026-09-23T14:45:00.000000",
+      "exit_time": "2026-09-23T14:57:00.000000",
+      "entry_price": 284000.0,
+      "exit_price": 284750.0,
+      "hold_mins": 12,
+      "prob": 0.5340107408766399,
+      "exit_type": "시간만료",
+      "net_return": 0.1940845070422535,
+      "mfe": 0.35211267605633806,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001860708615840534,
+        "target_vwap_disparity": -0.0451204776763916,
+        "target_bb_pctb": 0.23599036578837357,
+        "ref_10100_ret_1c": 0.0009812011400269771
+      }
+    },
+    {
+      "entry_time": "2026-09-28T09:10:00.000000",
+      "exit_time": "2026-09-28T09:22:00.000000",
+      "entry_price": 283750.0,
+      "exit_price": 282250.0,
+      "hold_mins": 12,
+      "prob": 0.5405626299582819,
+      "exit_type": "시간만료",
+      "net_return": -0.5986343612334801,
+      "mfe": 0.08810572687224669,
+      "mae": -0.6167400881057269,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002175285611240141,
+        "target_vwap_disparity": -0.032377179712057114,
+        "target_bb_pctb": 0.11412818342935055,
+        "ref_10100_ret_1c": 0.0012950039210992692
+      }
+    },
+    {
+      "entry_time": "2026-09-29T09:18:00.000000",
+      "exit_time": "2026-09-29T09:30:00.000000",
+      "entry_price": 271500.0,
+      "exit_price": 271750.0,
+      "hold_mins": 12,
+      "prob": 0.5255348928471597,
+      "exit_type": "시간만료",
+      "net_return": 0.02208103130755065,
+      "mfe": 0.5524861878453039,
+      "mae": -0.3683241252302026,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0019675354967398917,
+        "target_vwap_disparity": 0.013674060814082623,
+        "target_bb_pctb": 0.6720099408596772,
+        "ref_10100_ret_1c": 0.0019675354967398917
+      }
+    },
+    {
+      "entry_time": "2026-09-29T10:50:00.000000",
+      "exit_time": "2026-09-29T11:02:00.000000",
+      "entry_price": 274500.0,
+      "exit_price": 274500.0,
+      "hold_mins": 12,
+      "prob": 0.5289117891127899,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.36429872495446264,
+      "mae": -0.18214936247723132,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0013658313217966844,
+        "target_vwap_disparity": -0.17720092833042145,
+        "target_bb_pctb": 0.5428525402535898,
+        "ref_10100_ret_1c": 0.00045591321442639554
+      }
+    },
+    {
+      "entry_time": "2026-09-29T11:34:00.000000",
+      "exit_time": "2026-09-29T11:46:00.000000",
+      "entry_price": 273000.0,
+      "exit_price": 273000.0,
+      "hold_mins": 12,
+      "prob": 0.5346777240327474,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.18315018315018317,
+      "mae": -0.18315018315018317,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0015557417467912948,
+        "target_vwap_disparity": -0.12743446230888367,
+        "target_bb_pctb": -0.13170818623641645,
+        "ref_10100_ret_1c": 0.0006408286635342098
+      }
+    },
+    {
+      "entry_time": "2026-09-29T12:12:00.000000",
+      "exit_time": "2026-09-29T12:24:00.000000",
+      "entry_price": 271000.0,
+      "exit_price": 272250.0,
+      "hold_mins": 12,
+      "prob": 0.547421855180806,
+      "exit_type": "시간만료",
+      "net_return": 0.3912546125461254,
+      "mfe": 0.7380073800738007,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0019798450333210482,
+        "target_vwap_disparity": -0.18732371926307678,
+        "target_bb_pctb": -0.0088393876069247,
+        "ref_10100_ret_1c": -0.0007800445710948178
+      }
+    },
+    {
+      "entry_time": "2026-09-29T13:04:00.000000",
+      "exit_time": "2026-09-29T13:16:00.000000",
+      "entry_price": 270000.0,
+      "exit_price": 270000.0,
+      "hold_mins": 12,
+      "prob": 0.547421855180806,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.37037037037037035,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002125323349714714,
+        "target_vwap_disparity": -0.17395612597465515,
+        "target_bb_pctb": 0.027352911497114753,
+        "ref_10100_ret_1c": -0.0006447597527783344
+      }
+    },
+    {
+      "entry_time": "2026-09-29T14:18:00.000000",
+      "exit_time": "2026-09-29T14:30:00.000000",
+      "entry_price": 270750.0,
+      "exit_price": 269500.0,
+      "hold_mins": 12,
+      "prob": 0.5332125534516358,
+      "exit_type": "손절",
+      "net_return": -0.5316805170821791,
+      "mfe": 0.2770083102493075,
+      "mae": -0.46168051708217916,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0016590328873477,
+        "target_vwap_disparity": -0.05492088198661804,
+        "target_bb_pctb": 0.45310571384407505,
+        "ref_10100_ret_1c": 0.0007365236622554061
+      }
+    },
+    {
+      "entry_time": "2026-09-29T14:53:00.000000",
+      "exit_time": "2026-09-29T15:05:00.000000",
+      "entry_price": 270000.0,
+      "exit_price": 271250.0,
+      "hold_mins": 12,
+      "prob": 0.5329968643800336,
+      "exit_type": "시간만료",
+      "net_return": 0.3929629629629629,
+      "mfe": 0.5555555555555556,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018944167290926295,
+        "target_vwap_disparity": -0.1712469756603241,
+        "target_bb_pctb": 0.7731420719130072,
+        "ref_10100_ret_1c": 4.5987893602772445e-05
+      }
+    },
+    {
+      "entry_time": "2026-09-30T09:22:00.000000",
+      "exit_time": "2026-09-30T09:34:00.000000",
+      "entry_price": 273250.0,
+      "exit_price": 275000.0,
+      "hold_mins": 12,
+      "prob": 0.5468653498430107,
+      "exit_type": "시간만료",
+      "net_return": 0.5704391582799634,
+      "mfe": 0.6404391582799633,
+      "mae": -0.09149130832570905,
+      "entry_features": {
+        "ref_10100_spread_vs_target": -0.000136138306771727,
+        "target_vwap_disparity": -0.1922372430562973,
+        "target_bb_pctb": 0.06489935538760915,
+        "ref_10100_ret_1c": -0.000136138306771727
+      }
+    },
+    {
+      "entry_time": "2026-09-30T09:50:00.000000",
+      "exit_time": "2026-09-30T10:02:00.000000",
+      "entry_price": 272750.0,
+      "exit_price": 274000.0,
+      "hold_mins": 12,
+      "prob": 0.5397980022518941,
+      "exit_type": "시간만료",
+      "net_return": 0.388295142071494,
+      "mfe": 0.5499541704857929,
+      "mae": -0.27497708524289644,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0018696037126009202,
+        "target_vwap_disparity": -0.055836815387010574,
+        "target_bb_pctb": -0.04002065973370765,
+        "ref_10100_ret_1c": 0.0009538527968500077
+      }
+    },
+    {
+      "entry_time": "2026-10-01T09:18:00.000000",
+      "exit_time": "2026-10-01T09:30:00.000000",
+      "entry_price": 266750.0,
+      "exit_price": 265750.0,
+      "hold_mins": 12,
+      "prob": 0.5579272047452936,
+      "exit_type": "시간만료",
+      "net_return": -0.44488284910965326,
+      "mfe": 0.2811621368322399,
+      "mae": -0.46860356138706655,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0012504405487827608,
+        "target_vwap_disparity": -0.06397029757499695,
+        "target_bb_pctb": 0.508448419339269,
+        "ref_10100_ret_1c": 0.0012504405487827608
+      }
+    },
+    {
+      "entry_time": "2026-10-01T10:02:00.000000",
+      "exit_time": "2026-10-01T10:14:00.000000",
+      "entry_price": 269000.0,
+      "exit_price": 269000.0,
+      "hold_mins": 12,
+      "prob": 0.5337993062527492,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.3717472118959108,
+      "mae": -0.3717472118959108,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002590559002415893,
+        "target_vwap_disparity": -0.00828184187412262,
+        "target_bb_pctb": 0.8626592603677011,
+        "ref_10100_ret_1c": 0.0007352714328425769
+      }
+    },
+    {
+      "entry_time": "2026-10-01T10:39:00.000000",
+      "exit_time": "2026-10-01T10:51:00.000000",
+      "entry_price": 268000.0,
+      "exit_price": 267500.0,
+      "hold_mins": 12,
+      "prob": 0.532820529529074,
+      "exit_type": "시간만료",
+      "net_return": -0.25656716417910447,
+      "mfe": 0.1865671641791045,
+      "mae": -0.373134328358209,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0009217439187911847,
+        "target_vwap_disparity": -0.11402654647827148,
+        "target_bb_pctb": 0.31900657279983,
+        "ref_10100_ret_1c": 0.0009217439187911847
+      }
+    },
+    {
+      "entry_time": "2026-10-01T11:12:00.000000",
+      "exit_time": "2026-10-01T11:24:00.000000",
+      "entry_price": 268250.0,
+      "exit_price": 269000.0,
+      "hold_mins": 12,
+      "prob": 0.5411046215464606,
+      "exit_type": "시간만료",
+      "net_return": 0.20958993476234855,
+      "mfe": 0.65237651444548,
+      "mae": -0.09319664492078285,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014377759629459197,
+        "target_vwap_disparity": -0.06190387159585953,
+        "target_bb_pctb": 0.6699562741858837,
+        "ref_10100_ret_1c": 0.0005066772664841235
+      }
+    },
+    {
+      "entry_time": "2026-10-01T12:25:00.000000",
+      "exit_time": "2026-10-01T12:37:00.000000",
+      "entry_price": 271000.0,
+      "exit_price": 271000.0,
+      "hold_mins": 12,
+      "prob": 0.5232096354481162,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.18450184501845018,
+      "mae": -0.18450184501845018,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.001422936715846479,
+        "target_vwap_disparity": -0.142762690782547,
+        "target_bb_pctb": 0.15042191484809211,
+        "ref_10100_ret_1c": 0.0005012777296713455
+      }
+    },
+    {
+      "entry_time": "2026-10-01T13:10:00.000000",
+      "exit_time": "2026-10-01T13:22:00.000000",
+      "entry_price": 273750.0,
+      "exit_price": 273000.0,
+      "hold_mins": 12,
+      "prob": 0.5411046215464606,
+      "exit_type": "시간만료",
+      "net_return": -0.343972602739726,
+      "mfe": 0.273972602739726,
+      "mae": -0.45662100456621,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0014112537751198584,
+        "target_vwap_disparity": -0.061660587787628174,
+        "target_bb_pctb": 0.6113923111240172,
+        "ref_10100_ret_1c": 0.0004988450159957303
+      }
+    },
+    {
+      "entry_time": "2026-10-01T13:41:00.000000",
+      "exit_time": "2026-10-01T13:53:00.000000",
+      "entry_price": 273000.0,
+      "exit_price": 273000.0,
+      "hold_mins": 12,
+      "prob": 0.5232096354481162,
+      "exit_type": "시간만료",
+      "net_return": -0.06999999999999999,
+      "mfe": 0.18315018315018317,
+      "mae": -0.18315018315018317,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0013235690528983213,
+        "target_vwap_disparity": -0.12079164385795593,
+        "target_bb_pctb": 0.15227093819450513,
+        "ref_10100_ret_1c": 0.0004086559696412362
+      }
+    },
+    {
+      "entry_time": "2026-10-02T09:22:00.000000",
+      "exit_time": "2026-10-02T09:34:00.000000",
+      "entry_price": 274500.0,
+      "exit_price": 275000.0,
+      "hold_mins": 12,
+      "prob": 0.5298434984392238,
+      "exit_type": "시간만료",
+      "net_return": 0.11214936247723131,
+      "mfe": 0.9107468123861566,
+      "mae": -0.18214936247723132,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0009021199819576609,
+        "target_vwap_disparity": 0.005340904463082552,
+        "target_bb_pctb": 0.8606021861436518,
+        "ref_10100_ret_1c": 0.0009021199819576609
+      }
+    },
+    {
+      "entry_time": "2026-10-02T09:47:00.000000",
+      "exit_time": "2026-10-02T09:59:00.000000",
+      "entry_price": 275000.0,
+      "exit_price": 276750.0,
+      "hold_mins": 12,
+      "prob": 0.5479400391555057,
+      "exit_type": "시간만료",
+      "net_return": 0.5663636363636364,
+      "mfe": 0.7272727272727272,
+      "mae": -0.0909090909090909,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008567767051859132,
+        "target_vwap_disparity": -0.06385011225938797,
+        "target_bb_pctb": 0.41904241056737795,
+        "ref_10100_ret_1c": 0.0008567767051859132
+      }
+    },
+    {
+      "entry_time": "2026-10-02T10:13:00.000000",
+      "exit_time": "2026-10-02T10:25:00.000000",
+      "entry_price": 275750.0,
+      "exit_price": 275250.0,
+      "hold_mins": 12,
+      "prob": 0.5346422883355381,
+      "exit_type": "시간만료",
+      "net_return": -0.25132366273798734,
+      "mfe": 0.4533091568449683,
+      "mae": -0.271985494106981,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0016713684465854417,
+        "target_vwap_disparity": -0.07598935812711716,
+        "target_bb_pctb": 0.4205794967900943,
+        "ref_10100_ret_1c": 0.0007655713451362178
+      }
+    },
+    {
+      "entry_time": "2026-10-02T10:39:00.000000",
+      "exit_time": "2026-10-02T10:51:00.000000",
+      "entry_price": 273500.0,
+      "exit_price": 275000.0,
+      "hold_mins": 12,
+      "prob": 0.5336142942350721,
+      "exit_type": "시간만료",
+      "net_return": 0.4784460694698354,
+      "mfe": 0.7312614259597806,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0028661761812501796,
+        "target_vwap_disparity": -0.05633387714624405,
+        "target_bb_pctb": 0.06095862542850954,
+        "ref_10100_ret_1c": 0.0010413586630020344
+      }
+    },
+    {
+      "entry_time": "2026-10-02T11:14:00.000000",
+      "exit_time": "2026-10-02T11:26:00.000000",
+      "entry_price": 275500.0,
+      "exit_price": 276000.0,
+      "hold_mins": 12,
+      "prob": 0.5418268908378687,
+      "exit_type": "시간만료",
+      "net_return": 0.11148820326678764,
+      "mfe": 0.3629764065335753,
+      "mae": 0.0,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.002666976649962849,
+        "target_vwap_disparity": -0.07862415909767151,
+        "target_bb_pctb": 0.04735713483988882,
+        "ref_10100_ret_1c": 0.0008553824470642901
+      }
+    },
+    {
+      "entry_time": "2026-10-02T12:15:00.000000",
+      "exit_time": "2026-10-02T12:27:00.000000",
+      "entry_price": 276750.0,
+      "exit_price": 276000.0,
+      "hold_mins": 12,
+      "prob": 0.5337897993714333,
+      "exit_type": "시간만료",
+      "net_return": -0.34100271002710025,
+      "mfe": 0.09033423667570009,
+      "mae": -0.27100271002710025,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0007623783005872298,
+        "target_vwap_disparity": -0.05489306524395943,
+        "target_bb_pctb": 0.63263707095907,
+        "ref_10100_ret_1c": 0.0007623783005872298
+      }
+    },
+    {
+      "entry_time": "2026-10-02T13:02:00.000000",
+      "exit_time": "2026-10-02T13:14:00.000000",
+      "entry_price": 275750.0,
+      "exit_price": 276000.0,
+      "hold_mins": 12,
+      "prob": 0.5275580408436751,
+      "exit_type": "시간만료",
+      "net_return": 0.020661831368993654,
+      "mfe": 0.271985494106981,
+      "mae": -0.09066183136899365,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0008990379898423662,
+        "target_vwap_disparity": -0.07944725453853607,
+        "target_bb_pctb": 0.7273458842362105,
+        "ref_10100_ret_1c": 0.0008990379898423662
+      }
+    },
+    {
+      "entry_time": "2026-10-02T14:16:00.000000",
+      "exit_time": "2026-10-02T14:28:00.000000",
+      "entry_price": 274750.0,
+      "exit_price": 275250.0,
+      "hold_mins": 12,
+      "prob": 0.525422406497067,
+      "exit_type": "시간만료",
+      "net_return": 0.11198362147406735,
+      "mfe": 0.272975432211101,
+      "mae": -0.09099181073703366,
+      "entry_features": {
+        "ref_10100_spread_vs_target": 0.0017715184410711515,
+        "target_vwap_disparity": -0.08837678283452988,
+        "target_bb_pctb": 0.03621012526768557,
+        "ref_10100_ret_1c": -4.501198581352561e-05
+      }
+    }
+  ],
+  "backbone_baseline": null,
+  "beats_backbone": true
+}

@@ -1,0 +1,184 @@
+{
+  "_schema": {
+    "description": "수집처(provider)별 캔들 타임스탬프 라벨 규약 원장. 이 파일이 규약의 유일한 소유자다.",
+    "why": "같은 결합 코드라도 원천의 라벨 관례가 다르면 한쪽은 정상, 한쪽은 1봉 미래참조가 된다. 관례를 코드에 심볼 이름으로 적어 두면 신규 종목/신규 수집처마다 재발하므로, 수집처 단위로 이 원장에 선언하고 코드는 읽기만 한다.",
+    "values": {
+      "bar_open": "타임스탬프가 봉이 시작하는 시각. 그 봉의 종가는 timestamp + 1봉 이 지나야 확정된다 → 결합 시 확정 시각으로 밀어야 한다.",
+      "bar_close": "타임스탬프가 봉이 확정되는 시각. 그 시각에 이미 알 수 있는 값이므로 그대로 결합한다."
+    },
+    "resolution": "심볼+인터벌 → source_mappings.json 의 primary_source → 이 원장의 provider → interval_overrides 에 그 인터벌이 있으면 그 값, 없으면 provider 기본값. 선언이 없으면 결합을 거부한다(fail-closed).",
+    "basis": "empirical = 이 저장소의 실데이터로 확인, vendor_api = 수집처 API 문서 규약",
+    "interval_overrides": "같은 수집처라도 인터벌마다 규약이 다를 수 있다. 수집처가 준 캔들과 우리가 틱에서 직접 만든 캔들이 섞이기 때문이다 — 후자는 shared/core/candle_core.py 의 '구간 시작 시각' 규약을 따른다."
+  },
+  "providers": {
+    "CREON": {
+      "convention": "bar_close",
+      "basis": "empirical",
+      "evidence": "2026-09-28: 10100 1분봉의 개장 거래량 급증(09:00:00 개장)이 09:01 라벨 봉에 기록됨. 069500 10초봉을 분 집계하면 1분 뒤 라벨의 1분봉과 O/H/L/C/V 99.5% 일치.",
+      "interval_overrides": {
+        "10s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "3m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "5m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "10m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "15m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "30m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "60m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "1s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "5s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "15s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "30s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        }
+      }
+    },
+    "KIS": {
+      "convention": "bar_close",
+      "basis": "empirical",
+      "evidence": "CREON 과 같은 KRX 분봉 규약. 동일 종목의 대체 원천으로 병합되며 병합 산출물이 CREON 기준과 일치한다.",
+      "interval_overrides": {
+        "10s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "3m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "5m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "10m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "15m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "30m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "60m": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "우리가 수집처 1분봉(bar_close)을 집계해 만든 봉(normalized_builder.build_normalized_candle_stock → candle_resampler source_label='bar_close')이라 구간 시작 라벨이다 — 실전 CandleAggregator(shared/core/candle_core.get_candle_boundary)와 같은 경계·라벨. 2026-10-07 확인: 069500 15분봉 09:00 라벨 = 1분봉 09:01~09:15 라벨 집계, 종가 동시호가(15:30 라벨)는 15:15 봉에 합쳐져 하루 26봉."
+        },
+        "1s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "5s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "15s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        },
+        "30s": {
+          "convention": "bar_open",
+          "basis": "empirical",
+          "evidence": "틱에서 우리가 직접 만든 봉(build_normalized_10s_stock)이라 shared/core/candle_core.py 의 구간 시작 라벨 규약을 따른다. 2026-09-28 확인: 10초봉 [09:01:00~09:01:50] 집계가 1분봉 09:02 라벨과 O/H/L/C/V 일치."
+        }
+      }
+    },
+    "CTRADER": {
+      "convention": "bar_open",
+      "basis": "empirical",
+      "evidence": "2026-09-28: US_TECH_100 1분봉 09:01 라벨의 종가가 09:01~09:02 구간의 값. 결합 산출물에서 미래정합 +0.51 / 과거정합 +0.08 로 1분 미래참조가 측정됨."
+    },
+    "CME": {
+      "convention": "bar_open",
+      "basis": "vendor_api",
+      "evidence": "CME 선물 캔들은 봉 시작 시각 라벨."
+    },
+    "OVERSEAS": {
+      "convention": "bar_open",
+      "basis": "vendor_api",
+      "evidence": "해외 선물 수집 경로. CME 와 동일한 봉 시작 시각 라벨."
+    },
+    "PYTH": {
+      "convention": "bar_open",
+      "basis": "vendor_api",
+      "evidence": "Pyth 가격 피드 집계 봉은 구간 시작 시각 라벨."
+    },
+    "COMEX": {
+      "convention": "bar_open",
+      "basis": "vendor_api",
+      "evidence": "CME 그룹 거래소. CME 와 동일 규약."
+    },
+    "NYMEX": {
+      "convention": "bar_open",
+      "basis": "vendor_api",
+      "evidence": "CME 그룹 거래소. CME 와 동일 규약."
+    },
+    "UPBIT": {
+      "convention": "bar_open",
+      "basis": "empirical",
+      "evidence": "업비트 캔들 API 의 candle_date_time_kst 는 캔들 기준(시작) 시각. 2026-09-28 확인: KRW-BTC 1분봉과 BINANCE BTCUSDT 1분봉의 수익률 상관이 lag 0 에서 최대(+0.69)로, open time 라벨이 확실한 바이낸스와 같은 규약."
+    },
+    "BINANCE": {
+      "convention": "bar_open",
+      "basis": "empirical",
+      "evidence": "바이낸스 kline 의 첫 필드는 open time. 2026-09-28 확인: BTCUSDT-PERP 와 BTCUSDT 가 lag 0 에서 최대 상관(+0.98)으로 동일 규약."
+    },
+    "COINBASE": {
+      "convention": "bar_open",
+      "basis": "empirical",
+      "evidence": "Coinbase candles 의 bucket 시각은 구간 시작 시각. 2026-09-28 확인: BTC-USD 와 BINANCE BTCUSDT 의 상관이 lag 0 에서 최대(+0.99)."
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+    "SYMBOL_UPBIT": "122630",
+    "SYMBOL_BINANCE": "",
+    "INTERVAL": "1m",
+    "FEE_UPBIT": 5e-05,
+    "SLIPPAGE": 0.0001,
+    "ARCHIVE_START_YM": "2020-01",
+    "ARCHIVE_END_YM": "2026-10",
+    "FEE_RATE": 5e-05,
+    "BACKTEST_DAYS": 40,
+    "COOLDOWN_MINUTES": 2,
+    "TRAIN_START": "2026-04-09",
+    "TRAIN_END": "2026-09-04",
+    "OPT_START": "2026-09-07",
+    "OPT_END": "2026-10-08",
+    "TEST_START": "2026-03-01",
+    "TEST_END": "2026-03-31",
+    "ACTIVE_SESSION_ID": "KODEX2_M1_TEST1",
+    "INTRADAY_SQUARE_OFF": true,
+    "USE_MACRO_FILTER": true,
+    "MACRO_RSI_FILTER_THRESHOLD": 50.0,
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "mtf_ema_distance_4h",
+            "target_hour_cos",
+            "target_rsi_daily",
+            "target_atr_ratio",
+            "target_adx",
+            "target_hour_sin",
+            "target_bb_kc_squeeze",
+            "target_mfi",
+            "target_volatility_ratio",
+            "parkinson_rv_squeeze",
+            "kospi_basis",
+            "target_rv_ratio",
+            "target_ma_ratio",
+            "target_macd_hist",
+            "ref_000660_ret_5c",
+            "target_vwap_disparity",
+            "target_kaufman_er",
+            "ref_005930_ret_5c",
+            "kospi_basis_z",
+            "top2_lead_momentum",
+            "semi_duo_lead_delta"
+        ],
+        "active_features": [
+            "target_rsi_daily",
+            "target_adx",
+            "target_ma_ratio",
+            "ref_000660_ret_5c"
+        ],
+        "feature_params": {
+            "target_ma_ratio": {
+                "period_bars": 15
+            },
+            "target_trade_bid_ratio": {
+                "window_mins": 10
+            },
+            "target_rsi_daily": {
+                "period_days": 14
+            },
+            "target_hour": {},
+            "target_rsi_curr": {
+                "period_bars": 14
+            },
+            "target_adx": {
+                "period_bars": 14
+            },
+            "target_atr_ratio": {
+                "period_bars": 14
+            },
+            "ref_u180_ret_5c": {
+                "candles": 5
+            },
+            "ref_10100_ret_5c": {
+                "candles": 5
+            },
+            "ref_000660_ret_5c": {
+                "candles": 5
+            },
+            "target_bb_kc_squeeze": {
+                "period_bars": 20
+            },
+            "ref_005930_ret_5c": {
+                "candles": 5
+            },
+            "target_vwap_slope": {
+                "window_bars": 5
+            },
+            "krx_session_progress": {},
+            "krx_opening_decay": {},
+            "target_bb_pctb": {
+                "period_bars": 20,
+                "std_dev": 2
+            },
+            "target_large_trade_density": {
+                "window_bars": 10
+            },
+            "target_is_auction": {},
+            "target_large_trade_ratio": {},
+            "target_volume_spike": {
+                "period_bars": 20
+            },
+            "target_trade_price_spike": {
+                "period_bars": 20
+            },
+            "target_hour_cos": {},
+            "parkinson_rv_squeeze": {
+                "short_bars": 5,
+                "long_bars": 30
+            }
+        },
+        "feature_penalties": {
+            "target_cvd_momentum": 1,
+            "target_trade_bid_ratio": 1
+        },
+        "regime_features": {
+            "target_is_auction": true,
+            "target_hour_cos": true
+        },
+        "param_policy": "scale_v2"
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 42,
+        "outer_trials": 15,
+        "inner_trials": 15,
+        "wfa_outer_trials": 2,
+        "wfa_inner_trials": 2,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 1.2,
+            "user_max": 3.5
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 1,
+            "user_max": 2.5
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08,
+            "step": 0.005
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 3,
+            "user_max": 5,
+            "step": 1
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 16,
+            "user_max": 63,
+            "step": 1
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80,
+            "step": 1
+        },
+        "buy_threshold_range": {
+            "min": 0.5,
+            "max": 0.65,
+            "user_min": 0.52,
+            "user_max": 0.6,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 2,
+            "user_max": 24,
+            "step": 1
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "fee_upbit": 5e-05,
+        "slippage": 0.0001,
+        "min_trades": 5,
+        "min_profit_factor": 0.5,
+        "wfa_enabled": true,
+        "wfa_train_months": 1.95,
+        "wfa_opt_months": 0.48,
+        "wfa_test_months": 0.48,
+        "wfa_start_date": "2026-04-09",
+        "wfa_end_date": "2026-09-04",
+        "buy_quantile_range": {
+            "min": 0.8,
+            "max": 0.995,
+            "step": 0.005,
+            "user_min": 0.8,
+            "user_max": 0.995
+        },
+        "wfa_window_count": 5,
+        "holdout_td": 21,
+        "split_unit": "td",
+        "wfa_input_values": {
+            "unit": "td",
+            "train": 41,
+            "opt": 10,
+            "test": 10
+        }
+    },
+    "AUTOLAB_CONFIG": {
+        "min_profit": 0.0,
+        "min_trades": 8,
+        "max_mdd": 10.0,
+        "max_trials": 15,
+        "seed": 42,
+        "holdout_start": "2026-09-07",
+        "holdout_end": "2026-10-08",
+        "ic_threshold": 0.02,
+        "min_features": 2,
+        "max_features": 8,
+        "complexity_penalty": 0.15,
+        "final_test_ratio": 100,
+        "holdout_mode": "full",
+        "final_test_td": 5,
+        "use_all_features": false
+    },
+    "TARGET_HORIZON_CONFIG": {
+        "mode": "locked",
+        "locked_predict_ahead": 6,
+        "locked_max_hold": 6,
+        "candidate_horizons": [
+            6,
+            9,
+            12
+        ]
+    },
+    "PROJECT_META": {
+        "memo": "",
+        "created_at": "2026-10-09 00:00:48",
+        "created_from": "defaults"
+    },
+    "REFERENCE_SYMBOLS": [
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "key": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "10100",
+            "key": "10100",
+            "name": "KOSPI 200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "U180",
+            "key": "u180",
+            "name": "KOSPI 200 현물 지수",
+            "role": "index_benchmark"
+        }
+    ],
+    "reference_symbols": [
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "key": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "10100",
+            "key": "10100",
+            "name": "KOSPI 200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "U180",
+            "key": "u180",
+            "name": "KOSPI 200 현물 지수",
+            "role": "index_benchmark"
+        }
+    ],
+    "champion_features": [
+        "target_rsi_daily",
+        "target_adx",
+        "target_ma_ratio",
+        "ref_000660_ret_5c"
+    ]
+}

@@ -1,0 +1,241 @@
+{
+  "069500": {
+    "symbol": "069500",
+    "groups": [
+      "KRX_INDEX_FUTURES",
+      "KRX_SEMI_LEADERS",
+      "GLOBAL_MACRO_US"
+    ],
+    "references": [
+      {
+        "symbol": "USDJPY",
+        "role": "macro_futures",
+        "default_price": 145
+      },
+      {
+        "symbol": "11100",
+        "role": "macro_futures",
+        "default_price": 100000
+      },
+      {
+        "symbol": "15000",
+        "role": "macro_futures",
+        "default_price": 100000
+      }
+    ]
+  },
+  "122630": {
+    "symbol": "122630",
+    "groups": [
+      "KRX_SEMI_LEADERS",
+      "KRX_INDEX_FUTURES"
+    ],
+    "references": []
+  },
+  "229200": {
+    "symbol": "229200",
+    "references": [
+      {
+        "symbol": "NQ",
+        "role": "macro_futures",
+        "default_price": 19000.0
+      }
+    ]
+  },
+  "KRW-BTC": {
+    "symbol": "KRW-BTC",
+    "groups": [
+      "BTC_MASTER_QUANT_PACK",
+      "CRYPTO_MAJORS",
+      "GLOBAL_MACRO_US"
+    ],
+    "references": [
+      {
+        "symbol": "BTCUSDT-PERP",
+        "role": "",
+        "default_price": 100000
+      },
+      {
+        "symbol": "BTCUSDT",
+        "role": "",
+        "default_price": 100000
+      },
+      {
+        "symbol": "KRW-USDT",
+        "role": "",
+        "default_price": 100000
+      },
+      {
+        "symbol": "BTC-USD",
+        "role": "",
+        "default_price": 100000
+      }
+    ]
+  },
+  "396500": {
+    "symbol": "396500",
+    "references": [
+      {
+        "symbol": "000660",
+        "role": "leading_stock",
+        "default_price": 200000.0
+      },
+      {
+        "symbol": "005930",
+        "role": "leading_stock",
+        "default_price": 80000.0
+      }
+    ]
+  },
+  "KRW-ETH": {
+    "symbol": "KRW-ETH",
+    "references": [
+      {
+        "symbol": "BTCUSDT-PERP",
+        "role": "",
+        "default_price": 100000
+      },
+      {
+        "symbol": "BTCUSDT",
+        "role": "",
+        "default_price": 100000
+      },
+      {
+        "symbol": "BTC-USD",
+        "role": "",
+        "default_price": 100000
+      },
+      {
+        "symbol": "KRW-USDT",
+        "role": "",
+        "default_price": 100000
+      }
+    ],
+    "groups": []
+  },
+  "US_TECH_100": {
+    "symbol": "US_TECH_100",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "US_500": {
+    "symbol": "US_500",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "JAPAN_225": {
+    "symbol": "JAPAN_225",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "HONG_KONG_50": {
+    "symbol": "HONG_KONG_50",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "XAUUSD": {
+    "symbol": "XAUUSD",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "XTIUSD": {
+    "symbol": "XTIUSD",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "USDJPY": {
+    "symbol": "USDJPY",
+    "role": "macro_proxy",
+    "references": []
+  },
+  "379810": {
+    "symbol": "379810",
+    "references": [
+      {
+        "symbol": "US_TECH_100",
+        "role": "macro_futures",
+        "default_price": 24000
+      },
+      {
+        "symbol": "USDJPY",
+        "role": "macro_proxy",
+        "default_price": 150.0
+      }
+    ]
+  },
+  "449190": {
+    "symbol": "449190",
+    "references": [
+      {
+        "symbol": "US_500",
+        "role": "macro_futures",
+        "default_price": 5600
+      },
+      {
+        "symbol": "USDJPY",
+        "role": "macro_proxy",
+        "default_price": 150.0
+      }
+    ]
+  },
+  "0167A0": {
+    "symbol": "0167A0",
+    "groups": [
+      "KRX_INDEX_FUTURES",
+      "GLOBAL_MACRO_US"
+    ],
+    "references": [
+      {
+        "symbol": "005930",
+        "role": "leading_stock",
+        "default_price": 100000
+      },
+      {
+        "symbol": "000660",
+        "role": "leading_stock",
+        "default_price": 100000
+      },
+      {
+        "symbol": "11100",
+        "role": "macro_futures",
+        "default_price": 100000
+      },
+      {
+        "symbol": "15000",
+        "role": "macro_futures",
+        "default_price": 100000
+      }
+    ]
+  },
+  "005930": {
+    "symbol": "005930",
+    "groups": [
+      "KRX_INDEX_FUTURES"
+    ],
+    "references": [
+      {
+        "symbol": "11100",
+        "role": "stock_futures",
+        "default_price": 270000.0
+      }
+    ]
+  },
+  "000660": {
+    "symbol": "000660",
+    "groups": [
+      "KRX_INDEX_FUTURES"
+    ],
+    "references": [
+      {
+        "symbol": "005930",
+        "role": "leading_stock",
+        "default_price": 80000.0
+      },
+      {
+        "symbol": "15000",
+        "role": "stock_futures",
+        "default_price": 1750000.0
+      }
+    ]
+  }
+}

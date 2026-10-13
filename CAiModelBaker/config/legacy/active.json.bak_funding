@@ -1,0 +1,258 @@
+{
+    "BACKTEST_DAYS": 40,
+    "COOLDOWN_MINUTES": 3,
+    "ARCHIVE_START_YM": "2022-05",
+    "ARCHIVE_END_YM": "2026-08",
+    "TRAIN_START": "2025-06-01",
+    "TRAIN_END": "2026-07-16",
+    "OPT_START": "2026-06-01",
+    "OPT_END": "2026-07-16",
+    "TEST_START": "2026-05-01",
+    "TEST_END": "2026-07-25",
+    "ACTIVE_SESSION_ID": "BTC_R5",
+    "INTRADAY_SQUARE_OFF": false,
+    "USE_MACRO_FILTER": false,
+    "MACRO_RSI_FILTER_THRESHOLD": 50,
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "upbit_rsi_daily",
+            "binance_oi_value_ma_ratio",
+            "upbit_obv_momentum",
+            "binance_usdc_volume_share",
+            "kimchi_premium",
+            "upbit_ma_ratio",
+            "binance_cvd_divergence",
+            "binance_ret_5m",
+            "upbit_atr_ratio",
+            "upbit_adx",
+            "binance_oi_ma_ratio"
+        ],
+        "active_features": [
+            "binance_usdc_volume_share",
+            "upbit_rsi_daily",
+            "upbit_cvd_momentum",
+            "upbit_adx",
+            "kimchi_premium",
+            "binance_oi_value_ma_ratio",
+            "binance_cvd_divergence",
+            "binance_oi_ma_ratio",
+            "binance_oi_change_ratio",
+            "upbit_mfi",
+            "upbit_bb_pctb"
+        ],
+        "feature_params": {
+            "binance_ret_5m": {
+                "candles": 5
+            },
+            "upbit_ma_ratio": {
+                "period": 15
+            },
+            "upbit_trade_bid_ratio": {
+                "window": 1
+            },
+            "kimchi_premium": {
+                "window": 1500
+            },
+            "upbit_rsi_daily": {
+                "period_days": 6
+            },
+            "binance_spot_taker_ratio": {
+                "window": 17
+            },
+            "upbit_hour": {},
+            "upbit_is_weekend": {},
+            "upbit_rsi_curr": {
+                "period_candles": 14
+            },
+            "upbit_adx": {
+                "period_candles": 10
+            },
+            "upbit_atr_ratio": {
+                "period_candles": 14
+            },
+            "upbit_macd_hist": {
+                "fast_period": 12,
+                "slow_period": 26,
+                "signal_period": 9
+            },
+            "upbit_mfi": {
+                "period": 25
+            },
+            "upbit_bb_pctb": {
+                "period": 42,
+                "std_dev": 2
+            },
+            "binance_oi_ma_ratio": {
+                "period": 120
+            },
+            "binance_oi_change_ratio": {
+                "candles": 5
+            },
+            "binance_cvd_divergence": {
+                "fast_period": 15,
+                "slow_period": 120
+            },
+            "binance_cvd_momentum": {
+                "candles": 15
+            },
+            "upbit_volatility_ratio": {
+                "fast_period": 5,
+                "slow_period": 30
+            },
+            "binance_futures_spot_vol_ratio": {
+                "candles": 15
+            },
+            "binance_usdc_volume_share": {
+                "candles": 15
+            },
+            "upbit_trade_frequency": {},
+            "upbit_large_trade_ratio": {},
+            "upbit_avg_trade_size_change": {
+                "candles": 10
+            },
+            "binance_oi_value_ma_ratio": {
+                "period": 120
+            },
+            "binance_leading_momentum": {
+                "candles": 5
+            },
+            "upbit_volume_spike": {
+                "period": 20
+            },
+            "upbit_candle_body_ratio": {},
+            "upbit_obv_momentum": {
+                "candles": 15
+            },
+            "upbit_trade_price_spike": {
+                "period": 20
+            },
+            "binance_spot_quote_spike": {
+                "period": 20
+            },
+            "binance_spot_trade_frequency": {},
+            "binance_spot_taker_quote_ratio": {},
+            "upbit_cvd_momentum": {
+                "candles": 15
+            }
+        },
+        "feature_penalties": {
+            "binance_cvd_momentum": 0.3,
+            "upbit_cvd_momentum": 0.3,
+            "binance_cvd_divergence": 0.3,
+            "binance_usdc_volume_share": 0.3,
+            "binance_oi_change_ratio": 0.3,
+            "binance_oi_ma_ratio": 0.3,
+            "kimchi_premium": 0.3,
+            "upbit_trade_bid_ratio": 0.3
+        }
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 77,
+        "outer_trials": 30,
+        "inner_trials": 30,
+        "wfa_outer_trials": 10,
+        "wfa_inner_trials": 10,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 16,
+            "user_max": 96,
+            "step": 2
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 2,
+            "user_max": 4
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 1,
+            "user_max": 2
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 3,
+            "user_max": 4
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 8,
+            "user_max": 64
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80
+        },
+        "buy_threshold_range": {
+            "min": 0.45,
+            "max": 0.65,
+            "user_min": 0.5,
+            "user_max": 0.58,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 30,
+            "user_max": 360
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 24,
+            "user_max": 96,
+            "step": 2
+        },
+        "fee_upbit": 0.0005,
+        "slippage": 0.0006,
+        "min_trades": 8,
+        "min_profit_factor": 1.1,
+        "wfa_enabled": true,
+        "wfa_train_months": 12,
+        "wfa_opt_months": 1,
+        "wfa_test_months": 0.5,
+        "wfa_start_date": "2025-06-01",
+        "wfa_end_date": "2026-07-31",
+        "macro_rsi_threshold_range": {
+            "min": 5,
+            "max": 85,
+            "user_min": 10,
+            "user_max": 80,
+            "step": 10
+        },
+        "predict_ahead_range": {
+            "user_min": 4,
+            "user_max": 300,
+            "step": 2
+        }
+    },
+    "AUTOLAB_CONFIG": {
+        "min_profit": 0.0,
+        "min_trades": 2,
+        "max_mdd": 10.0,
+        "max_trials": 40,
+        "seed": 77,
+        "holdout_start": "2026-08-01",
+        "holdout_end": "",
+        "ic_threshold": 0.01,
+        "min_features": 4,
+        "max_features": 10,
+        "complexity_penalty": 0.15,
+        "final_test_ratio": 20,
+        "use_all_features": true
+    }
+}

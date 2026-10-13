@@ -1,0 +1,162 @@
+name: 🚀 CTradeSystem Vultr CI/CD Auto Deployment
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*' # v1.0.0, v1.0.1 등 버전 태그 푸시 시 트리거
+  workflow_dispatch: # GitHub 웹 UI에서 수동 클릭 실행 가능
+
+concurrency:
+  group: vultr-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: 🛡️ Pre-test & Deploy to Vultr VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 1. Repository Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 2. Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: ⚡ 3. Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel pybind11
+          pip install pandas numpy scipy lightgbm numba pyarrow optuna tqdm matplotlib plotly jinja2 python-multipart httpx aiohttp uvicorn PyJWT pytest pytest-asyncio fastapi starlette requests websockets pydantic psutil python-dotenv
+
+      - name: 🛠️ 3.5. Build C++ HFT Core Module (ctrade_core.so)
+        run: |
+          echo "🛠️ Compiling ctrade_core.so for Pre-deploy tests..."
+          cd CTrade && python setup.py build_ext --inplace && cd ..
+
+      - name: 🔬 4. Pre-deploy Full Test Suite Validation
+        run: |
+          echo "🔬 Running Pre-deploy Tests for deployed components (CTrade/CCommander/shared)..."
+          PYTHONPATH=$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/CTrade:$GITHUB_WORKSPACE/CAiModelBaker:$GITHUB_WORKSPACE/CCommander pytest -v CTrade CCommander shared
+
+      - name: 🔑 5. Setup Native SSH Key
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p ~/.ssh
+          python -c "
+          import os, base64
+          raw_key = os.environ.get('SSH_KEY', '').strip()
+          try:
+              # Base64 디코딩 시도
+              decoded = base64.b64decode(raw_key).decode('utf-8')
+          except Exception:
+              # 실패 시 원본 문자열의 공백을 개행으로 복원
+              decoded = raw_key
+          
+          # SSH 키 필수 정규화 (BEGIN/END 태그 및 내부 개행 보장)
+          with open(os.path.expanduser('~/.ssh/id_rsa'), 'w', encoding='utf-8') as f:
+              f.write(decoded.strip() + '\n')
+          "
+          chmod 600 ~/.ssh/id_rsa
+        env:
+          SSH_KEY: ${{ secrets.VULTR_SSH_KEY }}
+
+      - name: 🔌 6. Sync Code, Build .env & Restart Service on Vultr
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        env:
+          VULTR_IP: ${{ secrets.VULTR_IP }}
+          UPBIT_ACCESS_KEY: ${{ secrets.UPBIT_ACCESS_KEY }}
+          UPBIT_SECRET_KEY: ${{ secrets.UPBIT_SECRET_KEY }}
+          KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+          KIS_ACC_NO: ${{ secrets.KIS_ACC_NO }}
+          KIS_ACC_CODE: ${{ secrets.KIS_ACC_CODE || '01' }}
+          KIS_URL_BASE: ${{ secrets.KIS_URL_BASE || 'https://openapi.koreainvestment.com:9443' }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          ssh -o StrictHostKeyChecking=no root@$VULTR_IP "mkdir -p /root/projects/CTradeSystem/CTrade"
+
+          # 1. rsync 소스코드 전송 (Vultr 서버 런타임 데이터 및 토큰 영구 보존)
+          rsync -avz --delete \
+            --exclude='.git/' \
+            --exclude='.venv/' \
+            --exclude='__pycache__/' \
+            --exclude='CAiModelBaker/' \
+            --exclude='vultr_logs/' \
+            --exclude='CTrade/build/' \
+            --exclude='CTrade/*.so' \
+            --exclude='.env' \
+            --exclude='CTrade/.env' \
+            --exclude='CTrade/config/token_info.json' \
+            --exclude='config/token_info.json' \
+            --exclude='CTrade/trade_history.json' \
+            --exclude='trade_history.json' \
+            --exclude='account_baseline.json' \
+            --exclude='CTrade/data/' \
+            --exclude='CTrade/logs/' \
+            --exclude='CTrade/*.log' \
+            --exclude='*.log' \
+            --exclude='CTrade/config/timer_state.json' \
+            --exclude='CTrade/config/optimization_history.json' \
+            --exclude='CTrade/spike_verification_history.json' \
+            ./ root@$VULTR_IP:/root/projects/CTradeSystem/
+
+          # 2. 원격지에 .env 및 version.json 생성
+          # 커밋 메시지/시크릿을 셸·파이썬 문자열에 보간하지 않는다 (명령 주입 방지).
+          #  - 로컬 python 이 환경변수에서 JSON payload 를 만들고, ssh stdin 으로만 전달
+          #  - 원격 실행 코드는 고정 문자열(base64 인자)이며 외부 입력을 포함하지 않는다
+          export COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "main")
+          export COMMIT_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "Auto Deploy")
+          export DEPLOY_TIME=$(date +'%Y-%m-%d %H:%M:%S KST')
+          export GIT_TAG="${GITHUB_REF_NAME:-v1.0.0}"
+
+          REMOTE_CODE_B64=$(base64 -w0 <<'REMOTE_PY'
+          import sys, json, os
+          p = json.load(sys.stdin)
+          for path in ('/root/projects/CTradeSystem/CTrade/.env', '/root/projects/CTradeSystem/.env'):
+              with open(path, 'w') as f:
+                  f.write(p['env'])
+              os.chmod(path, 0o600)
+          for path in ('/root/projects/CTradeSystem/CTrade/version.json', '/root/projects/CTradeSystem/version.json'):
+              with open(path, 'w') as f:
+                  json.dump(p['version'], f, indent=2)
+          REMOTE_PY
+          )
+
+          python3 - <<'LOCAL_PY' | ssh -o StrictHostKeyChecking=no root@$VULTR_IP "python3 -c 'import base64,sys;exec(base64.b64decode(sys.argv[1]))' $REMOTE_CODE_B64"
+          import os, json
+          e = os.environ
+          acc_code = e.get('KIS_ACC_CODE') or '01'
+          url_base = e.get('KIS_URL_BASE') or 'https://openapi.koreainvestment.com:9443'
+          pairs = [
+              ('UPBIT_ACCESS_KEY', e.get('UPBIT_ACCESS_KEY', '')),
+              ('UPBIT_SECRET_KEY', e.get('UPBIT_SECRET_KEY', '')),
+              ('KIS_APP_KEY', e.get('KIS_APP_KEY', '')),
+              ('KIS_APP_SECRET', e.get('KIS_APP_SECRET', '')),
+              ('KIS_ACC_NO', e.get('KIS_ACC_NO', '')),
+              ('KIS_ACC_CODE', acc_code),
+              ('KIS_URL_BASE', url_base),
+              ('URL_BASE', url_base),
+              ('APP_KEY', e.get('KIS_APP_KEY', '')),
+              ('APP_SECRET', e.get('KIS_APP_SECRET', '')),
+              ('CANO', e.get('KIS_ACC_NO', '')),
+              ('ACNT_PRDT_CD', acc_code),
+              ('TELEGRAM_BOT_TOKEN', e.get('TELEGRAM_BOT_TOKEN', '')),
+              ('TELEGRAM_CHAT_ID', e.get('TELEGRAM_CHAT_ID', '')),
+          ]
+          def q(v):
+              return '"' + v.replace('\\', '\\\\').replace('"', '\\"') + '"'
+          env_content = '\n'.join(f'{k}={q(v)}' for k, v in pairs)
+          version = {
+              'version': e.get('GIT_TAG', ''),
+              'commit': e.get('COMMIT_HASH', ''),
+              'message': e.get('COMMIT_MSG', ''),
+              'deployed_at': e.get('DEPLOY_TIME', ''),
+          }
+          print(json.dumps({'env': env_content, 'version': version}))
+          LOCAL_PY
+
+          # 3. 원격 셋업 및 C++ 컴파일 & CTrade/CCommander 서비스 재기동
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=40 root@$VULTR_IP "cd /root/projects/CTradeSystem && chmod +x scripts/*.sh CCommander/*.sh && ./scripts/setup_vultr_service.sh && ./CCommander/setup_service.sh && systemctl restart ctrade ccommander"

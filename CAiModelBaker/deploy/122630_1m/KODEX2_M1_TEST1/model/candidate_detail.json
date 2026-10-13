@@ -1,0 +1,1451 @@
+{
+  "rank": 1,
+  "trial": 3,
+  "features": [
+    "target_rsi_daily",
+    "target_adx",
+    "target_ma_ratio",
+    "ref_000660_ret_5c"
+  ],
+  "val_profit": 1.8935987216051497,
+  "val_monthly_profit": 2.71,
+  "val_days": 21,
+  "val_mdd": 2.3951566001551257,
+  "val_trades": 67,
+  "val_monthly_trades": 97.0,
+  "val_adj": 1.5935987216051497,
+  "final_profit": 1.8935987216051497,
+  "final_monthly_profit": 2.71,
+  "final_days": 21,
+  "final_mdd": 2.3951566001551257,
+  "final_trades": 67,
+  "final_monthly_trades": 97.0,
+  "final_required_trades": 10.0,
+  "final_sample_sufficient": true,
+  "final_holdout_trading_days": 21,
+  "final_standard_holdout_td": 21,
+  "final_standard_met": true,
+  "final_non_standard": false,
+  "final_pf_lossless": false,
+  "dead_features": [],
+  "dead_feature_details": {},
+  "wfa_windows": 5,
+  "wfa_valid_windows": 5,
+  "wfa_oos_total_pct": 20.384405694451765,
+  "wfa_robust": true,
+  "wfa_window_details": [
+    {
+      "window": 1,
+      "train_start": "2026-04-09",
+      "train_end": "2026-06-11",
+      "opt_start": "2026-06-11",
+      "opt_end": "2026-06-25",
+      "test_start": "2026-06-25",
+      "test_end": "2026-07-09",
+      "profit": 4.93,
+      "trades": 40,
+      "passed": true
+    },
+    {
+      "window": 2,
+      "train_start": "2026-04-23",
+      "train_end": "2026-06-25",
+      "opt_start": "2026-06-25",
+      "opt_end": "2026-07-09",
+      "test_start": "2026-07-09",
+      "test_end": "2026-07-24",
+      "profit": 1.12,
+      "trades": 79,
+      "passed": true
+    },
+    {
+      "window": 3,
+      "train_start": "2026-05-11",
+      "train_end": "2026-07-09",
+      "opt_start": "2026-07-09",
+      "opt_end": "2026-07-24",
+      "test_start": "2026-07-24",
+      "test_end": "2026-08-07",
+      "profit": 4.91,
+      "trades": 15,
+      "passed": true
+    },
+    {
+      "window": 4,
+      "train_start": "2026-05-26",
+      "train_end": "2026-07-24",
+      "opt_start": "2026-07-24",
+      "opt_end": "2026-08-07",
+      "test_start": "2026-08-07",
+      "test_end": "2026-08-24",
+      "profit": 2.08,
+      "trades": 33,
+      "passed": true
+    },
+    {
+      "window": 5,
+      "train_start": "2026-06-10",
+      "train_end": "2026-08-07",
+      "opt_start": "2026-08-07",
+      "opt_end": "2026-08-24",
+      "test_start": "2026-08-24",
+      "test_end": "2026-09-03",
+      "profit": 7.33,
+      "trades": 16,
+      "passed": true
+    }
+  ],
+  "win_rate": 53.73134328358209,
+  "profit_factor": 1.2092263024808405,
+  "sharpe_ratio": 0.618753025284282,
+  "avg_hold_mins": 5.6716417910447765,
+  "best_trade": 0.8480664433782927,
+  "worst_trade": -0.7015771230502599,
+  "passed": true,
+  "status": "PASSED",
+  "is_champion": false,
+  "best_params": {
+    "take_profit": 2.238334639875376,
+    "stop_loss": 2.3450598013700716,
+    "max_depth": 3,
+    "num_leaves": 38,
+    "learning_rate": 0.046106580608295096,
+    "min_child_samples": 57,
+    "buy_quantile": 0.9289835777060267,
+    "cooldown_minutes": 16,
+    "predict_ahead_candles": 6,
+    "max_hold_candles": 6,
+    "buy_threshold": 0.5157935543714992,
+    "opt_session_id": "KODEX2_M1_TEST1",
+    "memo": "",
+    "seed": 42,
+    "train_start": "2026-04-09 09:01:00",
+    "train_end": "2026-08-24 09:01:00",
+    "opt_start": "2026-06-11 09:01:00",
+    "opt_end": "2026-08-24 09:01:00",
+    "created_at": "2026-10-09 11:56:01",
+    "optuna_score": 1.5473579929294612,
+    "validation_metrics": {
+      "score": 1.6020595927428563,
+      "trades": 13,
+      "required_trades": 10.0,
+      "win_rate": 53.84615384615385,
+      "mdd": 2.3453729975011957,
+      "profit_factor": 1.093690858568236,
+      "profit_factor_raw": 1.093690858568236,
+      "total_return": 0.30321418687042634
+    },
+    "training_meta": {
+      "num_boost_round": 30,
+      "tuning_objective": "binary",
+      "saved_model_objective": "binary",
+      "buy_threshold_prob_basis": "binary P(label=1)",
+      "optuna_score_note": "창별 best 점수의 평균 — 선택 편향 포함, 성과 지표로 해석 금지",
+      "dataset": {
+        "path": "/home/kuzimo/projects/CTradeSystem/DataVault/features/122630/data_snapshot_1m.csv",
+        "sha256": "0257c6ded15668d9248c5e70632ab6050b57a8c620095cf0ffb65d2a2b988173",
+        "byte_size": 77335924,
+        "manifest_sha256": "0257c6ded15668d9248c5e70632ab6050b57a8c620095cf0ffb65d2a2b988173",
+        "manifest_created_at": "2026-10-09T11:43:55.532089+09:00",
+        "matches_manifest": true,
+        "row_count": 193444,
+        "first_timestamp": "2024-08-30 09:01:00",
+        "last_timestamp": "2026-10-08 15:30:00"
+      },
+      "wfa_windows": 5,
+      "wfa_valid_windows": 5,
+      "wfa_oos_total_pct": 20.384405694451765,
+      "wfa_robust": true,
+      "wfa_window_details": [
+        {
+          "window": 1,
+          "train_start": "2026-04-09",
+          "train_end": "2026-06-11",
+          "opt_start": "2026-06-11",
+          "opt_end": "2026-06-25",
+          "test_start": "2026-06-25",
+          "test_end": "2026-07-09",
+          "profit": 4.93,
+          "trades": 40,
+          "passed": true
+        },
+        {
+          "window": 2,
+          "train_start": "2026-04-23",
+          "train_end": "2026-06-25",
+          "opt_start": "2026-06-25",
+          "opt_end": "2026-07-09",
+          "test_start": "2026-07-09",
+          "test_end": "2026-07-24",
+          "profit": 1.12,
+          "trades": 79,
+          "passed": true
+        },
+        {
+          "window": 3,
+          "train_start": "2026-05-11",
+          "train_end": "2026-07-09",
+          "opt_start": "2026-07-09",
+          "opt_end": "2026-07-24",
+          "test_start": "2026-07-24",
+          "test_end": "2026-08-07",
+          "profit": 4.91,
+          "trades": 15,
+          "passed": true
+        },
+        {
+          "window": 4,
+          "train_start": "2026-05-26",
+          "train_end": "2026-07-24",
+          "opt_start": "2026-07-24",
+          "opt_end": "2026-08-07",
+          "test_start": "2026-08-07",
+          "test_end": "2026-08-24",
+          "profit": 2.08,
+          "trades": 33,
+          "passed": true
+        },
+        {
+          "window": 5,
+          "train_start": "2026-06-10",
+          "train_end": "2026-08-07",
+          "opt_start": "2026-08-07",
+          "opt_end": "2026-08-24",
+          "test_start": "2026-08-24",
+          "test_end": "2026-09-03",
+          "profit": 7.33,
+          "trades": 16,
+          "passed": true
+        }
+      ]
+    }
+  },
+  "feature_importance": {
+    "target_rsi_daily": {
+      "gain": 1150.05,
+      "gain_pct": 35.66
+    },
+    "target_adx": {
+      "gain": 1137.53,
+      "gain_pct": 35.28
+    },
+    "target_ma_ratio": {
+      "gain": 666.01,
+      "gain_pct": 20.65
+    },
+    "ref_000660_ret_5c": {
+      "gain": 271.05,
+      "gain_pct": 8.41
+    }
+  },
+  "trades_detail": [
+    {
+      "entry_time": "2026-09-08T09:10:00.000000",
+      "exit_time": "2026-09-08T09:16:00.000000",
+      "entry_price": 114450.0,
+      "exit_price": 115285.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": 0.6995762341633902,
+      "mfe": 0.7688947138488423,
+      "mae": -0.34949759720401924,
+      "entry_features": {
+        "target_rsi_daily": 51.78744630722945,
+        "target_adx": 45.7006088224792,
+        "target_ma_ratio": 0.00439846667968391,
+        "ref_000660_ret_5c": 0.008431703204047292
+      }
+    },
+    {
+      "entry_time": "2026-09-08T10:41:00.000000",
+      "exit_time": "2026-09-08T10:47:00.000000",
+      "entry_price": 117450.0,
+      "exit_price": 117680.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": 0.16582801191996596,
+      "mfe": 0.5491698595146871,
+      "mae": -0.1277139208173691,
+      "entry_features": {
+        "target_rsi_daily": 51.78744630722945,
+        "target_adx": 51.6624834803805,
+        "target_ma_ratio": 0.004361210877287247,
+        "ref_000660_ret_5c": 0.004888647474198704
+      }
+    },
+    {
+      "entry_time": "2026-09-08T12:22:00.000000",
+      "exit_time": "2026-09-08T12:28:00.000000",
+      "entry_price": 119195.0,
+      "exit_price": 119410.0,
+      "hold_mins": 6,
+      "prob": 0.5382618292351908,
+      "exit_type": "시간만료",
+      "net_return": 0.15037669365325726,
+      "mfe": 0.1887663073115483,
+      "mae": -0.234909182432149,
+      "entry_features": {
+        "target_rsi_daily": 51.78744630722945,
+        "target_adx": 54.05854655722357,
+        "target_ma_ratio": 0.0029281344921618935,
+        "ref_000660_ret_5c": 0.002951435470888164
+      }
+    },
+    {
+      "entry_time": "2026-09-08T13:44:00.000000",
+      "exit_time": "2026-09-08T13:50:00.000000",
+      "entry_price": 118775.0,
+      "exit_price": 118805.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.0047421595453588745,
+      "mfe": 0.30730372553146706,
+      "mae": -0.16417596295516734,
+      "entry_features": {
+        "target_rsi_daily": 51.78744630722945,
+        "target_adx": 55.324202783381175,
+        "target_ma_ratio": -2.2450909767046667e-05,
+        "ref_000660_ret_5c": -0.0005333333333333856
+      }
+    },
+    {
+      "entry_time": "2026-09-08T14:14:00.000000",
+      "exit_time": "2026-09-08T14:20:00.000000",
+      "entry_price": 116510.0,
+      "exit_price": 116970.0,
+      "hold_mins": 6,
+      "prob": 0.5169430355917973,
+      "exit_type": "시간만료",
+      "net_return": 0.36481589563127625,
+      "mfe": 0.48493691528624155,
+      "mae": -0.15020169942494208,
+      "entry_features": {
+        "target_rsi_daily": 51.78744630722945,
+        "target_adx": 63.44632499352732,
+        "target_ma_ratio": -0.0025967355325587915,
+        "ref_000660_ret_5c": -0.0032467532467532756
+      }
+    },
+    {
+      "entry_time": "2026-09-08T14:46:00.000000",
+      "exit_time": "2026-09-08T14:52:00.000000",
+      "entry_price": 115400.0,
+      "exit_price": 114625.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.7015771230502599,
+      "mfe": 0.37261698440207974,
+      "mae": -0.723570190641248,
+      "entry_features": {
+        "target_rsi_daily": 51.78744630722945,
+        "target_adx": 54.14506733622301,
+        "target_ma_ratio": -0.0026475070509822674,
+        "ref_000660_ret_5c": -0.007046070460704601
+      }
+    },
+    {
+      "entry_time": "2026-09-09T09:18:00.000000",
+      "exit_time": "2026-09-09T09:24:00.000000",
+      "entry_price": 114555.0,
+      "exit_price": 114755.0,
+      "hold_mins": 6,
+      "prob": 0.5225740436811325,
+      "exit_type": "시간만료",
+      "net_return": 0.14458862555104535,
+      "mfe": 0.5412247392082405,
+      "mae": -0.10911789096940334,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 45.54545586550468,
+        "target_ma_ratio": 0.005503475879414577,
+        "ref_000660_ret_5c": 0.006057268722466924
+      }
+    },
+    {
+      "entry_time": "2026-09-09T10:53:00.000000",
+      "exit_time": "2026-09-09T10:57:00.000000",
+      "entry_price": 114940.0,
+      "exit_price": 115675.0,
+      "hold_mins": 4,
+      "prob": 0.5337271518796892,
+      "exit_type": "익절",
+      "net_return": 0.6094640682095006,
+      "mfe": 0.6612145467200278,
+      "mae": -0.09570210544631981,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 56.10998680267631,
+        "target_ma_ratio": -0.005284838974042638,
+        "ref_000660_ret_5c": -0.0037858301784748916
+      }
+    },
+    {
+      "entry_time": "2026-09-09T11:13:00.000000",
+      "exit_time": "2026-09-09T11:19:00.000000",
+      "entry_price": 116520.0,
+      "exit_price": 116345.0,
+      "hold_mins": 6,
+      "prob": 0.5393307585869478,
+      "exit_type": "시간만료",
+      "net_return": -0.18018880878819085,
+      "mfe": 0.051493305870236865,
+      "mae": -0.44627531754205285,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 56.944720573383094,
+        "target_ma_ratio": 0.0028718237083820153,
+        "ref_000660_ret_5c": 0.0021551724137931494
+      }
+    },
+    {
+      "entry_time": "2026-09-09T11:41:00.000000",
+      "exit_time": "2026-09-09T11:45:00.000000",
+      "entry_price": 117380.0,
+      "exit_price": 117855.0,
+      "hold_mins": 4,
+      "prob": 0.5393307585869478,
+      "exit_type": "익절",
+      "net_return": 0.37466859771681715,
+      "mfe": 0.4643039700119271,
+      "mae": -0.1192707445902198,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 54.76959018278075,
+        "target_ma_ratio": 0.003917141342005381,
+        "ref_000660_ret_5c": 0.0018671645772205814
+      }
+    },
+    {
+      "entry_time": "2026-09-09T12:10:00.000000",
+      "exit_time": "2026-09-09T12:16:00.000000",
+      "entry_price": 115920.0,
+      "exit_price": 115950.0,
+      "hold_mins": 6,
+      "prob": 0.5337271518796892,
+      "exit_type": "시간만료",
+      "net_return": -0.004120082815734991,
+      "mfe": 0.22860593512767427,
+      "mae": -0.30193236714975846,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 56.04416670293,
+        "target_ma_ratio": -0.004961458565897692,
+        "ref_000660_ret_5c": -0.0021470746108427363
+      }
+    },
+    {
+      "entry_time": "2026-09-09T12:33:00.000000",
+      "exit_time": "2026-09-09T12:39:00.000000",
+      "entry_price": 116010.0,
+      "exit_price": 115920.0,
+      "hold_mins": 6,
+      "prob": 0.5174761570719796,
+      "exit_type": "시간만료",
+      "net_return": -0.10757951900698215,
+      "mfe": 0.12067925178863892,
+      "mae": -0.1379191449013016,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 16.786238161834167,
+        "target_ma_ratio": 0.0021567549044432255,
+        "ref_000660_ret_5c": 0.004308023694130414
+      }
+    },
+    {
+      "entry_time": "2026-09-09T13:38:00.000000",
+      "exit_time": "2026-09-09T13:44:00.000000",
+      "entry_price": 115795.0,
+      "exit_price": 115890.0,
+      "hold_mins": 6,
+      "prob": 0.5225740436811325,
+      "exit_type": "시간만료",
+      "net_return": 0.05204153892655123,
+      "mfe": 0.08204153892655122,
+      "mae": -0.28066842264346475,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 48.66520536090925,
+        "target_ma_ratio": 0.003799809287051481,
+        "ref_000660_ret_5c": 0.005399568034557323
+      }
+    },
+    {
+      "entry_time": "2026-09-09T14:32:00.000000",
+      "exit_time": "2026-09-09T14:38:00.000000",
+      "entry_price": 114460.0,
+      "exit_price": 114650.0,
+      "hold_mins": 6,
+      "prob": 0.5337271518796892,
+      "exit_type": "시간만료",
+      "net_return": 0.13599685479643545,
+      "mfe": 0.345098724445221,
+      "mae": -0.07863008911410099,
+      "entry_features": {
+        "target_rsi_daily": 62.984496123882415,
+        "target_adx": 55.140317129390496,
+        "target_ma_ratio": 0.0007857529237527139,
+        "ref_000660_ret_5c": 0.0027114967462038564
+      }
+    },
+    {
+      "entry_time": "2026-09-10T09:45:00.000000",
+      "exit_time": "2026-09-10T09:51:00.000000",
+      "entry_price": 112560.0,
+      "exit_price": 112020.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.5097441364605544,
+      "mfe": 0.373134328358209,
+      "mae": -0.5863539445628998,
+      "entry_features": {
+        "target_rsi_daily": 56.76181102346562,
+        "target_adx": 54.247904000234755,
+        "target_ma_ratio": -0.00435785091323182,
+        "ref_000660_ret_5c": 0.0
+      }
+    },
+    {
+      "entry_time": "2026-09-10T13:37:00.000000",
+      "exit_time": "2026-09-10T13:43:00.000000",
+      "entry_price": 114465.0,
+      "exit_price": 114452.0,
+      "hold_mins": 6,
+      "prob": 0.5448563360387487,
+      "exit_type": "시간만료",
+      "net_return": -0.04135718341851221,
+      "mfe": 0.2926658804001223,
+      "mae": -0.07862665443585376,
+      "entry_features": {
+        "target_rsi_daily": 56.76181102346562,
+        "target_adx": 55.83305883612111,
+        "target_ma_ratio": 0.003113963467804126,
+        "ref_000660_ret_5c": 0.0037858301784747805
+      }
+    },
+    {
+      "entry_time": "2026-09-10T14:34:00.000000",
+      "exit_time": "2026-09-10T14:40:00.000000",
+      "entry_price": 115705.0,
+      "exit_price": 115460.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": -0.24174538697549802,
+      "mfe": 0.2981720755369258,
+      "mae": -0.3932414329544963,
+      "entry_features": {
+        "target_rsi_daily": 56.76181102346562,
+        "target_adx": 45.602100739123884,
+        "target_ma_ratio": 0.004732546022837347,
+        "ref_000660_ret_5c": 0.004298764105319819
+      }
+    },
+    {
+      "entry_time": "2026-09-11T09:16:00.000000",
+      "exit_time": "2026-09-11T09:22:00.000000",
+      "entry_price": 107770.0,
+      "exit_price": 108125.0,
+      "hold_mins": 6,
+      "prob": 0.5223635836473495,
+      "exit_type": "시간만료",
+      "net_return": 0.29940521480931614,
+      "mfe": 0.41755590609631626,
+      "mae": -0.33868423494478983,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 74.03925084855999,
+        "target_ma_ratio": 0.0022754327661387297,
+        "ref_000660_ret_5c": -0.0005624296962879471
+      }
+    },
+    {
+      "entry_time": "2026-09-11T09:52:00.000000",
+      "exit_time": "2026-09-11T09:57:00.000000",
+      "entry_price": 107540.0,
+      "exit_price": 108345.0,
+      "hold_mins": 5,
+      "prob": 0.5265315222618132,
+      "exit_type": "익절",
+      "net_return": 0.7185586758415473,
+      "mfe": 0.7811047052259624,
+      "mae": -0.03719546215361726,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 56.08615479763314,
+        "target_ma_ratio": -0.0009011771046200101,
+        "ref_000660_ret_5c": 0.0022535211267604716
+      }
+    },
+    {
+      "entry_time": "2026-09-11T10:36:00.000000",
+      "exit_time": "2026-09-11T10:42:00.000000",
+      "entry_price": 108190.0,
+      "exit_price": 107735.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": -0.45055642850540717,
+      "mfe": 0.21258896385987613,
+      "mae": -0.4760144190775487,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 45.79030542521345,
+        "target_ma_ratio": 0.004910459960771663,
+        "ref_000660_ret_5c": 0.005636978579481422
+      }
+    },
+    {
+      "entry_time": "2026-09-11T11:34:00.000000",
+      "exit_time": "2026-09-11T11:39:00.000000",
+      "entry_price": 107575.0,
+      "exit_price": 108040.0,
+      "hold_mins": 5,
+      "prob": 0.5265315222618132,
+      "exit_type": "익절",
+      "net_return": 0.4022565651870788,
+      "mfe": 0.455496165465954,
+      "mae": -0.15338136184057635,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 54.090708039235544,
+        "target_ma_ratio": -0.005301360785432974,
+        "ref_000660_ret_5c": -0.002239641657334812
+      }
+    },
+    {
+      "entry_time": "2026-09-11T12:16:00.000000",
+      "exit_time": "2026-09-11T12:22:00.000000",
+      "entry_price": 107485.0,
+      "exit_price": 107295.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.20676885146764667,
+      "mfe": 0.2605014653207424,
+      "mae": -0.18607247522910175,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 54.11135906830216,
+        "target_ma_ratio": -0.0014307082006520533,
+        "ref_000660_ret_5c": -0.0033632286995515237
+      }
+    },
+    {
+      "entry_time": "2026-09-11T13:34:00.000000",
+      "exit_time": "2026-09-11T13:38:00.000000",
+      "entry_price": 109080.0,
+      "exit_price": 109530.0,
+      "hold_mins": 4,
+      "prob": 0.5382618292351908,
+      "exit_type": "익절",
+      "net_return": 0.3825412541254125,
+      "mfe": 0.47671433810047675,
+      "mae": -0.18793546021268795,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 55.83257040837034,
+        "target_ma_ratio": 0.004181327087947384,
+        "ref_000660_ret_5c": 0.0011179429849077493
+      }
+    },
+    {
+      "entry_time": "2026-09-11T13:55:00.000000",
+      "exit_time": "2026-09-11T14:00:00.000000",
+      "entry_price": 109480.0,
+      "exit_price": 108775.0,
+      "hold_mins": 5,
+      "prob": 0.5169430355917973,
+      "exit_type": "손절",
+      "net_return": -0.6739532334673,
+      "mfe": 0.10504201680672268,
+      "mae": -0.712458896602119,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 61.038272776029565,
+        "target_ma_ratio": -0.00400895191086259,
+        "ref_000660_ret_5c": -0.0016611295681062677
+      }
+    },
+    {
+      "entry_time": "2026-09-11T14:54:00.000000",
+      "exit_time": "2026-09-11T14:56:00.000000",
+      "entry_price": 110470.0,
+      "exit_price": 111440.0,
+      "hold_mins": 2,
+      "prob": 0.5205178113745388,
+      "exit_type": "익절",
+      "net_return": 0.8480664433782927,
+      "mfe": 0.9052231375033946,
+      "mae": -0.5929211550647234,
+      "entry_features": {
+        "target_rsi_daily": 52.88401253903023,
+        "target_adx": 51.839455789267404,
+        "target_ma_ratio": 0.009866777177728991,
+        "ref_000660_ret_5c": 0.005540166204986097
+      }
+    },
+    {
+      "entry_time": "2026-09-14T09:15:00.000000",
+      "exit_time": "2026-09-14T09:21:00.000000",
+      "entry_price": 102585.0,
+      "exit_price": 102335.0,
+      "hold_mins": 6,
+      "prob": 0.5185062921388541,
+      "exit_type": "시간만료",
+      "net_return": -0.2737003460544914,
+      "mfe": 0.3314324706341083,
+      "mae": -0.6482429205049471,
+      "entry_features": {
+        "target_rsi_daily": 56.699529464307915,
+        "target_adx": 79.68446429252118,
+        "target_ma_ratio": 0.0024690795023076806,
+        "ref_000660_ret_5c": -0.0005803830528148257
+      }
+    },
+    {
+      "entry_time": "2026-09-14T10:28:00.000000",
+      "exit_time": "2026-09-14T10:34:00.000000",
+      "entry_price": 101530.0,
+      "exit_price": 101817.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": 0.25267507140746576,
+      "mfe": 0.6106569486851177,
+      "mae": -0.261006599034768,
+      "entry_features": {
+        "target_rsi_daily": 56.699529464307915,
+        "target_adx": 48.307605946083164,
+        "target_ma_ratio": 0.0027060124831119747,
+        "ref_000660_ret_5c": 0.006485849056603765
+      }
+    },
+    {
+      "entry_time": "2026-09-14T10:50:00.000000",
+      "exit_time": "2026-09-14T10:56:00.000000",
+      "entry_price": 102350.0,
+      "exit_price": 102645.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.2582266731802638,
+      "mfe": 0.33219345383488036,
+      "mae": -0.17098192476795313,
+      "entry_features": {
+        "target_rsi_daily": 56.699529464307915,
+        "target_adx": 54.11407662590393,
+        "target_ma_ratio": 0.0002247696110508901,
+        "ref_000660_ret_5c": 0.0008731082654249711
+      }
+    },
+    {
+      "entry_time": "2026-09-14T11:12:00.000000",
+      "exit_time": "2026-09-14T11:18:00.000000",
+      "entry_price": 104630.0,
+      "exit_price": 104390.0,
+      "hold_mins": 6,
+      "prob": 0.5185062921388541,
+      "exit_type": "시간만료",
+      "net_return": -0.2593797190098442,
+      "mfe": 0.1863710216954984,
+      "mae": -0.3870782758291121,
+      "entry_features": {
+        "target_rsi_daily": 56.699529464307915,
+        "target_adx": 82.7150608608923,
+        "target_ma_ratio": 0.005265079456485688,
+        "ref_000660_ret_5c": 0.0014417531718569077
+      }
+    },
+    {
+      "entry_time": "2026-09-14T14:22:00.000000",
+      "exit_time": "2026-09-14T14:28:00.000000",
+      "entry_price": 101945.0,
+      "exit_price": 101965.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.010381578302025605,
+      "mfe": 0.12751974103683358,
+      "mae": -0.43650988277993036,
+      "entry_features": {
+        "target_rsi_daily": 56.699529464307915,
+        "target_adx": 53.52388186450787,
+        "target_ma_ratio": -0.003762337535521909,
+        "ref_000660_ret_5c": -0.000881316098707452
+      }
+    },
+    {
+      "entry_time": "2026-09-21T09:10:00.000000",
+      "exit_time": "2026-09-21T09:16:00.000000",
+      "entry_price": 112765.0,
+      "exit_price": 112120.0,
+      "hold_mins": 6,
+      "prob": 0.5391299179142837,
+      "exit_type": "시간만료",
+      "net_return": -0.6019859885602802,
+      "mfe": 0.5586839888263202,
+      "mae": -0.7670819846583603,
+      "entry_features": {
+        "target_rsi_daily": 52.038816832932994,
+        "target_adx": 62.05849288106928,
+        "target_ma_ratio": 0.011203209115519419,
+        "ref_000660_ret_5c": -0.004794885455514097
+      }
+    },
+    {
+      "entry_time": "2026-09-21T10:12:00.000000",
+      "exit_time": "2026-09-21T10:18:00.000000",
+      "entry_price": 113555.0,
+      "exit_price": 113710.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": 0.10649773237638148,
+      "mfe": 0.5151688609044076,
+      "mae": -0.12328827440447361,
+      "entry_features": {
+        "target_rsi_daily": 52.038816832932994,
+        "target_adx": 50.54831686241396,
+        "target_ma_ratio": 0.004470011705680621,
+        "ref_000660_ret_5c": 0.0037413148049172396
+      }
+    },
+    {
+      "entry_time": "2026-09-21T12:44:00.000000",
+      "exit_time": "2026-09-21T12:50:00.000000",
+      "entry_price": 114295.0,
+      "exit_price": 114500.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.14936042696530905,
+      "mfe": 0.23185616168686296,
+      "mae": -0.0874928912025898,
+      "entry_features": {
+        "target_rsi_daily": 52.038816832932994,
+        "target_adx": 53.85779225891691,
+        "target_ma_ratio": 0.000577786726575491,
+        "ref_000660_ret_5c": 0.001068947087119243
+      }
+    },
+    {
+      "entry_time": "2026-09-21T13:45:00.000000",
+      "exit_time": "2026-09-21T13:51:00.000000",
+      "entry_price": 114555.0,
+      "exit_price": 114430.0,
+      "hold_mins": 6,
+      "prob": 0.5169430355917973,
+      "exit_type": "시간만료",
+      "net_return": -0.13911789096940336,
+      "mfe": 0.17895334118982148,
+      "mae": -0.12657675352450787,
+      "entry_features": {
+        "target_rsi_daily": 52.038816832932994,
+        "target_adx": 57.25854660948247,
+        "target_ma_ratio": -4.364525148392584e-05,
+        "ref_000660_ret_5c": 0.0005330490405117683
+      }
+    },
+    {
+      "entry_time": "2026-09-21T14:07:00.000000",
+      "exit_time": "2026-09-21T14:13:00.000000",
+      "entry_price": 114050.0,
+      "exit_price": 113805.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.2448180622533976,
+      "mfe": 0.07014467338886454,
+      "mae": -0.2893467777290662,
+      "entry_features": {
+        "target_rsi_daily": 52.038816832932994,
+        "target_adx": 54.52302441651942,
+        "target_ma_ratio": -0.0005345672197245577,
+        "ref_000660_ret_5c": -0.0010672358591248265
+      }
+    },
+    {
+      "entry_time": "2026-09-22T09:10:00.000000",
+      "exit_time": "2026-09-22T09:16:00.000000",
+      "entry_price": 119540.0,
+      "exit_price": 119280.0,
+      "hold_mins": 6,
+      "prob": 0.5185062921388541,
+      "exit_type": "시간만료",
+      "net_return": -0.24750041827003513,
+      "mfe": 0.2425966203781161,
+      "mae": -0.40572193408064244,
+      "entry_features": {
+        "target_rsi_daily": 55.486273490815485,
+        "target_adx": 85.8278676500128,
+        "target_ma_ratio": 0.01635716642039342,
+        "ref_000660_ret_5c": 0.0005189413596262682
+      }
+    },
+    {
+      "entry_time": "2026-09-22T09:57:00.000000",
+      "exit_time": "2026-09-22T10:03:00.000000",
+      "entry_price": 118800.0,
+      "exit_price": 118855.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.016296296296296295,
+      "mfe": 0.21043771043771042,
+      "mae": -0.1473063973063973,
+      "entry_features": {
+        "target_rsi_daily": 55.486273490815485,
+        "target_adx": 54.96168001477365,
+        "target_ma_ratio": -0.002261987413579525,
+        "ref_000660_ret_5c": -0.0010400416016640435
+      }
+    },
+    {
+      "entry_time": "2026-09-22T13:02:00.000000",
+      "exit_time": "2026-09-22T13:08:00.000000",
+      "entry_price": 117840.0,
+      "exit_price": 117970.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.08031907671418873,
+      "mfe": 0.13577732518669383,
+      "mae": -0.14426340801086218,
+      "entry_features": {
+        "target_rsi_daily": 55.486273490815485,
+        "target_adx": 54.354201334554155,
+        "target_ma_ratio": -0.002954022281884572,
+        "ref_000660_ret_5c": -0.002626050420168058
+      }
+    },
+    {
+      "entry_time": "2026-09-22T13:32:00.000000",
+      "exit_time": "2026-09-22T13:38:00.000000",
+      "entry_price": 116825.0,
+      "exit_price": 116690.0,
+      "hold_mins": 6,
+      "prob": 0.5169430355917973,
+      "exit_type": "시간만료",
+      "net_return": -0.14555745773592982,
+      "mfe": 0.17975604536700193,
+      "mae": -0.38091161994436123,
+      "entry_features": {
+        "target_rsi_daily": 55.486273490815485,
+        "target_adx": 64.56673808920017,
+        "target_ma_ratio": -0.0018040012714874987,
+        "ref_000660_ret_5c": -0.0015923566878981443
+      }
+    },
+    {
+      "entry_time": "2026-09-22T14:27:00.000000",
+      "exit_time": "2026-09-22T14:33:00.000000",
+      "entry_price": 113775.0,
+      "exit_price": 113835.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.022735662491760046,
+      "mfe": 0.49219951658976047,
+      "mae": -0.32080861349154033,
+      "entry_features": {
+        "target_rsi_daily": 55.486273490815485,
+        "target_adx": 54.94109743984726,
+        "target_ma_ratio": -0.007300013087759516,
+        "ref_000660_ret_5c": -0.003791982665222071
+      }
+    },
+    {
+      "entry_time": "2026-09-22T14:58:00.000000",
+      "exit_time": "2026-09-22T15:04:00.000000",
+      "entry_price": 115405.0,
+      "exit_price": 114760.0,
+      "hold_mins": 6,
+      "prob": 0.5382618292351908,
+      "exit_type": "손절",
+      "net_return": -0.5889012607772627,
+      "mfe": 0.19929812399809366,
+      "mae": -0.597894371994281,
+      "entry_features": {
+        "target_rsi_daily": 55.486273490815485,
+        "target_adx": 57.1465085695417,
+        "target_ma_ratio": 0.003737033450565974,
+        "ref_000660_ret_5c": 0.0016181229773462036
+      }
+    },
+    {
+      "entry_time": "2026-09-23T09:10:00.000000",
+      "exit_time": "2026-09-23T09:16:00.000000",
+      "entry_price": 118435.0,
+      "exit_price": 118260.0,
+      "hold_mins": 6,
+      "prob": 0.5235090521570256,
+      "exit_type": "시간만료",
+      "net_return": -0.1777603748891797,
+      "mfe": 0.215307974838519,
+      "mae": -0.3757335247181998,
+      "entry_features": {
+        "target_rsi_daily": 65.73604060895019,
+        "target_adx": 50.38059239954062,
+        "target_ma_ratio": 0.009831005610323018,
+        "ref_000660_ret_5c": -0.010021097046413519
+      }
+    },
+    {
+      "entry_time": "2026-09-23T10:01:00.000000",
+      "exit_time": "2026-09-23T10:07:00.000000",
+      "entry_price": 116865.0,
+      "exit_price": 117310.0,
+      "hold_mins": 6,
+      "prob": 0.5337271518796892,
+      "exit_type": "시간만료",
+      "net_return": 0.35078124331493604,
+      "mfe": 0.38078124331493607,
+      "mae": -0.20536516493389811,
+      "entry_features": {
+        "target_rsi_daily": 65.73604060895019,
+        "target_adx": 54.173870338243525,
+        "target_ma_ratio": -0.002529275870394976,
+        "ref_000660_ret_5c": -0.0005382131324004336
+      }
+    },
+    {
+      "entry_time": "2026-09-23T10:39:00.000000",
+      "exit_time": "2026-09-23T10:45:00.000000",
+      "entry_price": 116310.0,
+      "exit_price": 115765.0,
+      "hold_mins": 6,
+      "prob": 0.5241526925762321,
+      "exit_type": "손절",
+      "net_return": -0.4985753589545181,
+      "mfe": 0.12466683862092683,
+      "mae": -0.5244604935087266,
+      "entry_features": {
+        "target_rsi_daily": 65.73604060895019,
+        "target_adx": 57.17440398250562,
+        "target_ma_ratio": -0.0044480711235727055,
+        "ref_000660_ret_5c": -0.0032188841201716833
+      }
+    },
+    {
+      "entry_time": "2026-09-23T11:01:00.000000",
+      "exit_time": "2026-09-23T11:07:00.000000",
+      "entry_price": 115505.0,
+      "exit_price": 115275.0,
+      "hold_mins": 6,
+      "prob": 0.5337271518796892,
+      "exit_type": "시간만료",
+      "net_return": -0.22912557897926494,
+      "mfe": 0.10822042335829617,
+      "mae": -0.36362062248387517,
+      "entry_features": {
+        "target_rsi_daily": 65.73604060895019,
+        "target_adx": 56.246967856519596,
+        "target_ma_ratio": 0.0007855754483701016,
+        "ref_000660_ret_5c": 0.0010840108401084514
+      }
+    },
+    {
+      "entry_time": "2026-09-28T09:46:00.000000",
+      "exit_time": "2026-09-28T09:52:00.000000",
+      "entry_price": 113530.0,
+      "exit_price": 113570.0,
+      "hold_mins": 6,
+      "prob": 0.5337271518796892,
+      "exit_type": "시간만료",
+      "net_return": 0.00523297806747115,
+      "mfe": 0.16735664582048798,
+      "mae": -0.26424733550603363,
+      "entry_features": {
+        "target_rsi_daily": 67.31234866809834,
+        "target_adx": 55.40372882354824,
+        "target_ma_ratio": -0.002766919935086931,
+        "ref_000660_ret_5c": -0.0002759381898455038
+      }
+    },
+    {
+      "entry_time": "2026-09-28T10:24:00.000000",
+      "exit_time": "2026-09-28T10:30:00.000000",
+      "entry_price": 110660.0,
+      "exit_price": 111570.0,
+      "hold_mins": 6,
+      "prob": 0.5241526925762321,
+      "exit_type": "익절",
+      "net_return": 0.7923386951021146,
+      "mfe": 0.8855955178022772,
+      "mae": -0.18525212362190493,
+      "entry_features": {
+        "target_rsi_daily": 67.31234866809834,
+        "target_adx": 58.2765212934735,
+        "target_ma_ratio": -0.007738314069832386,
+        "ref_000660_ret_5c": -0.003091624508150592
+      }
+    },
+    {
+      "entry_time": "2026-09-28T11:32:00.000000",
+      "exit_time": "2026-09-28T11:38:00.000000",
+      "entry_price": 109855.0,
+      "exit_price": 109930.0,
+      "hold_mins": 6,
+      "prob": 0.5337271518796892,
+      "exit_type": "시간만료",
+      "net_return": 0.038271812844203716,
+      "mfe": 0.2867416139456556,
+      "mae": -0.14109507987802103,
+      "entry_features": {
+        "target_rsi_daily": 67.31234866809834,
+        "target_adx": 53.60216122047579,
+        "target_ma_ratio": -0.0009367212936756131,
+        "ref_000660_ret_5c": 0.0011286681715576563
+      }
+    },
+    {
+      "entry_time": "2026-09-28T13:06:00.000000",
+      "exit_time": "2026-09-28T13:11:00.000000",
+      "entry_price": 109535.0,
+      "exit_price": 109955.0,
+      "hold_mins": 5,
+      "prob": 0.5337271518796892,
+      "exit_type": "익절",
+      "net_return": 0.3534390833980007,
+      "mfe": 0.4062628383621673,
+      "mae": -0.09585977084950015,
+      "entry_features": {
+        "target_rsi_daily": 67.31234866809834,
+        "target_adx": 53.51313717937063,
+        "target_ma_ratio": -0.002797949788727161,
+        "ref_000660_ret_5c": -0.0011248593925758943
+      }
+    },
+    {
+      "entry_time": "2026-09-28T13:27:00.000000",
+      "exit_time": "2026-09-28T13:33:00.000000",
+      "entry_price": 111000.0,
+      "exit_price": 111085.0,
+      "hold_mins": 6,
+      "prob": 0.5195801361284937,
+      "exit_type": "시간만료",
+      "net_return": 0.04657657657657657,
+      "mfe": 0.23423423423423426,
+      "mae": -0.06756756756756757,
+      "entry_features": {
+        "target_rsi_daily": 67.31234866809834,
+        "target_adx": 81.06127563241752,
+        "target_ma_ratio": 0.002604362683757966,
+        "ref_000660_ret_5c": 0.0011191941801902416
+      }
+    },
+    {
+      "entry_time": "2026-09-29T09:59:00.000000",
+      "exit_time": "2026-09-29T10:02:00.000000",
+      "entry_price": 109055.0,
+      "exit_price": 110000.0,
+      "hold_mins": 3,
+      "prob": 0.5169430355917973,
+      "exit_type": "익절",
+      "net_return": 0.8365352345146944,
+      "mfe": 0.8848746045573335,
+      "mae": -0.19256338544770987,
+      "entry_features": {
+        "target_rsi_daily": 55.71234735399729,
+        "target_adx": 57.46126713425392,
+        "target_ma_ratio": -0.004654771140509717,
+        "ref_000660_ret_5c": -0.0011325028312570984
+      }
+    },
+    {
+      "entry_time": "2026-09-29T10:43:00.000000",
+      "exit_time": "2026-09-29T10:49:00.000000",
+      "entry_price": 110760.0,
+      "exit_price": 110590.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": -0.1834850126399422,
+      "mfe": 0.46496930299747197,
+      "mae": -0.176056338028169,
+      "entry_features": {
+        "target_rsi_daily": 55.71234735399729,
+        "target_adx": 49.456490150185324,
+        "target_ma_ratio": 0.004088514989619707,
+        "ref_000660_ret_5c": 0.0045223289994347216
+      }
+    },
+    {
+      "entry_time": "2026-09-29T13:02:00.000000",
+      "exit_time": "2026-09-29T13:08:00.000000",
+      "entry_price": 108655.0,
+      "exit_price": 108285.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.37052735723160457,
+      "mfe": 0.08743269982973632,
+      "mae": -0.4187566149740003,
+      "entry_features": {
+        "target_rsi_daily": 55.71234735399729,
+        "target_adx": 55.418138301356784,
+        "target_ma_ratio": -0.0029974460537091074,
+        "ref_000660_ret_5c": -0.0017045454545454586
+      }
+    },
+    {
+      "entry_time": "2026-09-29T14:38:00.000000",
+      "exit_time": "2026-09-29T14:42:00.000000",
+      "entry_price": 107335.0,
+      "exit_price": 107870.0,
+      "hold_mins": 4,
+      "prob": 0.5265315222618132,
+      "exit_type": "익절",
+      "net_return": 0.4684394652256953,
+      "mfe": 0.5357059672986445,
+      "mae": -0.06521637862766107,
+      "entry_features": {
+        "target_rsi_daily": 55.71234735399729,
+        "target_adx": 54.83835365081888,
+        "target_ma_ratio": -0.004658250698675315,
+        "ref_000660_ret_5c": -0.002870264064293915
+      }
+    },
+    {
+      "entry_time": "2026-09-29T14:58:00.000000",
+      "exit_time": "2026-09-29T15:04:00.000000",
+      "entry_price": 108800.0,
+      "exit_price": 109240.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": 0.3744117647058824,
+      "mfe": 0.4411764705882353,
+      "mae": -0.10569852941176469,
+      "entry_features": {
+        "target_rsi_daily": 55.71234735399729,
+        "target_adx": 48.82013176678763,
+        "target_ma_ratio": 0.004811643993664072,
+        "ref_000660_ret_5c": 0.003997715591090856
+      }
+    },
+    {
+      "entry_time": "2026-10-07T09:23:00.000000",
+      "exit_time": "2026-10-07T09:29:00.000000",
+      "entry_price": 112220.0,
+      "exit_price": 112405.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": 0.13485474959900198,
+      "mfe": 0.3297094991980039,
+      "mae": -0.3653537693815719,
+      "entry_features": {
+        "target_rsi_daily": 52.0282384579273,
+        "target_adx": 47.551188655236516,
+        "target_ma_ratio": 0.00958727055166464,
+        "ref_000660_ret_5c": 0.003981797497155881
+      }
+    },
+    {
+      "entry_time": "2026-10-07T10:10:00.000000",
+      "exit_time": "2026-10-07T10:16:00.000000",
+      "entry_price": 111530.0,
+      "exit_price": 110960.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": -0.5410732538330494,
+      "mfe": 0.04931408589617143,
+      "mae": -0.6186676230610598,
+      "entry_features": {
+        "target_rsi_daily": 52.0282384579273,
+        "target_adx": 53.994047355611556,
+        "target_ma_ratio": -0.0012805243882584305,
+        "ref_000660_ret_5c": -0.002266288951841333
+      }
+    },
+    {
+      "entry_time": "2026-10-07T11:10:00.000000",
+      "exit_time": "2026-10-07T11:14:00.000000",
+      "entry_price": 108405.0,
+      "exit_price": 108955.0,
+      "hold_mins": 4,
+      "prob": 0.5169430355917973,
+      "exit_type": "익절",
+      "net_return": 0.4773566717402334,
+      "mfe": 0.5488676721553434,
+      "mae": -0.050735667174023336,
+      "entry_features": {
+        "target_rsi_daily": 52.0282384579273,
+        "target_adx": 57.95584258192084,
+        "target_ma_ratio": -0.0061759708590430895,
+        "ref_000660_ret_5c": -0.001728110599078292
+      }
+    },
+    {
+      "entry_time": "2026-10-07T11:41:00.000000",
+      "exit_time": "2026-10-07T11:47:00.000000",
+      "entry_price": 109500.0,
+      "exit_price": 109630.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.0887214611872146,
+      "mfe": 0.3059360730593607,
+      "mae": -0.3059360730593607,
+      "entry_features": {
+        "target_rsi_daily": 52.0282384579273,
+        "target_adx": 54.731563220615094,
+        "target_ma_ratio": 0.0015701937587693227,
+        "ref_000660_ret_5c": -0.0011461318051575464
+      }
+    },
+    {
+      "entry_time": "2026-10-07T14:01:00.000000",
+      "exit_time": "2026-10-07T14:07:00.000000",
+      "entry_price": 108370.0,
+      "exit_price": 108525.0,
+      "hold_mins": 6,
+      "prob": 0.5265315222618132,
+      "exit_type": "시간만료",
+      "net_return": 0.11302851342622497,
+      "mfe": 0.4982928854849128,
+      "mae": -0.07843499123373628,
+      "entry_features": {
+        "target_rsi_daily": 52.0282384579273,
+        "target_adx": 54.32331945560855,
+        "target_ma_ratio": -0.00379960165475679,
+        "ref_000660_ret_5c": -0.0014409221902017544
+      }
+    },
+    {
+      "entry_time": "2026-10-08T09:18:00.000000",
+      "exit_time": "2026-10-08T09:24:00.000000",
+      "entry_price": 106630.0,
+      "exit_price": 106270.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": -0.36761605551908466,
+      "mfe": 0.07033667823314264,
+      "mae": -0.6517865516271218,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 47.46559620353084,
+        "target_ma_ratio": 0.003834711988558226,
+        "ref_000660_ret_5c": 0.005780346820809301
+      }
+    },
+    {
+      "entry_time": "2026-10-08T10:51:00.000000",
+      "exit_time": "2026-10-08T10:57:00.000000",
+      "entry_price": 106765.0,
+      "exit_price": 106660.0,
+      "hold_mins": 6,
+      "prob": 0.5205178113745388,
+      "exit_type": "시간만료",
+      "net_return": -0.12834683651009224,
+      "mfe": 0.17796094225635745,
+      "mae": -0.3512387018217581,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 50.76327315834209,
+        "target_ma_ratio": 0.0034304511277252203,
+        "ref_000660_ret_5c": 0.004576659038901587
+      }
+    },
+    {
+      "entry_time": "2026-10-08T11:15:00.000000",
+      "exit_time": "2026-10-08T11:21:00.000000",
+      "entry_price": 105265.0,
+      "exit_price": 105490.0,
+      "hold_mins": 6,
+      "prob": 0.5169430355917973,
+      "exit_type": "시간만료",
+      "net_return": 0.18374625944045977,
+      "mfe": 0.25649551132855175,
+      "mae": -0.09499833752909323,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 58.93699975176901,
+        "target_ma_ratio": -0.007168120726337435,
+        "ref_000660_ret_5c": -0.003997715591090856
+      }
+    },
+    {
+      "entry_time": "2026-10-08T12:23:00.000000",
+      "exit_time": "2026-10-08T12:28:00.000000",
+      "entry_price": 103880.0,
+      "exit_price": 104560.0,
+      "hold_mins": 5,
+      "prob": 0.5265315222618132,
+      "exit_type": "익절",
+      "net_return": 0.6246014632268001,
+      "mfe": 0.6546014632268001,
+      "mae": -0.04331921447824413,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 56.21934129666438,
+        "target_ma_ratio": -0.0017585501091644806,
+        "ref_000660_ret_5c": -0.00028985507246381825
+      }
+    },
+    {
+      "entry_time": "2026-10-08T12:47:00.000000",
+      "exit_time": "2026-10-08T12:53:00.000000",
+      "entry_price": 103085.0,
+      "exit_price": 102435.0,
+      "hold_mins": 6,
+      "prob": 0.5169430355917973,
+      "exit_type": "손절",
+      "net_return": -0.660547606344279,
+      "mfe": 0.0582043944317796,
+      "mae": -0.6645001697628171,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 56.89717858439669,
+        "target_ma_ratio": -0.002297018714991994,
+        "ref_000660_ret_5c": 0.00029256875365701873
+      }
+    },
+    {
+      "entry_time": "2026-10-08T13:38:00.000000",
+      "exit_time": "2026-10-08T13:44:00.000000",
+      "entry_price": 103875.0,
+      "exit_price": 103825.0,
+      "hold_mins": 6,
+      "prob": 0.5382618292351908,
+      "exit_type": "시간만료",
+      "net_return": -0.07813477737665463,
+      "mfe": 0.12033694344163659,
+      "mae": -0.29843561973525873,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 57.824335294979505,
+        "target_ma_ratio": 0.005850637353346233,
+        "ref_000660_ret_5c": 0.0029256875365710755
+      }
+    },
+    {
+      "entry_time": "2026-10-08T14:41:00.000000",
+      "exit_time": "2026-10-08T14:47:00.000000",
+      "entry_price": 103585.0,
+      "exit_price": 103275.0,
+      "hold_mins": 6,
+      "prob": 0.5169430355917973,
+      "exit_type": "시간만료",
+      "net_return": -0.3292711299898634,
+      "mfe": 0.13998165757590383,
+      "mae": -0.3958102041801419,
+      "entry_features": {
+        "target_rsi_daily": 56.21745974069814,
+        "target_adx": 56.60781673641763,
+        "target_ma_ratio": -0.00496309697260644,
+        "ref_000660_ret_5c": -0.005241700640652325
+      }
+    }
+  ],
+  "backbone_baseline": null,
+  "beats_backbone": true
+}

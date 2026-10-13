@@ -1,0 +1,23 @@
+{
+    "session_id": "SAMSUNG_M1_BEST1",
+    "symbol": "005930",
+    "interval": "1m",
+    "seed": 42,
+    "features_order": [
+        "ref_10100_spread_vs_target",
+        "target_vwap_disparity",
+        "target_bb_pctb",
+        "ref_10100_ret_1c"
+    ],
+    "feature_params": {
+        "ref_10100_spread_vs_target": {},
+        "target_vwap_disparity": {
+            "smooth_bars": 1
+        },
+        "target_bb_pctb": {
+            "period_bars": 20,
+            "std_dev": 2
+        },
+        "ref_10100_ret_1c": {}
+    }
+}

@@ -1,0 +1,166 @@
+"""kr_equity 수집·패널 모듈 — 임시 폴더로만 검사(실제 DataVault·네트워크 안 씀)."""
+import json
+import os
+import zipfile
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from shared.data_library.kr_equity import panel, runner, sources, store
+
+
+@pytest.fixture
+def stage(tmp_path, monkeypatch):
+    root = tmp_path / "staging" / "kr_equity"
+    root.mkdir(parents=True)
+    monkeypatch.setattr(store, "stage", lambda: str(root))
+    return root
+
+
+def _corpcode_zip(root, rows):
+    xml = "<result>" + "".join(f"<list><corp_code>{c}</corp_code><corp_name>{n}</corp_name><stock_code>{s}</stock_code>"
+                                f"<modify_date>20260101</modify_date></list>" for c, s, n in rows) + "</result>"
+    (root / "raw" / "dart").mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(root / "raw" / "dart" / "corpCode.zip", "w") as z:
+        z.writestr("CORPCODE.xml", xml)
+
+
+# ---------------------------------------------------------------- store
+def test_write_once_is_immutable_unless_replace(stage):
+    fp = str(stage / "raw" / "x" / "a.json")
+    assert store.write_once(fp, b"1") is True
+    assert store.write_once(fp, b"2") is False
+    assert open(fp, "rb").read() == b"1"
+    assert oct(os.stat(fp).st_mode & 0o777) == "0o444"
+    assert store.write_once(fp, b"3", replace=True) is True
+    assert open(fp, "rb").read() == b"3"
+
+
+def test_job_tracks_counts_and_caps_failed_list(stage):
+    j = store.Job("t", "테스트", 100, "건")
+    for i in range(60):
+        j.tick(failed=f"f{i}")
+    j.tick(fetched=True)
+    j.tick(skipped=True)
+    j.finish()
+    s = json.load(open(stage / "collect" / "t.json", encoding="utf-8"))
+    assert (s["done"], s["fetched"], s["skipped"], s["failed_n"], len(s["failed"]), s["finished"]) == (62, 1, 1, 60, 50, True)
+    j2 = store.Job("t", "테스트", 1, "건")
+    assert j2.s["first_started_at"] == s["first_started_at"]
+
+
+def test_build_universe_prefers_listed_unless_delisted_after_snapshot(stage):
+    (stage / "reference").mkdir()
+    (stage / "reference" / "listed_snapshot.csv").write_text(
+        "code,name,market,section,is_preferred,is_spac,control_kind,supervision_kind,status_kind,listed_date,snapshot_date\n"
+        "A000010,가,KOSPI,STOCK,0,0,0,0,0,19900101,2026-10-11\n"
+        "A000020,나,KOSDAQ,STOCK,0,0,0,0,0,20000101,2026-10-11\n", encoding="utf-8")
+    (stage / "reference" / "delisted.csv").write_text(
+        "code,name,market,delist_date,reason,kind_code,code_match,no\n"
+        "000020,나,KOSDAQ,2026-10-12,시총미달,00002,name,1\n"       # 스냅샷 뒤 폐지 → 상폐
+        "000010,가,KOSPI,2015-01-01,재상장전,00001,name,2\n"        # 스냅샷 전 폐지 뒤 재상장 → 상장 유지
+        "000030,다,KONEX,2020-01-01,x,00003,name,3\n"             # 코넥스 제외
+        "000040,라,KOSPI,2018-05-05,해산,00004,name,4\n", encoding="utf-8")
+    n = store.build_universe()
+    u = {r["code"]: r for r in store.read_universe()}
+    assert n == {"listed": 1, "delisted": 2}
+    assert u["A000010"]["status"] == "listed" and u["A000020"]["status"] == "delisted"
+    assert u["A000040"]["price_source"] == "naver" and "A000030" not in u
+    assert (stage / "targets_creon.txt").read_text().split() == ["A000010"]
+
+
+def test_universe_corps_maps_preferred_to_common(stage):
+    (stage / "universe.csv").write_text("code,name,market,status,is_preferred,is_spac,listed_date,delist_date,delist_reason,price_source\n"
+                                        "A005935,삼성전자우,KOSPI,listed,1,0,,,,creon\n", encoding="utf-8")
+    _corpcode_zip(stage, [("00126380", "005930", "삼성전자"), ("00000001", "000001", "기타")])
+    assert store.universe_corps() == {"00126380": "005930"}
+
+
+# ---------------------------------------------------------------- sources
+def test_parse_kind_rows():
+    html = ('<tr><td class="first txc">7</td><td><img alt=\'유가증권\'> <a onclick="companysummary_open(\'00503\');" title=\'부산주공\'>'
+            ' 부산주공</a></td><td class="txc">2026-10-12</td><td>기업의  계속성 <b>등</b></td><td></td></tr>')
+    r = sources.parse_kind(html)
+    assert r == [{"no": 7, "kind_code": "00503", "name": "부산주공", "market": "KOSPI", "delist_date": "2026-10-12", "reason": "기업의 계속성 등"}]
+
+
+def test_fnltt_chunks_are_stable_when_corps_added(stage):
+    a = sources._fnltt_chunks([f"{i:08d}" for i in range(150)])
+    assert [len(c) for c in a] == [100, 50]
+    b = sources._fnltt_chunks([f"{i:08d}" for i in range(160)])
+    assert b[0] == a[0] and b[1][:50] == a[1] and len(b[1]) == 60       # 기존 묶음 유지, 새 회사는 마지막에
+    c = sources._fnltt_chunks([f"{i:08d}" for i in range(260)])
+    assert [len(x) for x in c] == [100, 100, 60]
+
+
+def test_steps_registry_and_runner_commands(monkeypatch):
+    keys = [s["key"] for s in sources.STEPS]
+    assert "panel" in keys and "creon_daily" in keys and len(keys) == len(set(keys))
+    argv, cwd = runner.command("dart_list")
+    assert argv[-2:] == ["shared.data_library.kr_equity.cli", "dart_list"]
+    monkeypatch.setattr(runner, "_py_launcher", lambda: ["py.exe", "-3.10-32"])
+    argv, cwd = runner.command("creon_daily_ext", full=True)
+    assert argv[:3] == ["py.exe", "-3.10-32", "universe_driver.py"] and "--full" in argv and "--stage" in argv
+    assert cwd.endswith(os.path.join("CAiModelBaker", "core"))
+    monkeypatch.setattr(runner, "_py_launcher", lambda: None)
+    with pytest.raises(RuntimeError):
+        runner.command("creon_index")
+
+
+def test_runner_lock_clears_dead_pid(stage):
+    (stage / "collect").mkdir()
+    (stage / "collect" / ".running.json").write_text(json.dumps({"step": "x", "pid": 999999999}))
+    assert runner.running() is None
+    assert not (stage / "collect" / ".running.json").exists()
+    (stage / "collect" / ".running.json").write_text(json.dumps({"step": "y", "pid": os.getpid()}))
+    assert runner.running()["step"] == "y"
+
+
+# ---------------------------------------------------------------- panel
+def test_period_end_parses_both_forms():
+    assert panel.period_end_of("2024.01.01 ~ 2024.06.30") == "2024-06-30"
+    assert panel.period_end_of("2024.06.30 현재") == "2024-06-30"
+    assert panel.period_end_of("") is None
+
+
+def test_derive_q4_from_annual_minus_q3_cumulative():
+    w = pd.DataFrame({"stock_code": ["1"] * 4, "bsns_year": [2024] * 4, "reprt_code": ["11013", "11012", "11014", "11011"],
+                      "q": [1, 2, 3, 4], "sales": [10.0, 20.0, 30.0, 100.0], "sales_cum": [10.0, 30.0, 60.0, np.nan]})
+    for k in ("op_income", "net_income", "pretax_income"):
+        w[k] = np.nan
+    out = panel.derive_q4(w)
+    r = out[out.q == 4].iloc[0]
+    assert r.sales == 40.0 and r.sales_annual == 100.0 and r.sales_cum == 100.0
+    assert out[out.q < 4].sales.tolist() == [10.0, 20.0, 30.0]
+
+
+def test_parse_naver_and_shares():
+    d = panel.parse_naver(b'<x><item data="20170428|150|158|110|117|18522676" /><item data="20170502|98|106|79|79|11917330" /></x>')
+    assert list(d.close) == [117.0, 79.0] and str(d.date.iloc[0].date()) == "2017-04-28"
+    assert panel.parse_naver(b"<x></x>").empty
+    j = {"response": {"list": [{"se": "보통주", "rcept_no": "20170331004360", "distb_stock_co": "26,177,380"},
+                               {"se": "합계", "rcept_no": "20170331004360", "distb_stock_co": "26,177,380"}]}}
+    assert panel.parse_shares_file(j) == ("20170331", 26177380.0)
+    assert panel.parse_shares_file({"response": {"list": [{"se": "비고", "rcept_no": "1", "distb_stock_co": "-"}]}}) is None
+
+
+def test_read_creon_restores_regular_session_from_1m(stage, monkeypatch):
+    base = stage / "raw" / "creon"
+    (base / "candle_1d").mkdir(parents=True)
+    (base / "candle_1d_unadj").mkdir(parents=True)
+    hdr = "timestamp,upbit_open,upbit_high,upbit_low,upbit_close,upbit_volume,upbit_trade_price\n"
+    rows = "2026-09-11 00:00:00,100,110,90,100,10,1000\n2026-09-14 00:00:00,100,120,95,118,30,3000\n2026-09-15 00:00:00,118,119,117,119,5,500\n"
+    (base / "candle_1d" / "A000001_1d.csv").write_text(hdr + rows.replace(",100,110,90,100,", ",200,220,180,200,").replace(",100,120,95,118,", ",200,240,190,236,").replace(",118,119,117,119,", ",236,238,234,238,"))
+    (base / "candle_1d_unadj" / "A000001_1d.csv").write_text(hdr + rows)
+    m1 = stage / "m1" / "A000001"
+    m1.mkdir(parents=True)
+    (m1 / "2026-09-14.csv").write_text("timestamp,upbit_open,upbit_high,upbit_low,upbit_close,upbit_volume,upbit_trade_price\n"
+                                       "2026-09-14 09:01:00,100,105,99,104,10,1000\n2026-09-14 15:30:00,104,108,103,106,15,1500\n"
+                                       "2026-09-14 20:00:00,110,120,110,118,5,500\n")
+    monkeypatch.setattr(panel, "M1_STORE", str(stage / "m1"))
+    d = panel.read_creon("A000001").set_index("date")
+    assert d.loc["2026-09-11", "close"] == 200 and d.loc["2026-09-11", "reg_fix"] == 0
+    assert d.loc["2026-09-14", "close"] == pytest.approx(212) and d.loc["2026-09-14", "close_unadj"] == 106      # 정규장 종가 × 계수 2
+    assert d.loc["2026-09-14", "volume"] == 25 and d.loc["2026-09-14", "reg_fix"] == 1
+    assert np.isnan(d.loc["2026-09-15", "close"]) and d.loc["2026-09-15", "reg_fix"] == 2                       # 1분봉 없음 → NaN

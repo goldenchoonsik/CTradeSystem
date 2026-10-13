@@ -1,0 +1,123 @@
+# ==========================================
+# CTradeSystem Root Git Ignore
+# ==========================================
+
+# 1. Python & C++ Build / Compilation Artifacts
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dll
+*.dylib
+*.o
+*.obj
+*.a
+.Python
+build/
+**/build/
+develop-eggs/
+dist/
+**/dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+**/*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 2. Virtual Environments
+.venv/
+**/.venv/
+venv/
+**/venv/
+ENV/
+env/
+node_modules/
+**/node_modules/
+
+# 3. IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# 4. Logs, Runtime Outputs & Databases
+*.log
+**/*.log
+*.lock
+**/*.lock
+logs/
+**/logs/
+vultr_logs/
+*.sqlite3
+quant_engine_log.txt
+server_debug.log
+trade_debug.log
+
+# 5. Datasets & Market Data (Large files)
+/data/
+**/data/
+data_vault/
+**/data_vault/
+DataVault/*
+!DataVault/config/
+DataVault/config/backup.json
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.csv.gz
+*.tar.gz
+*.zip
+*.deactivated_bak*
+
+# 6. AI Models and Weights (Large binary files)
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.pb
+*.weights
+*.bin
+*.deb
+/models/
+**/models/
+
+# 7. Environments, Secrets & Configs
+.env
+*.env
+*.local
+config.local.json
+config/token_info.json
+**/config/token_info.json
+
+# 8. Temporary & Scratch Folders
+scratch/
+**/scratch/
+*.bak
+*.bak.*
+*.tmp
+*.temp
+
+# 7. Project lab: per-run artifacts and per-PC state (accepted models/config under deploy/*/*/ stay tracked)
+CAiModelBaker/deploy/*/*/runs/
+CAiModelBaker/config/active_project.json

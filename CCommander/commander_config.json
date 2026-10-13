@@ -1,0 +1,10 @@
+{
+  "PRIMARY_SERVICE": "ctrade",
+  "MANAGED_SERVICES": [
+    "ctrade"
+  ],
+  "LOG_DEFAULT_LINES": 20,
+  "STATUS_REFRESH_INTERVAL_SEC": 3,
+  "ALLOW_REBOOT": true,
+  "PROJECT_ROOT": "/root/projects/CTradeSystem"
+}

@@ -1,0 +1,17 @@
+# CTrade Git Ignore
+.venv/
+venv/
+.env
+*.log
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+build/
+config/token_info.json
+data/
+scratch/
+trade_debug.log
+trade_history.json
+spike_verification_history.json
+google_screenshot.png

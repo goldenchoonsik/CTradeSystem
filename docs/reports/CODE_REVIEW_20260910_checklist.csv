@@ -1,0 +1,21 @@
+id,severity,app,file_line,summary,status,fix_owner,verification_method,note
+C-1,critical,CTrade,CTrade/core/engine.py:541,"KIS 실전 매도 후 C++ 포지션 미제거(positions는 읽기전용 복사본)",VERIFIED,Cline,"remove_position 실증(포지션 제거 확인) + pytest 157건 통과",ctrade_core.h:318 / cpp:881 / binding:1610
+C-2,critical,CTrade,"CTrade/core/optimizer.py:88,109,113","Shadow optimizer의 async buy/sell을 await 없이 호출 → 체결 0건",VERIFIED,Cline,"evaluate async 전환 + engine.py:1660 await + 코루틴 실증 체결 확인 + pytest 157건 통과",evaluate를 async로 전환
+H-1,high,CTrade+CAiModelBaker,"shared/tbm_executor.py:28(resolve_exit) / backtester.py:262 / model_engine.py x7 / cross_validation.py:101 / web_dashboard:3241","청산 우선순위(당일청산 vs 비상손절) 백테스트≠실전",VERIFIED,Cline,"resolve_exit 단일화 + test_exit_priority_parity 9 passed + 전체 214 passed","단일 판정 함수로 통일"
+H-2,high,CAiModelBaker+CTrade,"CTrade/core/ai_strategy.py:172(_resolve_model_file) / CAiModelBaker/core/backtester.py:176","multiclass 모델을 model_{interval}.txt로 저장 + 로더 listdir[0] 임의 선택",VERIFIED,Cline,"test_ai_model_loader_spec 3 passed + 전체 217 passed","명명 규격 단일화"
+H-3,high,CAiModelBaker+CTrade,"shared/ai_policy.py:12(META_APPROVAL_THRESHOLD) / backtester.py:304 / model_engine.py:1726 / web_dashboard:3326 / ai_strategy.py:627","메타 필터 임계값 0.35/0.50 혼재 + 실전 미적용",VERIFIED,Cline,"test_meta_threshold_unification 5 passed + 메타 로더 1 passed + 전체 223 passed","단일 상수 0.50 통일"
+M-1,medium,CTrade,"CTrade/utils/history_store.py(save_history_merged) / simulator.py:47 / kis_trader.py:38","trade_history.json writer 충돌(마지막 writer가 상대 이벤트 소실)",VERIFIED,Cline,"test_history_merge 4 passed + 실제 VirtualTrader/KISTrader 종단 검증 + 전체 227 passed","합집합 병합+원자저장+파일락"
+M-2,medium,CTrade,CTrade/core/ai_strategy.py:919,"Lv.1 쿨다운 cooldown_candles=1 고정(인터벌 무시)",VERIFIED,Cline,"test_lv1_cooldown_interval 4 passed (10s=6, 1m=1, 10m=1) + 전체 234 passed","max(1,int(1/interval_minutes))"
+M-3,medium,shared,shared/feature_engine.py:112(_execute_feature_tasks),"병렬 피처 계산 순서 비결정성(피처 간 의존성 시 값 상이)",VERIFIED,Cline,"test_feature_parallel_determinism 3 passed(순차=병렬 동일) + 전체 234 passed","의존성 위상 레벨 스케줄링"
+L-1,low,CTrade,CTrade/utils/portfolio_tracker.py:18,"datetime.now() 로컬타임 사용(문서는 09:00 KST 롤오버)",VERIFIED,Cline,"datetime.now(KST) 6곳 치환 + 전체 242 passed",명시적 KST
+L-2,low,CTrade,CTrade/core/tick_router.py:40,"_is_futures_symbol 짧은 키워드 과매칭(부분문자열)",VERIFIED,Cline,"test_low_priority_fixes 8 passed + 전체 242 passed",정확 토큰 매칭
+L-3,low,CTrade,CTrade/core/cpp/ctrade_core.cpp:846,"get_stats total_asset 청산 수수료 미반영(ROI 소폭 낙관)",VERIFIED,Cline,"net 평가액 반영 + test_ctrade_core_stats_fee_adjusted + 재빌드(exit 0)",청산수수료 반영
+L-4,low,CTrade,CTrade/core/kis_trader.py:58,"KISTrader 실현손익 수수료 미차감",VERIFIED,Cline,"calc_realized_profit + CCommander 테스트 정정 + 전체 242 passed",왕복 수수료 반영
+L-5,low,CTrade,CTrade/core/auto_analyser.py:62,"UTC 문자열 변환 시 DST/altzone 미고려",VERIFIED,Cline,"calendar.timegm + test_auto_analyser_utc 2 passed",calendar.timegm
+L-6,low,CTrade,"CTrade/core/engine.py:1891,1904,1913","경계 트리거(지터 시 체크 누락 가능)",VERIFIED,Cline,"경과시간 기반(_last_*_ts) + 정적 테스트",경과시간 기반
+L-7,low,shared,shared/tests/cross_validation.py,"run_baker_simulation 매크로 필터 미적용",VERIFIED,Cline,"매크로 필터 반영 + test_low_priority_part2 + 전체 246 passed",resolve_exit(H-1)+macro
+L-8,low,test-infra,scripts/run_tests.sh,"동일 패키지명 core 로 인해 통합 pytest 수집 충돌",VERIFIED,Cline,"run_tests.sh 스위트 분리 실행 + bash -n OK",스위트 분리 실행
+H-4,low,CAiModelBaker,CAiModelBaker/web_dashboard/main.py:3244,"web_dashboard 백테스트 비상손절 미구현/영문 라벨",VERIFIED,Cline,"resolve_exit 통일(비상손절+한글라벨) + test_low_priority_part2 + 전체 246 passed",H-1 후속
+BUG-1,critical,CTrade,CTrade/core/ai_strategy.py:673,"multiclass 매수 진입 시 primary_is_buy 조건 누락 및 Signal __init__ 파라미터 불일치",VERIFIED,Antigravity,"primary_is_buy 가드 + Signal 확장 + test_multiclass_blocks_entry_when_primary_not_buy 실증 + 전체 247 passed",매수 오진입 차단
+INFRA-1,low,root,.gitignore:64,"동시성 제어 *.lock 패턴 누락",VERIFIED,Antigravity,".gitignore 에 *.lock 추가",락 파일 git 추적 배제
+DOCS-1,medium,docs,"docs/ARCHITECTURE.md, CAiModelBaker/docs/STRATEGY.md, docs/STRATEGY.md","3대 핵심 문서 실시간 최신화 및 동기화 무결성 확보 (사용자 룰 1, 2 준수)",VERIFIED,Antigravity,"19개 수정 사항 및 최신 아키텍처/청산순서/메타상수 문서 전면 동기화",동기화 무결성 100%

@@ -1,0 +1,17 @@
+import numpy as np, pandas as pd
+exec(open('/tmp/claude-1000/-home-kuzimo-projects-CTradeSystem/cdd04595-95b9-434d-934c-506721b93e31/scratchpad/overnight_scan_fixed.py').read().split("print('== 분해")[0])
+def perf(r, name):  # r: 일별 수익률 %(복리)
+    eq = (1 + r / 100).cumprod(); yrs = len(r) / 250
+    cagr = eq.iloc[-1] ** (1 / yrs) - 1; vol = r.std() / 100 * np.sqrt(250)
+    mdd = (1 - eq / eq.cummax()).max()
+    print(f'  {name:<34} CAGR={cagr:+.1%} 변동성={vol:.1%} 샤프={cagr / vol:+.2f} MDD={mdd:.1%}')
+print('== 선물 10년, 122630 환산(2배) ==')
+perf(2 * (fd.on + fd.id) , '보유(B&H 근사, 오버나잇+장중)')
+perf(2 * fd.on - 0.03, '오버나잇만 (비용 0.03%/회)')
+perf(2 * fd.id - 0.03, '장중만')
+perf(pd.Series(np.where(fd.dret < -1, 2 * fd.on - 0.03, 0), index=fd.index), '전날<-1%일 때만 오버나잇')
+perf(fd.on + fd.id, '[1배=069500 근사] 보유')
+perf(fd.on - 0.03, '[1배=069500 근사] 오버나잇만')
+print('== 122630 실측 2년 ==')
+perf(ed.on + ed.id, '보유')
+perf(pd.Series(tax_net(ed.on), index=ed.index), '오버나잇만 (비용+과세)')

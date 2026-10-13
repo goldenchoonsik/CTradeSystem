@@ -1,0 +1,459 @@
+{
+    "SYMBOL_UPBIT": "069500",
+    "SYMBOL_BINANCE": "",
+    "INTERVAL": "10s",
+    "FEE_UPBIT": 5e-05,
+    "SLIPPAGE": 0.0001,
+    "ARCHIVE_START_YM": "2020-01",
+    "ARCHIVE_END_YM": "2026-10",
+    "FEE_RATE": 5e-05,
+    "BACKTEST_DAYS": 40,
+    "COOLDOWN_MINUTES": 2,
+    "TRAIN_START": "2026-07-21",
+    "TRAIN_END": "2026-09-22",
+    "OPT_START": "2026-09-23",
+    "OPT_END": "2026-10-06",
+    "TEST_START": "2026-03-01",
+    "TEST_END": "2026-03-31",
+    "ACTIVE_SESSION_ID": "KODEX200_S10_NEW2",
+    "INTRADAY_SQUARE_OFF": true,
+    "USE_MACRO_FILTER": true,
+    "MACRO_RSI_FILTER_THRESHOLD": 50.0,
+    "FEATURE_CONFIG": {
+        "enabled_features": [
+            "ref_000660_ret_1c",
+            "ref_000660_spread_vs_target",
+            "ref_000660_intensity",
+            "target_trade_frequency",
+            "ref_000660_ret_5c",
+            "target_ma_ratio",
+            "target_mfi",
+            "top2_lead_momentum",
+            "target_macd_hist",
+            "target_bb_pctb",
+            "ref_15000_spread_vs_target",
+            "ref_10100_spread_vs_target",
+            "target_vwap_disparity",
+            "ref_usdjpy_spread_vs_target",
+            "ref_us_500_spread_vs_target",
+            "target_rsi_curr",
+            "ref_us_tech_100_spread_vs_target",
+            "ref_11100_spread_vs_target",
+            "target_trade_bid_ratio",
+            "ref_11100_ret_5c",
+            "target_large_trade_density",
+            "overnight_gap_pct",
+            "ref_11100_ret_1c",
+            "ref_usdjpy_ret_1c",
+            "ref_15000_ret_1c",
+            "ref_10100_ret_1c",
+            "ref_us_tech_100_ret_1c",
+            "stock_basis",
+            "stock_basis_rate",
+            "stock_basis_z",
+            "target_large_trade_ratio",
+            "target_volume_spike",
+            "target_trade_price_spike",
+            "target_bb_kc_squeeze",
+            "target_hour_cos",
+            "parkinson_rv_squeeze"
+        ],
+        "active_features": [
+            "ref_000660_ret_1c",
+            "ref_000660_spread_vs_target",
+            "ref_000660_intensity",
+            "target_trade_frequency",
+            "ref_000660_ret_5c",
+            "target_ma_ratio",
+            "target_mfi",
+            "top2_lead_momentum",
+            "target_macd_hist",
+            "target_bb_pctb",
+            "ref_15000_spread_vs_target",
+            "ref_10100_spread_vs_target",
+            "target_vwap_disparity",
+            "ref_usdjpy_spread_vs_target",
+            "ref_us_500_spread_vs_target",
+            "target_rsi_curr",
+            "ref_us_tech_100_spread_vs_target",
+            "ref_11100_spread_vs_target",
+            "target_trade_bid_ratio",
+            "ref_11100_ret_5c",
+            "target_large_trade_density",
+            "overnight_gap_pct",
+            "ref_11100_ret_1c",
+            "ref_usdjpy_ret_1c",
+            "ref_15000_ret_1c",
+            "ref_10100_ret_1c",
+            "ref_us_tech_100_ret_1c",
+            "stock_basis",
+            "stock_basis_rate",
+            "stock_basis_z",
+            "target_large_trade_ratio",
+            "target_volume_spike",
+            "target_trade_price_spike",
+            "target_bb_kc_squeeze",
+            "target_hour_cos",
+            "parkinson_rv_squeeze"
+        ],
+        "feature_params": {
+            "target_ma_ratio": {
+                "period_bars": 15
+            },
+            "target_trade_bid_ratio": {
+                "window_mins": 10
+            },
+            "target_rsi_daily": {
+                "period_days": 14
+            },
+            "target_hour": {},
+            "target_rsi_curr": {
+                "period_bars": 14
+            },
+            "target_adx": {
+                "period_bars": 14
+            },
+            "target_atr_ratio": {
+                "period_bars": 14
+            },
+            "ref_000660_ret_1c": {},
+            "ref_000660_intensity": {},
+            "ref_000660_spread_vs_target": {},
+            "target_trade_frequency": {},
+            "ref_000660_ret_5c": {
+                "candles": 5
+            },
+            "target_mfi": {
+                "period_bars": 14
+            },
+            "top2_lead_momentum": {
+                "candles": 5,
+                "window": 60
+            },
+            "target_bb_pctb": {
+                "period_bars": 20,
+                "std_dev": 2
+            },
+            "target_macd_hist": {
+                "fast_period": 12,
+                "slow_period": 26,
+                "signal_period": 9
+            },
+            "ref_10100_spread_vs_target": {},
+            "target_vwap_disparity": {
+                "smooth_bars": 1
+            },
+            "ref_us_500_spread_vs_target": {},
+            "ref_us_tech_100_spread_vs_target": {},
+            "target_ofi_cumsum": {
+                "window_bars": 10
+            },
+            "target_large_trade_density": {
+                "window_bars": 10
+            },
+            "target_is_auction": {},
+            "target_large_trade_ratio": {},
+            "target_volume_spike": {
+                "period_bars": 20
+            },
+            "target_trade_price_spike": {
+                "period_bars": 20
+            },
+            "target_bb_kc_squeeze": {
+                "period_bars": 20
+            },
+            "target_hour_cos": {},
+            "parkinson_rv_squeeze": {
+                "short_bars": 5,
+                "long_bars": 30
+            },
+            "krx_session_time": {},
+            "ref_15000_spread_vs_target": {},
+            "ref_usdjpy_spread_vs_target": {},
+            "ref_11100_spread_vs_target": {},
+            "ref_11100_ret_5c": {
+                "candles": 5
+            },
+            "overnight_gap_pct": {},
+            "ref_11100_ret_1c": {},
+            "ref_usdjpy_ret_1c": {},
+            "ref_15000_ret_1c": {},
+            "ref_10100_ret_1c": {},
+            "ref_us_tech_100_ret_1c": {},
+            "stock_basis": {},
+            "stock_basis_rate": {},
+            "stock_basis_z": {
+                "window": 60
+            }
+        },
+        "feature_penalties": {
+            "target_cvd_momentum": 0.3,
+            "target_trade_bid_ratio": 0.3
+        },
+        "regime_features": {
+            "target_is_auction": true,
+            "target_hour_cos": true,
+            "krx_session_time": true
+        }
+    },
+    "OPTUNA_CONFIG": {
+        "seed": 42,
+        "outer_trials": 15,
+        "inner_trials": 15,
+        "wfa_outer_trials": 2,
+        "wfa_inner_trials": 2,
+        "predict_ahead_candles_range": {
+            "min": 16,
+            "max": 48,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "take_profit_range": {
+            "min": 1,
+            "max": 4,
+            "step": 0.1,
+            "user_min": 1.2,
+            "user_max": 3.5
+        },
+        "stop_loss_range": {
+            "min": 0.5,
+            "max": 3,
+            "step": 0.1,
+            "user_min": 1,
+            "user_max": 2.5
+        },
+        "learning_rate_range": {
+            "min": 0.01,
+            "max": 0.1,
+            "user_min": 0.02,
+            "user_max": 0.08,
+            "step": 0.005
+        },
+        "max_depth_range": {
+            "min": 3,
+            "max": 10,
+            "user_min": 3,
+            "user_max": 4,
+            "step": 1
+        },
+        "num_leaves_range": {
+            "min": 15,
+            "max": 127,
+            "user_min": 8,
+            "user_max": 32,
+            "step": 1
+        },
+        "min_child_samples_range": {
+            "min": 10,
+            "max": 100,
+            "user_min": 20,
+            "user_max": 80,
+            "step": 1
+        },
+        "buy_threshold_range": {
+            "min": 0.5,
+            "max": 0.65,
+            "user_min": 0.52,
+            "user_max": 0.6,
+            "step": 0.01
+        },
+        "cooldown_minutes_range": {
+            "min": 1,
+            "max": 30,
+            "user_min": 2,
+            "user_max": 24,
+            "step": 1
+        },
+        "max_hold_candles_range": {
+            "min": 24,
+            "max": 64,
+            "user_min": 6,
+            "user_max": 6,
+            "step": 1
+        },
+        "fee_upbit": 5e-05,
+        "slippage": 0.0001,
+        "min_trades": 5,
+        "min_profit_factor": 0.5,
+        "wfa_enabled": true,
+        "wfa_train_months": 0.714,
+        "wfa_opt_months": 0.19,
+        "wfa_test_months": 0.19,
+        "wfa_start_date": "2026-07-21",
+        "wfa_end_date": "2026-09-22",
+        "buy_quantile_range": {
+            "min": 0.8,
+            "max": 0.995,
+            "step": 0.005,
+            "user_min": 0.8,
+            "user_max": 0.995
+        },
+        "split_unit": "td",
+        "wfa_window_count": 5,
+        "holdout_td": 7,
+        "wfa_input_values": {
+            "unit": "td",
+            "train": 15,
+            "opt": 4,
+            "test": 4
+        }
+    },
+    "AUTOLAB_CONFIG": {
+        "min_profit": 0,
+        "min_trades": 8,
+        "max_mdd": 10,
+        "max_trials": 30,
+        "seed": 42,
+        "holdout_start": "2026-09-23",
+        "holdout_end": "2026-10-06",
+        "align_mode": "",
+        "ic_threshold": 0.015,
+        "min_features": 2,
+        "max_features": 10,
+        "complexity_penalty": 0.15,
+        "final_test_ratio": 100,
+        "holdout_mode": "full",
+        "final_test_td": 5,
+        "use_all_features": false,
+        "allow_gapped_trading_days": true
+    },
+    "PROJECT_META": {
+        "memo": "",
+        "created_at": "2026-10-04 17:58:29",
+        "created_from": "defaults"
+    },
+    "TARGET_HORIZON_CONFIG": {
+        "interval": "10s",
+        "mode": "locked",
+        "locked_predict_ahead": 6,
+        "locked_max_hold": 6,
+        "candidate_horizons": [
+            6,
+            9,
+            12
+        ],
+        "candidate_details": [
+            {
+                "candles": 6,
+                "minutes": 1,
+                "name": "초단기 체결 펄스 (1분)"
+            },
+            {
+                "candles": 18,
+                "minutes": 3,
+                "name": "수급 모멘텀 (3분, 추천★)"
+            },
+            {
+                "candles": 36,
+                "minutes": 6,
+                "name": "호가 흡수 파동 (6분)"
+            },
+            {
+                "candles": 60,
+                "minutes": 10,
+                "name": "마이크로 세션 추세 (10분)"
+            }
+        ]
+    },
+    "reference_symbols": [
+        {
+            "symbol": "10100",
+            "key": "10100",
+            "name": "KOSPI 200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "key": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "key": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "key": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "USDJPY",
+            "key": "usdjpy",
+            "name": "달러-엔화 FX (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "11100",
+            "key": "11100",
+            "name": "삼성전자 주식선물 (연결)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "15000",
+            "key": "15000",
+            "name": "SK하이닉스 주식선물 (연결)",
+            "role": "macro_futures"
+        }
+    ],
+    "REFERENCE_SYMBOLS": [
+        {
+            "symbol": "10100",
+            "key": "10100",
+            "name": "KOSPI 200 선물",
+            "role": "kospi_futures"
+        },
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "005930",
+            "key": "005930",
+            "name": "삼성전자",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "key": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "key": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "USDJPY",
+            "key": "usdjpy",
+            "name": "달러-엔화 FX (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "11100",
+            "key": "11100",
+            "name": "삼성전자 주식선물 (연결)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "15000",
+            "key": "15000",
+            "name": "SK하이닉스 주식선물 (연결)",
+            "role": "macro_futures"
+        }
+    ]
+}

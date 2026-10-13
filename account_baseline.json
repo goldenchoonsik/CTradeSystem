@@ -1,0 +1,38 @@
+{
+  "UPBIT": {
+    "initial_balance": 200000.49945502,
+    "initial_timestamp": "2026-08-29 11:10:47",
+    "daily_balance": 193940.37197426,
+    "daily_date": "2026-10-09",
+    "daily_timestamp": "2026-10-09 10:31:40"
+  },
+  "KIS": {
+    "initial_balance": 200000.4056,
+    "initial_timestamp": "2026-08-29 11:10:47",
+    "daily_balance": 205745.5784,
+    "daily_date": "2026-10-09",
+    "daily_timestamp": "2026-10-09 10:31:40"
+  },
+  "TOTAL": {
+    "initial_balance": 400000.90505502,
+    "initial_timestamp": "2026-08-29 11:10:47",
+    "daily_balance": 399685.95037425996,
+    "daily_date": "2026-10-09",
+    "daily_timestamp": "2026-10-09 10:31:40"
+  },
+  "history": [
+    {
+      "id": "base_1787969447300_56ac8b",
+      "timestamp": "2026-08-29 11:10:47",
+      "broker": "ALL",
+      "action": "RESET",
+      "upbit_balance": 200000.49945502,
+      "kis_balance": 200000.4056,
+      "total_balance": 400000.90505502,
+      "prev_upbit": 30726.49945502,
+      "prev_kis": 7519.0,
+      "prev_total": 38245.49945502,
+      "note": "업비트, 한국투자증권 국내 각각 20만원 테스트 세팅"
+    }
+  ]
+}
