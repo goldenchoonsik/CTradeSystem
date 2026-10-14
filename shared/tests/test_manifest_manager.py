@@ -73,3 +73,23 @@ def test_manifest_missing_detection():
         ok, msg = ManifestManager.verify_manifest(test_file)
         assert ok is False
         assert "매니페스트 누락" in msg
+
+
+def test_daily_file_is_not_judged_by_minute_completeness():
+    """일봉(하루 1분)에 KRX 380분 검사를 적용하면 모든 날이 '이상'으로 박제된다(삼성전자 일봉 236KB 오판 목록)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        f = os.path.join(tmpdir, "A005930_1d.csv")
+        pd.DataFrame({"timestamp": [f"2026-09-{d:02d} 00:00:00" for d in range(1, 21)], "close": range(20)}).to_csv(f, index=False)
+        m = ManifestManager.generate_and_save_manifest(f, provider="creon")
+        v = m["krx_validation"]
+        assert v["applicable"] is False and v["anomaly_dates"] == [] and v["trading_days"] == 20
+        assert m["market"] == "KRX" and m["timezone"] == "Asia/Seoul"
+
+
+def test_us_daily_manifest_records_market_and_timezone():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        f = os.path.join(tmpdir, "AAPL_1d.csv")
+        pd.DataFrame({"timestamp": ["2026-10-12 00:00:00", "2026-10-13 00:00:00"], "close": [1.0, 2.0]}).to_csv(f, index=False)
+        m = ManifestManager.generate_and_save_manifest(f, provider="yahoo", market="US", timezone_name="America/New_York")
+        assert m["market"] == "US" and m["timezone"] == "America/New_York"
+        assert m["krx_validation"]["applicable"] is False and m["krx_validation"]["trading_days"] == 2

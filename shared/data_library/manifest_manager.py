@@ -41,6 +41,27 @@ class ManifestManager:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
+    # KRX 정규장 분 단위 완결성(하루 380분 이상) 검사는 분봉·틱처럼 하루에 분이 많이 찍히는 데이터에만 의미가 있다.
+    # 일봉(하루 1분)·5분봉(하루 76분)에 적용하면 모든 날이 '이상'으로 기록된다 — 2026-10-15 실측: 삼성전자 일봉 매니페스트
+    # 324KB 중 236KB가 1980년부터 전 거래일 '1m' 이상 목록이었다. 하루 고유 분 수의 중앙값이 이 값 미만이면 검사 대상이 아니다.
+    MINUTE_CHECK_MIN_MEDIAN = 300
+
+    @classmethod
+    def _krx_minute_metrics(cls, market: str, mins_per_day: Dict[str, int]) -> Dict[str, Any]:
+        trading_days = len(mins_per_day)
+        counts = sorted(mins_per_day.values())
+        min_mins = counts[0] if counts else 0
+        median = counts[len(counts) // 2] if counts else 0
+        out = {"market": market.upper(), "trading_days": trading_days, "min_minutes_per_day": min_mins}
+        if market.upper() != "KRX" or median < cls.MINUTE_CHECK_MIN_MEDIAN:
+            out.update({"applicable": False, "fully_intact": None, "anomaly_dates": [],
+                        "reason": "KRX 시장이 아님" if market.upper() != "KRX"
+                        else f"분 단위 데이터가 아님(하루 고유 분 중앙값 {median}) — 380분 완결성 검사 대상 아님"})
+            return out
+        anomalies = [f"{d} ({c}m)" for d, c in mins_per_day.items() if c < 380]
+        out.update({"applicable": True, "fully_intact": (min_mins >= 380 and not anomalies), "anomaly_dates": anomalies})
+        return out
+
     @classmethod
     def inspect_dataset_metrics(
         cls, file_path: str, market: str = "KRX"
@@ -85,30 +106,12 @@ class ManifestManager:
                 first_ts = ts_series.iloc[0]
                 last_ts = ts_series.iloc[-1]
 
-                if market.upper() == "KRX":
-                    try:
-                        dt_series = pd.to_datetime(ts_series)
-                        date_series = dt_series.dt.date
-                        minute_series = dt_series.dt.floor("min")
-                        unique_mins = minute_series.groupby(date_series).nunique()
-
-                        trading_days = len(unique_mins)
-                        min_mins = int(unique_mins.min()) if trading_days > 0 else 0
-                        anomalies = [
-                            f"{str(d)} ({cnt}m)"
-                            for d, cnt in unique_mins.items()
-                            if cnt < 380
-                        ]
-
-                        krx_metrics = {
-                            "market": "KRX",
-                            "trading_days": trading_days,
-                            "min_minutes_per_day": min_mins,
-                            "fully_intact": (min_mins >= 380 and len(anomalies) == 0),
-                            "anomaly_dates": anomalies,
-                        }
-                    except Exception as e:
-                        krx_metrics["error"] = str(e)
+                try:
+                    dt_series = pd.to_datetime(ts_series)
+                    unique_mins = dt_series.dt.floor("min").groupby(dt_series.dt.date).nunique()
+                    krx_metrics = cls._krx_minute_metrics(market, {str(d): int(c) for d, c in unique_mins.items()})
+                except Exception as e:
+                    krx_metrics["error"] = str(e)
 
             # 헬스 메트릭 (Parquet 및 고도화 감사용)
             null_ratio = float(df.isnull().mean().mean()) if not df.empty else 0.0
@@ -152,7 +155,7 @@ class ManifestManager:
                         first_ts = ts_val
                     last_ts = ts_val
 
-                    if market.upper() == "KRX" and len(ts_val) >= 16:
+                    if len(ts_val) >= 16:
                         # "YYYY-MM-DD HH:MM" 추출
                         day = ts_val[:10]
                         minute = ts_val[:16]
@@ -160,25 +163,7 @@ class ManifestManager:
                             unique_minutes_by_day[day] = set()
                         unique_minutes_by_day[day].add(minute)
 
-        trading_days = len(unique_minutes_by_day)
-        min_mins = (
-            min((len(s) for s in unique_minutes_by_day.values()), default=0)
-            if trading_days > 0
-            else 0
-        )
-        anomalies = [
-            f"{d} ({len(s)}m)"
-            for d, s in unique_minutes_by_day.items()
-            if len(s) < 380
-        ]
-
-        krx_metrics = {
-            "market": market,
-            "trading_days": trading_days,
-            "min_minutes_per_day": min_mins,
-            "fully_intact": (min_mins >= 380 and len(anomalies) == 0),
-            "anomaly_dates": anomalies,
-        }
+        krx_metrics = cls._krx_minute_metrics(market, {d: len(s) for d, s in unique_minutes_by_day.items()})
 
         integrity_metrics = {
             "byte_size": os.path.getsize(file_path),
@@ -199,8 +184,10 @@ class ManifestManager:
         market: str = "KRX",
         notes: str = "",
         extra_meta: Optional[Dict[str, Any]] = None,
+        timezone_name: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """데이터 파일의 사이드카 매니페스트를 생성하고 저장한다."""
+        """데이터 파일의 사이드카 매니페스트를 생성하고 저장한다.
+        timezone_name: 타임스탬프 문자열의 시간대. 없으면 시장 기본값(KRX=Asia/Seoul, 그 외 UTC)."""
         abs_data_path = os.path.abspath(data_path)
         if not os.path.exists(abs_data_path):
             raise FileNotFoundError(f"데이터 파일이 존재하지 않습니다: {abs_data_path}")
@@ -242,7 +229,7 @@ class ManifestManager:
             "symbol": symbol,
             "asset_type": asset_type.lower(),
             "market": market.upper(),
-            "timezone": "Asia/Seoul" if market.upper() == "KRX" else "UTC",
+            "timezone": timezone_name or ("Asia/Seoul" if market.upper() == "KRX" else "UTC"),
             "created_at": now_kst,
             "integrity": integrity,
             "health_summary": health_summary,
@@ -272,6 +259,7 @@ class ManifestManager:
         market: str = "KRX",
         notes: str = "",
         extra_meta: Optional[Dict[str, Any]] = None,
+        timezone_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """하위 호환 및 일괄 동기화용 래퍼: create_manifest 호출"""
         return cls.create_manifest(
@@ -283,6 +271,7 @@ class ManifestManager:
             market=market,
             notes=notes,
             extra_meta=extra_meta,
+            timezone_name=timezone_name,
         )
 
     @classmethod

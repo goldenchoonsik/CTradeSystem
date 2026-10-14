@@ -179,6 +179,11 @@
       "convention": "bar_open",
       "basis": "empirical",
       "evidence": "Coinbase candles 의 bucket 시각은 구간 시작 시각. 2026-09-28 확인: BTC-USD 와 BINANCE BTCUSDT 의 상관이 lag 0 에서 최대(+0.99)."
+    },
+    "YAHOO": {
+      "convention": "bar_open",
+      "basis": "empirical",
+      "evidence": "2026-10-15: Yahoo chart API 일봉 timestamp 는 그날 정규장 시작(09:30 ET) epoch 이고, 장중에 받은 응답의 그날 봉은 진행 중 값(IBM 10-14 거래량 64만 vs 확정 510만). 원천(raw/yahoo/candle_1d)은 거래소 현지 세션 날짜 00:00 라벨로 저장 — 종가는 그날 16:00 ET(KST 다음날 05~06시)에 확정되므로 봉 시작 라벨이다. 분봉도 Yahoo 는 구간 시작 시각(해외선물 OVERSEAS/CME 와 같은 Yahoo 경로)."
     }
   }
 }

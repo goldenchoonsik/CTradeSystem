@@ -706,6 +706,7 @@ def build_normalized_us_stock(
 
     if raw_candle_path is None or not os.path.exists(raw_candle_path):
         candidates = [
+            dpaths.raw_path("yahoo", f"candle_{interval}", f"{clean_sym}_{interval}.csv"),   # 출처 Yahoo (2026-10-15~)
             dpaths.raw_path("kis", f"candle_{interval}", f"{clean_sym}_{interval}.csv"),
             dpaths.raw_path("kis", "candle_1m", f"{clean_sym}_1m.csv"),
             dpaths.data_path("historical", "kis", f"candle_{interval}", f"{clean_sym}_{interval}.csv"),

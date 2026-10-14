@@ -172,12 +172,13 @@ def interval_label(interval: str) -> str:
 
 
 def raw_target(kind: str, symbol: str, interval: str) -> str:
-    """원천 파일 경로 — kind='overseas' → DataVault/raw/overseas/futures_{주기}/, 'us_stock' → DataVault/raw/kis/candle_{주기}/"""
+    """원천 파일 경로 — kind='overseas' → DataVault/raw/overseas/futures_{주기}/, 'us_stock' → DataVault/raw/yahoo/candle_{주기}/
+    (미국 주식·ETF 의 출처는 Yahoo 다. 2026-10-15 이전에는 raw/kis 에 두었으나 출처와 폴더가 달라 옮겼다.)"""
     from shared.data_library.paths import data_vault_path
     lab = interval_label(interval)
     if kind == "overseas":
         return data_vault_path("raw", "overseas", f"futures_{lab}", f"{symbol}_{lab}.csv")
-    return data_vault_path("raw", "kis", f"candle_{lab}", f"{symbol}_{lab}.csv")
+    return data_vault_path("raw", "yahoo", f"candle_{lab}", f"{symbol}_{lab}.csv")
 
 
 def _ingest(df: pd.DataFrame, target: str, interval: str, label: str, requested_after, source_exhausted: bool, local_log=print):
@@ -347,37 +348,39 @@ def _last_ts(path: str):
 
 def download_and_save_us_stock(symbol: str, interval: str = "1m", range_str: str = None, baker_root: str = None, local_log=print) -> str:
     """
-    미국 개별 주식/ETF (GOOGL, NVDA, TSLA, AAPL, QQQ 등) 시세를 받아 원천(DataVault/raw/kis/candle_{주기})에 공통 절차로 저장
+    미국 개별 주식/ETF (GOOGL, NVDA, TSLA, AAPL, QQQ 등) 시세를 받아 원천(DataVault/raw/yahoo/candle_{주기})에 공통 절차로 저장.
+    일봉은 전 종목 수집(shared.data_library.us_equity)과 같은 경로·같은 파일이다 — 무수정가(분할 되돌림)·기업행위 분리·응답 원본 보존.
+    분봉은 Yahoo 조회 창(1m 7일·5m 60일)만 주며 분할 수정값 그대로다(창 안에 분할이 있으면 '확인 필요'로 드러난다).
     """
+    sym_clean = symbol.upper().strip()
+    if interval_label(interval) == "1d":
+        from shared.data_library import raw_ingest
+        from shared.data_library.us_equity import bronze
+        from shared.data_library.us_equity.yahoo import PERIOD1_ALL, fetch_chart
+        target = bronze.candle_path(sym_clean)
+        last = raw_ingest._kst(raw_ingest.last_timestamp(target))
+        period1 = PERIOD1_ALL if last is None else int((last - timedelta(days=14)).timestamp())
+        raw, why = fetch_chart(sym_clean, period1=period1, log=local_log)
+        if raw is None:
+            local_log(f"  ❌ [US Market] {sym_clean} (1d) 데이터 다운로드 실패: {why}")
+            return ""
+        bronze.save_response(sym_clean, raw, datetime.now().strftime("%Y%m%d"))
+        rep = bronze.ingest_response(sym_clean, raw, full_history=last is None, log=local_log)
+        if rep is None:
+            local_log(f"  ❌ [US Market] {sym_clean} (1d) 저장 실패 — 기존 원천은 그대로입니다")
+            return ""
+        local_log(f"  💾 [US Market] {sym_clean} (1d) 원천 저장: {target} (수신 {rep['rows']:,}행, 추가 {rep['added_rows']:,})")
+        return target
+
     if range_str is None:
         range_str = _RANGE_BY_INTERVAL.get(interval, _RANGE_BY_INTERVAL.get(interval.lower(), "7d"))
-    before = _last_ts(raw_target("us_stock", symbol.upper().strip(), interval))
+    target = raw_target("us_stock", sym_clean, interval)
+    before = _last_ts(target)
     df = fetch_yahoo_chart_data(symbol, interval, range_str, local_log=local_log)
     if df.empty:
         local_log(f"  ❌ [US Market] {symbol} ({interval}) 데이터 다운로드 실패")
         return ""
-    
-    sym_clean = symbol.upper().strip()
-    target = raw_target("us_stock", sym_clean, interval)
-
-    # 표준 컬럼 포맷팅
-    std_df = pd.DataFrame()
-    std_df['timestamp'] = df['timestamp']
-    std_df['upbit_open'] = df['open'].astype(float)
-    std_df['upbit_high'] = df['high'].astype(float)
-    std_df['upbit_low'] = df['low'].astype(float)
-    std_df['upbit_close'] = df['close'].astype(float)
-    std_df['upbit_volume'] = df['volume'].astype(float)
-    std_df['upbit_trade_price'] = (std_df['upbit_close'] * std_df['upbit_volume']).astype(float)
-    
-    # target_* 컬럼 동시 제공
-    std_df['target_open'] = std_df['upbit_open']
-    std_df['target_high'] = std_df['upbit_high']
-    std_df['target_low'] = std_df['upbit_low']
-    std_df['target_close'] = std_df['upbit_close']
-    std_df['target_volume'] = std_df['upbit_volume']
-    std_df['target_trade_price'] = std_df['upbit_trade_price']
-    
+    std_df = df[["timestamp", "open", "high", "low", "close", "volume"]].copy()
     out = _ingest(std_df, target, interval, f"US/{sym_clean}", before, True, local_log)
     if out:
         local_log(f"  💾 [US Market] {sym_clean} ({interval}) 원천 저장: {out} (수신 {len(std_df):,}행)")

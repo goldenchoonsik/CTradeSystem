@@ -6535,6 +6535,7 @@ async function loadDataVaultStatus() {
     loadMedallionStatus();
     loadRawFeedRegistry();
     loadHealthMatrix();
+    loadRawCatalog();
     if (typeof loadRawBackupStatus === 'function') loadRawBackupStatus();
     const tbody = document.getElementById('dataVaultTableBody');
     if (!tbody) return;
@@ -9024,4 +9025,136 @@ function renderResearchSymbols(key) {
            + `<td style="color:${col};">${lbl}</td><td>${v(r.m1_days)}</td><td>${v(r.halted_days)}</td><td>${adj}</td><td>${v(r.quarantined_days)}</td><td>${qual}</td></tr>`;
     });
     document.getElementById('rdt-' + name).innerHTML = h + '</table>';
+}
+
+
+// ───────────────────────────────────────────────────────────────────────────
+// 원천 목록 (운용 + 유니버스) — 요약 → 이상만 → 검색(서버 페이지). shared/data_library/raw_catalog.py
+// ───────────────────────────────────────────────────────────────────────────
+let _rcPage = 1, _rcTimer = null, _rcOpenKey = null;
+const _RC_ISSUE_COLOR = {conflict: '#f87171', stale: '#fbbf24', missing_days: '#fb923c', no_file: '#f87171',
+                         no_manifest: '#f87171', size_mismatch: '#f87171', listing_ended: '#94a3b8'};
+
+async function loadRawCatalog(force) {
+    const badge = document.getElementById('rawCatalogBadge');
+    if (!badge) return;
+    badge.textContent = force ? '다시 훑는 중...' : '로딩 중...';
+    let res;
+    try { res = await apiGet('/api/raw_store/catalog/summary' + (force ? '?force=true' : '')); } catch (e) { badge.textContent = '조회 실패'; return; }
+    if (!res || res.status !== 'ok') { badge.textContent = (res && res.message) || '조회 실패'; return; }
+    const anomaly = res.anomaly_total || 0;
+    badge.textContent = `${res.total.toLocaleString()}종목 · 이상 ${anomaly.toLocaleString()}`;
+    badge.className = 'badge ' + (anomaly ? 'badge-orange' : 'badge-green');
+    badge.style.background = anomaly ? 'rgba(251,146,60,0.15)' : 'rgba(74,222,128,0.15)';
+    badge.style.color = anomaly ? '#fb923c' : '#4ade80';
+    document.getElementById('rawCatalogBuilt').textContent = `목록 ${String(res.built_at || '').replace('T', ' ')}` +
+        (res.listing_day ? ` · 거래소 목록 ${res.listing_day}` : '');
+    document.getElementById('rawCatalogWarnings').innerHTML = (res.warnings || []).map(w =>
+        `<div style="margin-bottom:8px;padding:6px 10px;border-radius:6px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);color:#fbbf24;font-size:12px;">⚠️ ${_esc(w)}</div>`).join('');
+    const latest = res.market_latest || {};
+    const rows = (res.groups || []).map(g => `<tr>
+        <td>${_esc(g.tier)}</td><td>${_esc(g.market)}</td><td>${_esc(g.provider)}</td>
+        <td style="text-align:right;">${g.count.toLocaleString()}</td>
+        <td style="text-align:right;">${_esc(g.last_max || '-')}</td>
+        <td style="text-align:right;color:${g.anomaly ? '#fb923c' : '#4ade80'};cursor:${g.anomaly ? 'pointer' : 'default'};"
+            ${g.anomaly ? `onclick="rawCatalogFilter('${_esc(g.tier)}','${_esc(g.market)}')"` : ''}>${g.anomaly.toLocaleString()}</td>
+        <td style="text-align:right;color:#94a3b8;">${g.ended ? g.ended.toLocaleString() : ''}</td></tr>`).join('');
+    const issues = (res.issues || []).map(i => `<span style="display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:10px;font-size:11px;cursor:pointer;
+        border:1px solid ${_RC_ISSUE_COLOR[i.code] || '#94a3b8'};color:${_RC_ISSUE_COLOR[i.code] || '#94a3b8'};"
+        onclick="rawCatalogIssue('${_esc(i.code)}')">${_esc(i.label)} ${i.count.toLocaleString()}</span>`).join('');
+    document.getElementById('rawCatalogSummary').innerHTML = `
+        <table class="table" style="width:100%;font-size:12px;border-collapse:collapse;">
+          <thead><tr style="color:#94a3b8;"><th style="text-align:left;">구분</th><th style="text-align:left;">시장</th><th style="text-align:left;">원천</th>
+            <th style="text-align:right;">종목</th><th style="text-align:right;">최신일</th><th style="text-align:right;">이상</th><th style="text-align:right;">상장 종료</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+        <div style="margin-top:6px;">${issues}</div>
+        ${Object.keys(latest).length ? `<div style="font-size:11px;color:#64748b;margin-top:4px;">시장 최신 거래일(유니버스 최빈 마지막 날): ${Object.entries(latest).map(([k, v]) => `${_esc(k)} ${_esc(v || '-')}`).join(' · ')}</div>` : ''}`;
+    const sel = document.getElementById('rcIssue');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">모든 이상 종류</option>' + (res.issues || []).map(i =>
+        `<option value="${_esc(i.code)}">${_esc(i.label)} (${i.count.toLocaleString()})</option>`).join('');
+    sel.value = cur;
+    rawCatalogSearch(_rcPage);
+}
+
+function rawCatalogFilter(tier, market) {
+    document.getElementById('rcTier').value = tier;
+    document.getElementById('rcMarket').value = market;
+    document.getElementById('rcView').value = 'anomaly';
+    rawCatalogSearch(1);
+}
+
+function rawCatalogIssue(code) {
+    document.getElementById('rcIssue').value = code;
+    document.getElementById('rcView').value = '';
+    rawCatalogSearch(1);
+}
+
+function rawCatalogSearchDebounced() {
+    clearTimeout(_rcTimer);
+    _rcTimer = setTimeout(() => rawCatalogSearch(1), 300);
+}
+
+async function rawCatalogSearch(page) {
+    _rcPage = page || 1;
+    const q = document.getElementById('rcQ').value.trim();
+    const params = new URLSearchParams({
+        q, tier: document.getElementById('rcTier').value, market: document.getElementById('rcMarket').value,
+        issue: document.getElementById('rcIssue').value, page: _rcPage, size: 50,
+        // 검색어가 있으면 '이상만'이어도 전체에서 찾는다(찾는 종목이 정상이어도 보여야 한다)
+        only_anomaly: (document.getElementById('rcView').value === 'anomaly' && !q && !document.getElementById('rcIssue').value) ? 'true' : 'false',
+    });
+    const box = document.getElementById('rcTable');
+    let res;
+    try { res = await apiGet('/api/raw_store/catalog/items?' + params.toString()); } catch (e) { box.textContent = '조회 실패: ' + e; return; }
+    if (!res || res.status !== 'ok') { box.textContent = (res && res.message) || '조회 실패'; return; }
+    document.getElementById('rcCount').textContent = `${res.total.toLocaleString()}건`;
+    if (!res.items.length) {
+        box.innerHTML = `<div style="padding:12px;color:#4ade80;font-size:12px;">${params.get('only_anomaly') === 'true' ? '✅ 이상 없음' : '해당 종목 없음'}</div>`;
+    } else {
+        box.innerHTML = `<table class="table" style="width:100%;font-size:12px;border-collapse:collapse;">
+          <thead><tr style="color:#94a3b8;position:sticky;top:0;background:#0f172a;">
+            <th style="text-align:left;">심볼</th><th style="text-align:left;">이름</th><th>구분</th><th>시장</th><th>원천</th><th>주기</th>
+            <th style="text-align:right;">봉 수</th><th style="text-align:right;">시작</th><th style="text-align:right;">최신일</th><th style="text-align:left;">이상</th></tr></thead>
+          <tbody>${res.items.map(e => {
+            const tags = (e.issues || []).map((c, i) => `<span style="margin-right:4px;padding:1px 6px;border-radius:8px;font-size:11px;border:1px solid ${_RC_ISSUE_COLOR[c] || '#94a3b8'};color:${_RC_ISSUE_COLOR[c] || '#94a3b8'};">${_esc((e.issue_labels || [])[i] || c)}${c === 'missing_days' && e.missing_days ? ' ' + e.missing_days : ''}${c === 'conflict' && e.conflicts ? ' ' + e.conflicts : ''}</span>`).join('');
+            const open = e.tier === '유니버스' || e.key.indexOf('feed:') !== 0;
+            return `<tr style="border-top:1px solid rgba(255,255,255,0.05);${open ? 'cursor:pointer;' : ''}" ${open ? `onclick="rawCatalogDetail('${encodeURIComponent(e.key)}')"` : ''}>
+              <td style="font-weight:600;">${_esc(e.symbol)}${e.etf ? ' <span style="font-size:10px;color:#94a3b8;">ETF</span>' : ''}</td>
+              <td style="color:#cbd5e1;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_esc(e.name)}">${_esc(e.name || '')}</td>
+              <td style="text-align:center;color:${e.tier === '운용' ? '#38bdf8' : '#94a3b8'};">${_esc(e.tier)}</td>
+              <td style="text-align:center;">${_esc(e.market)}</td><td style="text-align:center;">${_esc(e.provider)}</td><td style="text-align:center;">${_esc(e.interval || '')}</td>
+              <td style="text-align:right;">${e.rows != null ? Number(e.rows).toLocaleString() : ''}</td>
+              <td style="text-align:right;">${_esc(e.first || '')}</td><td style="text-align:right;">${_esc(e.last || '')}</td>
+              <td>${tags}</td></tr>
+              <tr id="rcd-${encodeURIComponent(e.key)}" style="display:none;"><td colspan="10"></td></tr>`;
+          }).join('')}</tbody></table>`;
+    }
+    const pages = Math.max(1, Math.ceil(res.total / res.size));
+    document.getElementById('rcPager').innerHTML = pages <= 1 ? '' : `
+        <button class="btn btn-xs" ${_rcPage <= 1 ? 'disabled' : ''} onclick="rawCatalogSearch(${_rcPage - 1})">◀</button>
+        <span>${_rcPage} / ${pages}</span>
+        <button class="btn btn-xs" ${_rcPage >= pages ? 'disabled' : ''} onclick="rawCatalogSearch(${_rcPage + 1})">▶</button>`;
+}
+
+async function rawCatalogDetail(encKey) {
+    const row = document.getElementById('rcd-' + encKey);
+    if (!row) return;
+    if (row.style.display !== 'none') { row.style.display = 'none'; return; }
+    row.style.display = '';
+    const cell = row.firstElementChild;
+    cell.innerHTML = '<div style="padding:8px;color:#94a3b8;">불러오는 중…</div>';
+    let res;
+    try { res = await apiGet('/api/raw_store/catalog/detail?key=' + encKey); } catch (e) { cell.textContent = '조회 실패: ' + e; return; }
+    if (!res || res.status !== 'ok' || res.error) { cell.textContent = (res && (res.error || res.message)) || '조회 실패'; return; }
+    const a = res.actions || {};
+    const miss = res.recent_missing || [];
+    const conf = res.conflicts || [];
+    cell.innerHTML = `<div style="padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:6px;font-size:12px;color:#cbd5e1;line-height:1.7;">
+        <div>파일 <code>${_esc(res.key)}</code></div>
+        ${res.recent_window && res.recent_window.length ? `<div>최근 거래일(${_esc(res.recent_window[0])}~${_esc(res.recent_window[1])}, 기준 SPY) 중 빠진 날: ${miss.length ? `<span style="color:#fb923c;">${miss.length}일</span> ${_esc(miss.slice(0, 12).join(', '))}${miss.length > 12 ? ' …' : ''}` : '<span style="color:#4ade80;">없음</span>'}</div>` : ''}
+        <div>확인 필요: ${conf.length ? `<span style="color:#f87171;">${conf.length}건</span> ${_esc(conf.slice(0, 5).map(c => c.ts).join(', '))}` : '없음'}</div>
+        <div>영구 결손: ${(res.unrecoverable || []).length ? _esc(res.unrecoverable.map(r => r.join('~')).join(', ')) : '없음'}</div>
+        ${a.splits ? `<div>분할 ${a.splits.length}건${a.splits.length ? ': ' + _esc(a.splits.map(x => `${x.date} ${(+x.numerator)}:${(+x.denominator)}`).join(', ')) : ''} · 배당 ${a.dividends}건${a.last_dividend ? ` (최근 ${_esc(a.last_dividend.date)} ${_esc(a.last_dividend.amount)})` : ''}</div>` : ''}
+    </div>`;
 }

@@ -3066,6 +3066,42 @@ async def api_raw_store_registry():
         return {"status": "error", "message": str(e)}
 
 
+@app.get("/api/raw_store/catalog/summary")
+async def api_raw_store_catalog_summary(force: bool = False):
+    """원천 목록 요약 — 시장×원천×구분(운용/유니버스)별 종목 수·최신일·이상 건수, 이상 종류별 건수, 경고."""
+    try:
+        from shared.data_library import raw_catalog
+        loop = asyncio.get_event_loop()
+        return {"status": "ok", **(await loop.run_in_executor(None, lambda: raw_catalog.summary(force=force)))}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/raw_store/catalog/items")
+async def api_raw_store_catalog_items(q: str = "", market: str = "", provider: str = "", tier: str = "", issue: str = "",
+                                      only_anomaly: bool = False, page: int = 1, size: int = 50):
+    """원천 목록 검색 — 서버에서 거르고 페이지 단위로 보낸다(유니버스 ~1.3만 종목)."""
+    try:
+        from shared.data_library import raw_catalog
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(None, lambda: raw_catalog.search(q=q, market=market, provider=provider, tier=tier,
+                                                                         issue=issue, only_anomaly=only_anomaly, page=page, size=size))
+        return {"status": "ok", **res}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/raw_store/catalog/detail")
+async def api_raw_store_catalog_detail(key: str):
+    """유니버스 항목 상세 — 확인 필요·영구 결손·기업행위·최근 거래일 중 빠진 날."""
+    try:
+        from shared.data_library import raw_catalog
+        loop = asyncio.get_event_loop()
+        return {"status": "ok", **(await loop.run_in_executor(None, lambda: raw_catalog.detail(key)))}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 @app.get("/api/raw_store/health_matrix")
 async def api_raw_store_health_matrix(days: str = "120", force_refresh: bool = False, cache_only: bool = True):
     """Raw Store 등록 자산 전체의 결측일 매트릭스 (자산 x 최근 N거래일 또는 전체) 조회 (비동기 스레드 풀 실행)"""
@@ -4060,6 +4096,7 @@ async def api_data_vault_delete_single_scale(payload: dict):
                 raw_base = data_vault_path("raw", "kis")
                 sc = scale_clean.lower()
                 candidates.extend([
+                    data_vault_path("raw", "yahoo", f"candle_{sc}", f"{clean_sym}_{sc}.csv"),   # 미국 주식·ETF(출처 Yahoo)
                     os.path.join(raw_base, f"candle_{sc}", f"{clean_sym}_{sc}.csv"),
                     os.path.join(raw_base, f"candle_{sc}", f"A{clean_sym}_{sc}.csv"),
                     os.path.join(raw_base, f"{clean_sym}_{sc}.csv"),
@@ -4615,10 +4652,10 @@ async def run_active_feeds_sync_worker(
                                 local_log=lambda m: asyncio.run_coroutine_threadsafe(log_fn(m), loop).result()
                             )
                         )
-                # 원천의 원본은 DataVault/raw/kis (수집기가 공통 절차로 직접 저장) — 레거시 폴더에는 사본만 둔다
+                # 원천의 원본은 DataVault/raw/yahoo (수집기가 공통 절차로 직접 저장) — 레거시 폴더에는 사본만 둔다
                 for us_sym in us_stock_symbols:
                     for intv in ("1m", "5m", "1d"):
-                        src_f = data_vault_path("raw", "kis", f"candle_{intv}", f"{us_sym}_{intv}.csv")
+                        src_f = data_vault_path("raw", "yahoo", f"candle_{intv}", f"{us_sym}_{intv}.csv")
                         if os.path.exists(src_f):
                             dst_d = data_path("historical", "kis", f"candle_{intv}")
                             os.makedirs(dst_d, exist_ok=True)

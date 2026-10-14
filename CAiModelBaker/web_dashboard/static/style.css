@@ -1908,3 +1908,6 @@ tbody tr:hover {
     color: #38bdf8 !important;
     font-weight: 600;
 }
+
+/* 원천 목록(운용 + 유니버스) — 1.3만 행을 다루는 표라 행을 촘촘하게 */
+#rawCatalogCard table th, #rawCatalogCard table td { padding: 4px 8px; }

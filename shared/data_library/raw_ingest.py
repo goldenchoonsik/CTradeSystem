@@ -75,11 +75,14 @@ def last_timestamp(csv_path: str) -> Optional[str]:
 def ingest_dataframe(df: pd.DataFrame, target_csv: str, *, provider: str, market: str,
                      interval: Optional[str] = None, requested_after: Optional[str] = None,
                      source_exhausted: bool = False, volume_col: Optional[str] = None,
-                     publish_manifest: bool = True, log: Callable[[str], None] = print) -> Optional[Dict]:
+                     publish_manifest: bool = True, timezone_name: str = "Asia/Seoul",
+                     log: Callable[[str], None] = print) -> Optional[Dict]:
     """DataFrame(첫 열 = 시각)을 원천 파일에 공통 절차로 저장한다. 반환: 병합 보고서, 실패 시 None(원본 유지, 신규분 격리).
 
     requested_after : 이번 수집을 시작할 때 파일의 마지막 시각(없으면 None).
     source_exhausted: 원천이 줄 수 있는 가장 오래된 데이터까지 받았는가(예: Yahoo 는 조회 창 전체를 주므로 True).
+    timezone_name   : 타임스탬프 문자열의 시간대(매니페스트 기록용). 원천 저장소 기본 규약은 KST 문자열이다
+                      — 예외: 미국 일봉은 거래소 현지 세션 날짜(America/New_York).
                       둘 다 주어지면, 받은 데이터가 requested_after 에 닿지 못한 구간을 영구 결손으로 기록한다.
     """
     if df is None or df.empty:
@@ -95,6 +98,7 @@ def ingest_dataframe(df: pd.DataFrame, target_csv: str, *, provider: str, market
         try:
             from shared.data_library.manifest_manager import ManifestManager
             ManifestManager.generate_and_save_manifest(data_file_path=target_csv, data_tier="raw", provider=provider.lower(),
+                                                       market=market, timezone_name=timezone_name,
                                                        notes=f"raw_ingest {interval or ''}".strip())
         except Exception as e:
             log(f"   ⚠️ [Raw Ingest] 매니페스트 발행 실패({os.path.basename(target_csv)}): {e}")

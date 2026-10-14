@@ -266,11 +266,22 @@ class SourceMappingManager:
         """
         changed = False
         scan_roots = [raw_root(), data_vault_path("normalized")]
+        # 원천에 파일이 있다고 수집 대상(feed)이 되지는 않는다 (2026-10-15): 원천 저장소에는 매매 원장 종목 외에
+        # 연구 유니버스(미국 전 종목 ~1.3만, raw/yahoo)도 같은 규약으로 들어온다. 원장에 없는 종목, 그리고 Yahoo 원천
+        # (유니버스와 같은 파일을 공유)은 자동 등록하지 않는다 — 미국 종목의 수집 대상 지정은 UI 등록으로만 한다.
+        try:
+            from shared.config.config_manager import load_symbols_registry
+            ledger = set(load_symbols_registry())
+        except Exception as e:
+            logger.warning(f"[SourceMappingManager] 원장 로드 실패 — 자동 탐지를 건너뜁니다: {e}")
+            return current_mappings, False
 
         for scan_dir in scan_roots:
             if not os.path.exists(scan_dir):
                 continue
-            for root, _, files in os.walk(scan_dir):
+            for root, dirs, files in os.walk(scan_dir):
+                if os.path.abspath(root) == os.path.abspath(raw_root()):
+                    dirs[:] = [d for d in dirs if d.lower() != "yahoo"]   # 유니버스 원천(1.3만 매니페스트) — 열어 보지도 않는다
                 for f in files:
                     if f.endswith(".manifest.json") and not f.startswith("."):
                         manifest_path = os.path.join(root, f)
@@ -293,7 +304,9 @@ class SourceMappingManager:
                                 continue
                             if clean_sym in ("SP500_FUTURES", "SP500_FUTURES_1M") and any(k in current_mappings for k in ("ES", "SP500")):
                                 continue
-                            if (meta.get("provider") or "").upper() == "MACRO":
+                            if (meta.get("provider") or "").upper() in ("MACRO", "YAHOO"):
+                                continue
+                            if sym not in ledger and clean_sym not in ledger:
                                 continue
                             if cls._is_foreign_listing_of_mapped_asset(sym, current_mappings):
                                 continue
@@ -1008,6 +1021,7 @@ class SourceMappingManager:
             for sc in ("1m", "5m", "1d"):
                 lbl = sc.upper()
                 groups[lbl] = [
+                    data_vault_path("raw", "yahoo", f"candle_{sc}", f"{clean_sym}_{sc}.csv"),   # 미국 주식·ETF(출처 Yahoo)
                     os.path.join(raw_base, f"candle_{sc}", f"{clean_sym}_{sc}.csv"),
                     os.path.join(raw_base, f"candle_{sc}", f"A{clean_sym}_{sc}.csv"),
                     os.path.join(raw_base, f"{clean_sym}_{sc}.csv"),
@@ -1086,6 +1100,9 @@ class SourceMappingManager:
             ])
         elif p_up == "KIS":
             candidate_paths.extend([
+                data_vault_path("raw", "yahoo", "candle_1m", f"{clean_sym}_1m.csv"),   # 미국 주식·ETF(출처 Yahoo)
+                data_vault_path("raw", "yahoo", "candle_5m", f"{clean_sym}_5m.csv"),
+                data_vault_path("raw", "yahoo", "candle_1d", f"{clean_sym}_1d.csv"),
                 data_vault_path("raw", "kis", "candle_1m", f"{clean_sym}_1m.csv"),
                 data_vault_path("raw", "kis", "candle_5m", f"{clean_sym}_5m.csv"),
                 data_vault_path("raw", "kis", "candle_1d", f"{clean_sym}_1d.csv"),

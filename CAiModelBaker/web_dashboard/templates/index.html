@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAiModelBaker - 퀀트 대시보드</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=20261015_rawcat1">
     <!-- Lightweight Charts v5 (가격/지표/Equity) -->
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
     <!-- Plotly (수익률 분포 히스토그램 + WFA 타임라인용 유지) -->
     <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
     <script src="/static/lwc_charts.js?v=20260811"></script>
-    <script src="/static/features.js?v=20261004_daily1"></script>
+    <script src="/static/features.js?v=20261015_rawcat1"></script>
     <script src="/static/timeline_manager.js?v=20260806"></script>
     <script src="/static/feature_charts.js?v=20260811"></script>
 </head>
@@ -773,6 +773,33 @@
                             <pre id="rawBackupLog" style="margin:8px 0 0; max-height:130px; overflow:auto; font-size:11px; color:#94a3b8; background:rgba(0,0,0,0.3); padding:6px 8px; border-radius:4px;"></pre>
                         </div>
                         <div style="font-size:11px; color:#64748b; margin-top:8px;">봉인된 일자별 틱 파일은 덮어쓰지 않고(충돌 시 보고), 그 외 파일은 이전 판을 3개까지 보관합니다. 대상에서 파일을 삭제하지 않습니다.</div>
+                    </div>
+
+                    <!-- 1-1.4 원천 목록 (운용 + 유니버스 한 목록) — 요약 → 이상만 → 검색 -->
+                    <div class="card" id="rawCatalogCard" style="border: 1px solid rgba(74, 222, 128, 0.35); background: rgba(15, 23, 42, 0.85); margin-bottom: 16px;">
+                        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <span style="color:#4ade80; font-weight:bold; font-size:15px;">🗂️ 원천 목록 (운용 + 유니버스)</span>
+                                <span class="badge" id="rawCatalogBadge" style="font-size:11px;">로딩 중...</span>
+                            </div>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <span id="rawCatalogBuilt" style="font-size:11px; color:#64748b;"></span>
+                                <button class="btn btn-xs" onclick="loadRawCatalog(true)" style="font-size:11px; padding:3px 10px; border-radius:4px; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.4); color:#4ade80;" title="원천 파일을 다시 훑어 목록을 새로 만듭니다(매니페스트가 바뀐 파일만 다시 읽음)">🔄 새로 고침</button>
+                            </div>
+                        </div>
+                        <div id="rawCatalogWarnings"></div>
+                        <div id="rawCatalogSummary" style="margin-bottom:10px;"></div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:6px;">
+                            <input id="rcQ" placeholder="티커·종목코드·이름 검색" style="padding:4px 8px; min-width:200px;" oninput="rawCatalogSearchDebounced()">
+                            <select id="rcView" onchange="rawCatalogSearch(1)"><option value="anomaly">이상만</option><option value="">전체</option></select>
+                            <select id="rcTier" onchange="rawCatalogSearch(1)"><option value="">전체 구분</option><option>운용</option><option>유니버스</option></select>
+                            <select id="rcMarket" onchange="rawCatalogSearch(1)"><option value="">전체 시장</option><option>KRX</option><option>US</option><option>CRYPTO</option></select>
+                            <select id="rcIssue" onchange="rawCatalogSearch(1)"><option value="">모든 이상 종류</option></select>
+                            <span id="rcCount" style="font-size:12px; color:#94a3b8;"></span>
+                        </div>
+                        <div id="rcTable" style="max-height:520px; overflow:auto;"></div>
+                        <div id="rcPager" style="display:flex; gap:6px; align-items:center; justify-content:flex-end; margin-top:6px; font-size:12px; color:#94a3b8;"></div>
+                        <div style="font-size:11px; color:#64748b; margin-top:6px;">운용 = 수집 대상(원장 종목)으로 장중 파이프라인까지 쓰는 종목, 유니버스 = 연구용 전 종목(일봉). 같은 규약으로 저장되고 같은 이상 집계에 들어갑니다. '상장 종료'는 이상이 아니라 상태로 따로 셉니다. 운용 종목의 날짜 칸 상세는 아래 결측일 매트릭스에서 봅니다.</div>
                     </div>
 
                     <!-- 1-1.5 자산 결측일 헬스 매트릭스 (Raw Store 전체 자산 x 최근 거래일) -->
