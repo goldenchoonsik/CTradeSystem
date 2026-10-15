@@ -9032,6 +9032,7 @@ function renderResearchSymbols(key) {
 // 원천 목록 (운용 + 유니버스) — 요약 → 이상만 → 검색(서버 페이지). shared/data_library/raw_catalog.py
 // ───────────────────────────────────────────────────────────────────────────
 let _rcPage = 1, _rcTimer = null, _rcOpenKey = null;
+const STALE_NOTE = '5거래일 이상 뒤처지면 최신일 지연';
 const _RC_ISSUE_COLOR = {conflict: '#f87171', stale: '#fbbf24', missing_days: '#fb923c', no_file: '#f87171',
                          no_manifest: '#f87171', size_mismatch: '#f87171', listing_ended: '#94a3b8'};
 
@@ -9068,13 +9069,50 @@ async function loadRawCatalog(force) {
             <th style="text-align:right;">종목</th><th style="text-align:right;">최신일</th><th style="text-align:right;">이상</th><th style="text-align:right;">상장 종료</th></tr></thead>
           <tbody>${rows}</tbody></table>
         <div style="margin-top:6px;">${issues}</div>
-        ${Object.keys(latest).length ? `<div style="font-size:11px;color:#64748b;margin-top:4px;">시장 최신 거래일(유니버스 최빈 마지막 날): ${Object.entries(latest).map(([k, v]) => `${_esc(k)} ${_esc(v || '-')}`).join(' · ')}</div>` : ''}`;
+        ${Object.keys(latest).length ? `<div style="font-size:11px;color:#64748b;margin-top:4px;">${Object.entries(latest).map(([k, v]) => `${_esc(k)}: 보유 최신일 ${_esc(v || '-')} · 확정된 마지막 거래일 ${_esc((res.market_expected || {})[k] || '-')}`).join(' / ')} (거래일 달력 기준, ${STALE_NOTE})</div>` : ''}`;
     const sel = document.getElementById('rcIssue');
     const cur = sel.value;
     sel.innerHTML = '<option value="">모든 이상 종류</option>' + (res.issues || []).map(i =>
         `<option value="${_esc(i.code)}">${_esc(i.label)} (${i.count.toLocaleString()})</option>`).join('');
     sel.value = cur;
     rawCatalogSearch(_rcPage);
+    loadUsUniverseJob();
+}
+
+let _usJobTimer = null;
+async function loadUsUniverseJob() {
+    const el = document.getElementById('usJobStatus'), btn = document.getElementById('btnUsJob');
+    if (!el) return;
+    let res;
+    try { res = await apiGet('/api/raw_store/catalog/us_job'); } catch (e) { return; }
+    if (!res || res.status !== 'ok') return;
+    const L = res.last || {};
+    clearTimeout(_usJobTimer);
+    if (res.running) {
+        const pct = L.target ? Math.floor(100 * (L.done || 0) / L.target) : 0;
+        el.textContent = `미국 갱신 중 ${(L.done || 0).toLocaleString()}/${(L.target || 0).toLocaleString()} (${pct}%) · 실패 ${L.failed_n || 0}`;
+        el.style.color = '#38bdf8';
+        btn.disabled = true;
+        _usJobTimer = setTimeout(loadUsUniverseJob, 15000);
+    } else {
+        el.textContent = L.updated_at ? `미국 마지막 갱신 ${String(L.updated_at).replace('T', ' ').slice(0, 16)}${L.finished ? '' : ' (중단됨)'}` : '';
+        el.style.color = L.finished === false ? '#fbbf24' : '#94a3b8';
+        btn.disabled = false;
+    }
+}
+
+async function startUsUniverseJob() {
+    const now = new Date(new Date().toLocaleString('en-US', {timeZone: 'America/New_York'}));
+    const mins = now.getHours() * 60 + now.getMinutes();
+    const inSession = now.getDay() >= 1 && now.getDay() <= 5 && mins >= 9 * 60 + 30 && mins < 16 * 60;
+    const msg = (inSession ? '⚠️ 지금은 미국 정규장 중입니다. 오늘 봉은 미완성이라 빠지고 다음 갱신에서 채워집니다.\n\n' : '') +
+        '미국 유니버스(~1.3만 종목) 증분 수집을 시작할까요? 약 2~3시간, 별도 프로세스로 돌아갑니다.';
+    if (!confirm(msg)) return;
+    let res;
+    try { res = await apiPost('/api/raw_store/catalog/us_job', {}); } catch (e) { alert('시작 실패: ' + e); return; }
+    if (!res || res.status !== 'ok') { alert((res && res.message) || '시작 실패'); return; }
+    if (!res.started) alert('이미 실행 중입니다 (pid ' + res.pid + ', ' + res.started_at + ' 시작)');
+    loadUsUniverseJob();
 }
 
 function rawCatalogFilter(tier, market) {
@@ -9152,7 +9190,7 @@ async function rawCatalogDetail(encKey) {
     const conf = res.conflicts || [];
     cell.innerHTML = `<div style="padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:6px;font-size:12px;color:#cbd5e1;line-height:1.7;">
         <div>파일 <code>${_esc(res.key)}</code></div>
-        ${res.recent_window && res.recent_window.length ? `<div>최근 거래일(${_esc(res.recent_window[0])}~${_esc(res.recent_window[1])}, 기준 SPY) 중 빠진 날: ${miss.length ? `<span style="color:#fb923c;">${miss.length}일</span> ${_esc(miss.slice(0, 12).join(', '))}${miss.length > 12 ? ' …' : ''}` : '<span style="color:#4ade80;">없음</span>'}</div>` : ''}
+        ${res.recent_window && res.recent_window.length ? `<div>최근 거래일(${_esc(res.recent_window[0])}~${_esc(res.recent_window[1])}, 거래일 달력) 중 빠진 날${res.recent_after_last ? ` (마지막 봉 이후 ${res.recent_after_last}거래일은 미수집)` : ''}: ${miss.length ? `<span style="color:#fb923c;">${miss.length}일</span> ${_esc(miss.slice(0, 12).join(', '))}${miss.length > 12 ? ' …' : ''}` : '<span style="color:#4ade80;">없음</span>'}</div>` : ''}
         <div>확인 필요: ${conf.length ? `<span style="color:#f87171;">${conf.length}건</span> ${_esc(conf.slice(0, 5).map(c => c.ts).join(', '))}` : '없음'}</div>
         <div>영구 결손: ${(res.unrecoverable || []).length ? _esc(res.unrecoverable.map(r => r.join('~')).join(', ')) : '없음'}</div>
         ${a.splits ? `<div>분할 ${a.splits.length}건${a.splits.length ? ': ' + _esc(a.splits.map(x => `${x.date} ${(+x.numerator)}:${(+x.denominator)}`).join(', ')) : ''} · 배당 ${a.dividends}건${a.last_dividend ? ` (최근 ${_esc(a.last_dividend.date)} ${_esc(a.last_dividend.amount)})` : ''}</div>` : ''}

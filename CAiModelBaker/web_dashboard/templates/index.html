@@ -10,7 +10,7 @@
     <!-- Plotly (수익률 분포 히스토그램 + WFA 타임라인용 유지) -->
     <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
     <script src="/static/lwc_charts.js?v=20260811"></script>
-    <script src="/static/features.js?v=20261015_rawcat1"></script>
+    <script src="/static/features.js?v=20261015_rawcat2"></script>
     <script src="/static/timeline_manager.js?v=20260806"></script>
     <script src="/static/feature_charts.js?v=20260811"></script>
 </head>
@@ -784,6 +784,8 @@
                             </div>
                             <div style="display:flex; gap:6px; align-items:center;">
                                 <span id="rawCatalogBuilt" style="font-size:11px; color:#64748b;"></span>
+                                <span id="usJobStatus" style="font-size:11px; color:#94a3b8;"></span>
+                                <button class="btn btn-xs" id="btnUsJob" onclick="startUsUniverseJob()" style="font-size:11px; padding:3px 10px; border-radius:4px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.4); color:#38bdf8;" title="미국 거래소 목록을 받아 상장 변동을 기록하고, 전 종목 일봉을 마지막 14일부터 증분 수집합니다(약 2~3시간, 별도 프로세스). 미국 정규장 마감 뒤(한국 06~22시)에 돌리세요.">🇺🇸 미국 유니버스 갱신</button>
                                 <button class="btn btn-xs" onclick="loadRawCatalog(true)" style="font-size:11px; padding:3px 10px; border-radius:4px; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.4); color:#4ade80;" title="원천 파일을 다시 훑어 목록을 새로 만듭니다(매니페스트가 바뀐 파일만 다시 읽음)">🔄 새로 고침</button>
                             </div>
                         </div>

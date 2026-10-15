@@ -203,10 +203,58 @@ def _extract_krx_vault_historical_holidays():
         return set(), set()
 
 
+# 미국 거래일 기준 종목 — 1962년(PFE 1972)부터 거래일마다 체결된 대형주. 한 종목의 거래정지·결측에 흔들리지 않게 다수결로 본다.
+_US_CALENDAR_REFS = ("IBM", "KO", "GE", "XOM", "PG", "JNJ", "MRK", "PFE", "CAT", "MMM", "DIS")
+
+
+def _extract_us_vault_historical_holidays():
+    """DataVault 미국 일봉(raw/yahoo/candle_1d, 거래소 현지 세션 날짜 라벨)에서 기준 대형주 다수결로 거래일을 뽑고
+    그 기간 평일 중 거래가 없던 날을 휴장일로 역산한다 (2026-10-15 — 종전 ES 선물 5년치 역산을 대체; 1962~ 16,304 거래일,
+    겹치는 2021~ 구간은 종전 캐시와 일치). 기준 종목이 거래 중이던 날만 표를 센다(상장 전·후는 기권).
+    Returns:
+        (detected_holidays_set, trading_dates_set)
+    """
+    try:
+        from collections import Counter
+        from shared.data_library.paths import data_vault_path
+        votes, voters = Counter(), Counter()
+        spans = []
+        for sym in _US_CALENDAR_REFS:
+            fp = data_vault_path("raw", "yahoo", "candle_1d", f"{sym}_1d.csv")
+            if not os.path.exists(fp):
+                continue
+            with open(fp, "r", encoding="utf-8", errors="ignore") as f:
+                next(f, None)
+                ds = [line[:10] for line in f if len(line) >= 10 and line[4] == "-" and line[7] == "-"]
+            if ds:
+                votes.update(ds)
+                spans.append((ds[0], ds[-1]))
+        if not spans:
+            return set(), set()
+        start = min(a for a, _ in spans)
+        end = max(b for _, b in spans)
+        trading, detected = set(), set()
+        cur_d = datetime.strptime(start, "%Y-%m-%d").date()
+        end_d = datetime.strptime(end, "%Y-%m-%d").date()
+        while cur_d <= end_d:
+            if cur_d.weekday() < 5:
+                d_str = cur_d.strftime("%Y-%m-%d")
+                n = sum(1 for a, b in spans if a <= d_str <= b)
+                if n and votes[d_str] * 2 >= n:
+                    trading.add(d_str)
+                else:
+                    detected.add(d_str)
+            cur_d += timedelta(days=1)
+        return detected, trading
+    except Exception as e:
+        logger.warning(f"[MarketCalendar] DataVault 미국 과거 휴장일 스캔 실패: {e}")
+        return set(), set()
+
+
 def sync_market_holidays(market: str = "KRX", range_str: str = "5y") -> Set[str]:
     """
     Yahoo Finance 공식 실거래 일봉(KRX: 069500.KS, US: ES=F) 및
-    DataVault 장기 일봉 아카이브(KRX 1980~현재)를 스캔하여
+    DataVault 장기 일봉 아카이브(KRX 1980~현재, US 1962~현재 대형주 다수결)를 스캔하여
     평일 중 거래가 없는 날을 '실제 증시 휴장일'로 자동 역산 추출합니다.
     """
     norm_mkt = _normalize_market(market)
@@ -244,6 +292,15 @@ def sync_market_holidays(market: str = "KRX", range_str: str = "5y") -> Set[str]
         if vault_trades:
             trading_dates.update(vault_trades)
             detected_holidays.update(vault_hols)
+    elif norm_mkt == "US":
+        vault_hols, vault_trades = _extract_us_vault_historical_holidays()
+        if vault_trades:
+            # 주식 일봉이 있는 기간은 주식 거래일이 정답이다. ES 선물은 주식 휴장일에도 단축 거래를 해서(2023 추수감사절·
+            # 2025 카터 국장일·메모리얼데이·준틴스·독립기념일 실측), ES 관측일로 휴장일을 지우면 그 날이 거래일로 둔갑한다.
+            # ES 는 주식 일봉 마지막 날 이후 구간에만 쓴다.
+            vmax = max(vault_trades)
+            trading_dates = set(vault_trades) | {d for d in trading_dates if d > vmax}
+            detected_holidays = set(vault_hols) | {d for d in detected_holidays if d > vmax}
 
     if not trading_dates and not detected_holidays:
         # 둘 다 실패 시 로컬 캐시/Fallback 반환

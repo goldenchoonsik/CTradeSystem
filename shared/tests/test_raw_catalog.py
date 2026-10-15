@@ -36,6 +36,7 @@ def vault(tmp_path, monkeypatch):
         {"key": "feed:ES", "symbol": "ES", "name": "S&P500 선물", "tier": "운용", "provider": "CME", "market": "US",
          "category": "OVERSEAS_FUTURES", "path": str(tmp_path / "raw" / "overseas" / "ES_1d.csv"), "missing_days": 3,
          "archived": False, "file_exists": True, "last": "2026-10-13", "conflicts": 0}])
+    monkeypatch.setattr(rc, "expected_latest", lambda market, now=None: "2026-10-13")   # 오늘 날짜와 무관하게
     rc._MEM["data"] = None
     yield tmp_path
     rc._MEM["data"] = None

@@ -124,3 +124,69 @@ def test_raw_files_outside_ledger_do_not_become_feeds(vault):
         (d / f"{sym}_1d.csv.manifest.json").write_text(json.dumps({"symbol": sym, "provider": prov, "market": "US"}))
     maps, changed = SourceMappingManager.auto_discover_vault_manifests({})
     assert maps == {} and changed is False
+
+
+def test_us_calendar_from_vault_majority_and_es_cannot_erase_stock_holidays(vault, monkeypatch):
+    """미국 거래일은 기준 대형주 다수결. ES 선물이 주식 휴장일에 단축 거래해도 휴장일이 지워지면 안 된다."""
+    from shared.core import market_calendar as mc
+    d = vault / "raw" / "yahoo" / "candle_1d"
+    d.mkdir(parents=True)
+    days = ["2026-01-05", "2026-01-06", "2026-01-08", "2026-01-09"]          # 01-07(수) 휴장
+    for sym in ("IBM", "KO", "GE"):
+        (d / f"{sym}_1d.csv").write_text("timestamp,close\n" + "".join(f"{x} 00:00:00,1\n" for x in days))
+    # 한 종목만 휴장일에 봉이 있어도(데이터 오류) 다수결로 휴장일 유지
+    (d / "XOM_1d.csv").write_text("timestamp,close\n" + "".join(f"{x} 00:00:00,1\n" for x in days + ["2026-01-07"]))
+    hol, trade = mc._extract_us_vault_historical_holidays()
+    assert "2026-01-07" in hol and "2026-01-07" not in trade and "2026-01-08" in trade
+
+    class _Resp:                                                             # ES 는 01-07 에도 거래(단축)
+        def __init__(self):
+            ts = [int(__import__("datetime").datetime(2026, 1, x, 12).timestamp()) for x in (5, 6, 7, 8, 9, 12)]
+            self.b = json.dumps({"chart": {"result": [{"timestamp": ts}]}}).encode()
+        def read(self): return self.b
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    monkeypatch.setattr(mc.urllib.request, "urlopen", lambda *a, **k: _Resp())
+    monkeypatch.setattr(mc, "_CACHE_FILE", str(vault / "market_holidays.json"))
+    monkeypatch.setattr(mc, "_DEFAULT_FALLBACK_HOLIDAYS", {"US": [], "KRX": []})
+    monkeypatch.setattr(mc, "_MEM_CACHE", {})                                # 프로세스 공용 캐시 오염 방지
+    h = mc.sync_market_holidays("US")
+    assert "2026-01-07" in h
+
+
+def test_listing_changes_are_recorded_once(vault, monkeypatch):
+    """직전 목록과 비교해 신규·제외를 원장에 쌓는다 — 같은 날 다시 돌려도 한 번만(상폐 기록을 직접 축적하는 경로)."""
+    from shared.data_library.us_equity import collect
+    monkeypatch.setattr(collect, "log", lambda m: None)
+    hdr = "Symbol|Security Name|Market Category|Test Issue|Financial Status|Round Lot Size|ETF|NextShares\n"
+    for day, syms in (("20261014", ["AAA", "OLD"]), ("20261015", ["AAA", "NEW"])):
+        d = vault / "raw" / "nasdaqtrader" / "symdir" / day
+        d.mkdir(parents=True)
+        (d / "nasdaqlisted.txt").write_text(hdr + "".join(f"{s}|{s} Inc.|Q|N|N|100|N|N\n" for s in syms))
+        (d / "otherlisted.txt").write_text("ACT Symbol|Security Name|Exchange|CQS Symbol|ETF|Round Lot Size|Test Issue|NASDAQ Symbol\n")
+    rows = [{"yahoo_symbol": s, "name": f"{s} Inc.", "exchange": "NASDAQ", "etf": "N"} for s in ("AAA", "NEW")]
+    assert collect.record_listing_changes("20261015", rows) == {"added": 1, "removed": 1}
+    assert collect.record_listing_changes("20261015", rows) == {"added": 0, "removed": 0}
+    ch = pd.read_csv(vault / "raw" / "nasdaqtrader" / "listing_changes.csv")
+    assert sorted(zip(ch["change"], ch["yahoo_symbol"])) == [("added", "NEW"), ("removed", "OLD")]
+
+
+def test_finished_child_is_not_reported_running(tmp_path, monkeypatch):
+    """끝난 자식 프로세스(회수 전 좀비)를 '실행 중'으로 보면 갱신 버튼이 영영 잠긴다."""
+    import subprocess, sys
+    from shared.data_library.us_equity import collect
+    monkeypatch.setattr(collect, "stage", lambda *p: str(tmp_path.joinpath(*p)))
+    (tmp_path / "collect").mkdir()
+    proc = subprocess.Popen([sys.executable, "-c", "pass"])
+    (tmp_path / "collect" / ".running.json").write_text(json.dumps({"pid": proc.pid}))
+    import time
+    for _ in range(50):                       # 끝나기를 기다리되 wait() 는 하지 않는다(좀비 상태 재현)
+        try:
+            with open(f"/proc/{proc.pid}/stat") as f:
+                if f.read().rsplit(")", 1)[1].split()[0] == "Z":
+                    break
+        except OSError:
+            break
+        time.sleep(0.05)
+    assert collect.running() is None
+    assert not (tmp_path / "collect" / ".running.json").exists()

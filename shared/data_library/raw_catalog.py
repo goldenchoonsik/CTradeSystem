@@ -27,11 +27,10 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-import numpy as np
 
 from shared.data_library.paths import data_vault_path
 
-STALE_BUSINESS_DAYS = 5
+STALE_TRADING_DAYS = 5                                  # 확정된 마지막 거래일보다 이만큼(거래일) 뒤처지면 '최신일 지연'
 UNIVERSE_DIRS = {"yahoo": ("candle_1d", "US")}        # 원천 폴더 → (하위 폴더, 시장) — 유니버스 원천
 _CACHE_PATH = data_vault_path("temp", "cache", "raw_catalog.json")
 _LOCK = threading.Lock()
@@ -161,8 +160,34 @@ def _feed_market(category: str, provider: str) -> str:
     return "US" if c.startswith("US") or p in ("CME", "YAHOO", "OVERSEAS", "CTRADER") else (c or p)
 
 
+# 시장별 정규장 마감(현지) — 이 시각이 지나야 그날 일봉이 확정된다
+_SESSION_CLOSE = {"US": ("America/New_York", 16, 0)}
+
+
+def expected_latest(market: str, now: Optional[datetime] = None) -> Optional[str]:
+    """그 시장에서 일봉이 확정된 마지막 거래일(거래일 달력 기준). 오늘이 거래일이고 마감이 지났으면 오늘, 아니면 직전 거래일."""
+    if market not in _SESSION_CLOSE:
+        return None
+    from zoneinfo import ZoneInfo
+    from shared.core import market_calendar as mc
+    tz, hh, mm = _SESSION_CLOSE[market]
+    local = (now or datetime.now(ZoneInfo("Asia/Seoul"))).astimezone(ZoneInfo(tz))
+    today = local.strftime("%Y-%m-%d")
+    if mc.is_trading_day(today, market) and (local.hour, local.minute) >= (hh, mm):
+        return today
+    return mc.prev_trading_day(today, market)
+
+
+def trading_days_behind(last: str, latest: str, market: str) -> int:
+    """last 다음 거래일부터 latest 까지의 거래일 수(0 = 최신)."""
+    from shared.core import market_calendar as mc
+    if not last or not latest or last >= latest:
+        return 0
+    return max(0, mc.count_trading_days(last, latest, market) - 1)
+
+
 def _market_latest(entries: List[Dict[str, Any]]) -> Optional[str]:
-    """시장 최신 거래일 = 상장 중 종목들의 마지막 날짜 최빈값(달력 원장 전까지의 근사 — 3단계에서 거래일 달력으로 교체)."""
+    """유니버스가 실제로 가진 최신일 = 상장 중 종목들의 마지막 날짜 최빈값(갱신 여부 경고용)."""
     c = Counter(e["last"] for e in entries if e.get("last") and e.get("listing") != "ended")
     return c.most_common(1)[0][0] if c else None
 
@@ -189,19 +214,20 @@ def build(force: bool = False) -> Dict[str, Any]:
             e["etf"] = (meta or {}).get("etf", "") == "Y"
             e["listing"] = "listed" if meta else ("ended" if listing else "unknown")
             entries.append(e)
-        latest = {}
+        latest, expected = {}, {}
         by_market = defaultdict(list)
         for e in entries:
             by_market[e["market"]].append(e)
         for mk, es in by_market.items():
             latest[mk] = _market_latest(es)
+            expected[mk] = expected_latest(mk) or latest[mk]
         for e in entries:
-            e["issues"] = _issues(e, latest.get(e["market"]))
+            e["issues"] = _issues(e, expected.get(e["market"]))
             e.pop("_sig", None)
         for f in feeds:
             f["issues"] = (["missing_days"] if f["missing_days"] and not f["archived"] else []) + \
                           (["no_file"] if not f["file_exists"] and not f["archived"] else [])
-        data = {"built_at": datetime.now().isoformat(timespec="seconds"), "market_latest": latest,
+        data = {"built_at": datetime.now().isoformat(timespec="seconds"), "market_latest": latest, "market_expected": expected,
                 "listing_day": next(iter(listing.values()), {}).get("list_day") if listing else None,
                 "items": feeds + entries}
         _save_cache({"universe": uni, "built_at": data["built_at"]})
@@ -220,7 +246,7 @@ def _issues(e: Dict[str, Any], market_latest: Optional[str]) -> List[str]:
     if e.get("listing") == "ended":
         out.append("listing_ended")
     elif market_latest and e.get("last") and \
-            np.busday_count(e["last"], market_latest) >= STALE_BUSINESS_DAYS:
+            trading_days_behind(e["last"], market_latest, e["market"]) >= STALE_TRADING_DAYS:
         out.append("stale")
     return out
 
@@ -247,9 +273,12 @@ def summary(force: bool = False) -> Dict[str, Any]:
         issue_counts.update(e["issues"])
     warnings = []
     for mk, last in (d["market_latest"] or {}).items():
-        if last and mk == "US" and np.busday_count(last, datetime.now().strftime("%Y-%m-%d")) > STALE_BUSINESS_DAYS:
-            warnings.append(f"미국 유니버스 최신일이 {last} — {STALE_BUSINESS_DAYS}영업일 넘게 갱신되지 않았습니다")
-    return {"built_at": d["built_at"], "market_latest": d["market_latest"], "listing_day": d["listing_day"],
+        exp = (d.get("market_expected") or {}).get(mk)
+        behind = trading_days_behind(last, exp, mk) if last and exp else 0
+        if behind >= 1:
+            warnings.append(f"{mk} 유니버스가 확정된 마지막 거래일 {exp}보다 {behind}거래일 뒤처져 있습니다(보유 최신일 {last}) — 갱신 필요")
+    return {"built_at": d["built_at"], "market_latest": d["market_latest"], "market_expected": d.get("market_expected"),
+            "listing_day": d["listing_day"],
             "total": len(d["items"]), "anomaly_total": sum(g["anomaly"] for g in groups.values()),
             "groups": sorted(groups.values(), key=lambda g: (g["tier"] != "운용", g["market"], g["provider"])),
             "issues": [{"code": k, "label": ISSUE_LABELS.get(k, k), "count": v} for k, v in issue_counts.most_common()],
@@ -311,14 +340,18 @@ def detail(key: str, recent: int = 120) -> Dict[str, Any]:
         out["actions"] = {"splits": [a for a in acts if a["type"] == "split"][-10:],
                           "dividends": len([a for a in acts if a["type"] == "dividend"]),
                           "last_dividend": next((a for a in reversed(acts) if a["type"] == "dividend"), None)}
-    # 거래일 기준: 같은 시장의 기준 종목(SPY) 날짜 — 3단계 거래일 달력 전까지의 근사
-    ref = data_vault_path("raw", "yahoo", "candle_1d", "SPY_1d.csv")
-    if e.get("market") == "US" and os.path.exists(ref):
-        ref_days = _dates(ref)[-recent:]
+    # 거래일 달력(대형주 다수결로 만든 미국 달력) 기준 최근 N 거래일 중 빠진 날
+    if e.get("market") in _SESSION_CLOSE:
+        from datetime import timedelta
+        from shared.core import market_calendar as mc
+        end = expected_latest(e["market"])
+        start = (datetime.strptime(end, "%Y-%m-%d") - timedelta(days=int(recent * 1.6))).strftime("%Y-%m-%d")
+        cal = mc.get_trading_days(start, end, e["market"])[-recent:]
         mine = set(_dates(p))
-        first = e.get("first") or ""
-        out["recent_missing"] = [d for d in ref_days if d >= first and d not in mine]
-        out["recent_window"] = [ref_days[0], ref_days[-1]] if ref_days else []
+        first, last = e.get("first") or "", e.get("last") or ""
+        out["recent_missing"] = [d for d in cal if first <= d <= last and d not in mine]
+        out["recent_after_last"] = len([d for d in cal if d > last])
+        out["recent_window"] = [cal[0], cal[-1]] if cal else []
     return out
 
 

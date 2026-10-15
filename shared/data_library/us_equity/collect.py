@@ -68,12 +68,67 @@ def fetch_lists(day: str) -> List[dict]:
         if r["yahoo_symbol"] not in seen:
             seen.add(r["yahoo_symbol"])
             out.append(r)
+    record_listing_changes(day, out)
     os.makedirs(stage("reference"), exist_ok=True)
     with open(stage("reference", "universe.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
     return out
+
+
+LISTING_CHANGES = ("raw", "nasdaqtrader", "listing_changes.csv")
+CHANGE_FIELDS = ["day", "prev_day", "change", "yahoo_symbol", "name", "exchange", "etf"]
+
+
+def _read_list(day: str) -> dict:
+    """그날 보존된 목록 원본 → {Yahoo 심볼: 행}."""
+    out = {}
+    for name in LISTS:
+        fp = data_vault_path("raw", "nasdaqtrader", "symdir", day, f"{name}.txt")
+        if not os.path.exists(fp):
+            continue
+        with open(fp, encoding="utf-8") as f:
+            for row in csv.DictReader(f, delimiter="|"):
+                sym = row.get("Symbol") if name == "nasdaqlisted" else row.get("ACT Symbol")
+                if sym and not sym.startswith("File Creation Time") and row.get("Test Issue") == "N":
+                    out.setdefault(yahoo_symbol(sym), {"name": row.get("Security Name", ""), "etf": row.get("ETF", ""),
+                                                       "exchange": "NASDAQ" if name == "nasdaqlisted" else EXCHANGES.get(row.get("Exchange"), row.get("Exchange", ""))})
+    return out
+
+
+def record_listing_changes(day: str, rows: List[dict]) -> dict:
+    """직전 목록과 비교해 신규 상장(added)·목록 제외(removed)를 원장(raw/nasdaqtrader/listing_changes.csv)에 더한다.
+    Yahoo 는 상폐 종목을 주지 않으므로, 이 원장이 미국 상폐(·티커 변경) 기록을 우리 손으로 쌓는 유일한 경로다.
+    같은 (day, 변화, 심볼)은 한 번만 — 몇 번 돌려도 같다."""
+    root = data_vault_path("raw", "nasdaqtrader", "symdir")
+    prev_days = sorted(d for d in os.listdir(root) if d < day) if os.path.isdir(root) else []
+    if not prev_days:
+        return {"added": 0, "removed": 0}
+    prev = _read_list(prev_days[-1])
+    cur = {r["yahoo_symbol"]: r for r in rows}
+    fp = data_vault_path(*LISTING_CHANGES)
+    have = set()
+    if os.path.exists(fp):
+        with open(fp, encoding="utf-8") as f:
+            have = {(r["day"], r["change"], r["yahoo_symbol"]) for r in csv.DictReader(f)}
+    new = [{"day": day, "prev_day": prev_days[-1], "change": "added", "yahoo_symbol": s, "name": r["name"],
+            "exchange": r["exchange"], "etf": r["etf"]} for s, r in cur.items() if s not in prev]
+    new += [{"day": day, "prev_day": prev_days[-1], "change": "removed", "yahoo_symbol": s, "name": r["name"],
+             "exchange": r["exchange"], "etf": r["etf"]} for s, r in prev.items() if s not in cur]
+    new = [r for r in new if (r["day"], r["change"], r["yahoo_symbol"]) not in have]
+    if new:
+        os.makedirs(os.path.dirname(fp), exist_ok=True)
+        first = not os.path.exists(fp)
+        with open(fp, "a", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=CHANGE_FIELDS)
+            if first:
+                w.writeheader()
+            w.writerows(sorted(new, key=lambda r: (r["change"], r["yahoo_symbol"])))
+    n = {"added": sum(r["change"] == "added" for r in new), "removed": sum(r["change"] == "removed" for r in new)}
+    if new:
+        log(f"상장 변동 {day} (직전 {prev_days[-1]}): 신규 {n['added']} · 제외 {n['removed']}")
+    return n
 
 
 class Job:
@@ -189,3 +244,76 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ── 대시보드 실행기: 별도 프로세스로 띄운다(서버가 재시작돼도 수집은 계속, 한 번에 하나) ──
+RUN_LOCK = ("collect", ".running.json")
+
+
+def running() -> Optional[dict]:
+    """실행 중인 수집 작업(pid 가 살아 있으면) 또는 None. 죽은 잠금은 지운다."""
+    fp = stage(*RUN_LOCK)
+    try:
+        with open(fp, encoding="utf-8") as f:
+            info = json.load(f)
+        pid = int(info["pid"])
+        if _alive(pid):
+            return info
+    except (OSError, ValueError, KeyError):
+        pass
+    if os.path.exists(fp):
+        os.remove(fp)
+    return None
+
+
+def _alive(pid: int) -> bool:
+    """살아 있는 프로세스인가. 대시보드가 띄운 자식은 끝나도 회수 전까지 좀비로 남아 kill(0) 이 성공한다(2026-10-15 실측:
+    수집이 끝났는데 '갱신 중'에 버튼이 잠김) — 우리 자식이면 회수하고, /proc 상태가 Z 면 끝난 것으로 본다."""
+    try:
+        done, _ = os.waitpid(pid, os.WNOHANG)
+        if done == pid:
+            return False
+    except ChildProcessError:
+        pass                                   # 우리 자식이 아님(다른 프로세스가 띄움) — 아래로
+    try:
+        with open(f"/proc/{pid}/stat", encoding="utf-8") as f:
+            return f.read().rsplit(")", 1)[1].split()[0] != "Z"
+    except OSError:
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+
+
+def start_background(step: str = "chart", day: Optional[str] = None) -> dict:
+    """python -m shared.data_library.us_equity.collect <step> 을 새 세션으로 띄운다. 이미 돌고 있으면 그 정보를 돌려준다."""
+    import subprocess
+    import sys
+    cur = running()
+    if cur:
+        return {"started": False, "reason": "already_running", **cur}
+    day = day or datetime.now().strftime("%Y%m%d")
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    os.makedirs(stage("logs"), exist_ok=True)
+    out = open(stage("logs", f"run_{step}_{day}.txt"), "a", encoding="utf-8")
+    p = subprocess.Popen([sys.executable, "-m", "shared.data_library.us_equity.collect", step, "--day", day],
+                         cwd=root, stdout=out, stderr=subprocess.STDOUT, start_new_session=True,
+                         env={**os.environ, "PYTHONPATH": root})
+    info = {"pid": p.pid, "step": step, "day": day, "started_at": datetime.now().isoformat(timespec="seconds")}
+    with open(stage(*RUN_LOCK), "w", encoding="utf-8") as f:
+        json.dump(info, f, ensure_ascii=False)
+    log(f"대시보드에서 시작: {step} {day} (pid {p.pid})")
+    return {"started": True, **info}
+
+
+def job_status() -> dict:
+    """대시보드용 — 실행 여부 + 마지막 작업 상태(collect/yahoo_chart_1d.json)."""
+    st = {}
+    try:
+        with open(stage("collect", "yahoo_chart_1d.json"), encoding="utf-8") as f:
+            st = json.load(f)
+    except Exception:
+        pass
+    return {"running": running(), "last": {k: st.get(k) for k in ("title", "target", "done", "fetched", "failed_n",
+                                                                   "started_at", "updated_at", "finished")} if st else None}

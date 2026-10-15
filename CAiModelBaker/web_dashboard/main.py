@@ -3102,6 +3102,26 @@ async def api_raw_store_catalog_detail(key: str):
         return {"status": "error", "message": str(e)}
 
 
+@app.get("/api/raw_store/catalog/us_job")
+async def api_raw_store_catalog_us_job():
+    """미국 유니버스 수집 작업 상태(실행 중 여부 + 마지막 진행)."""
+    try:
+        from shared.data_library.us_equity import collect
+        return {"status": "ok", **collect.job_status()}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/raw_store/catalog/us_job")
+async def api_raw_store_catalog_us_job_start():
+    """미국 유니버스 증분 수집 시작 — 거래소 목록(상장 변동 기록) → 종목별 마지막 14일부터 → 원천 반영. 별도 프로세스, 한 번에 하나."""
+    try:
+        from shared.data_library.us_equity import collect
+        return {"status": "ok", **collect.start_background("chart")}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 @app.get("/api/raw_store/health_matrix")
 async def api_raw_store_health_matrix(days: str = "120", force_refresh: bool = False, cache_only: bool = True):
     """Raw Store 등록 자산 전체의 결측일 매트릭스 (자산 x 최근 N거래일 또는 전체) 조회 (비동기 스레드 풀 실행)"""
