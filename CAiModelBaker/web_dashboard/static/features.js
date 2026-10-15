@@ -3360,6 +3360,7 @@ const HM_STATUS_COLOR = {
     holiday: 'rgba(255,255,255,0.10)',
     out_of_range: 'rgba(255,255,255,0.04)',
     lost: '#7f1d1d',         // 영구 결손 — 원장에 복구 불가로 기록된 날 (이상 아님)
+    pending: 'rgba(56,189,248,0.35)',   // 완결 대기 — 일자 저장소는 D+1 06:00 이후에 그날을 저장
 };
 const HM_STATUS_LABEL = {
     found: '정상 수집',
@@ -3369,6 +3370,7 @@ const HM_STATUS_LABEL = {
     holiday: '휴장일',
     out_of_range: '수집 시작 이전 (원천 보존기간/상장 전 — 정상)',
     lost: '영구 결손 — 서버 보존기간 밖이라 복구 불가 (원장에 기록됨, 이상 아님)',
+    pending: '완결 대기 — 다음 날 06:00 이후 수집에서 저장 (이상 아님)',
 };
 
 async function loadHealthMatrix(forceRefresh = false) {

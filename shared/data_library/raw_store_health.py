@@ -280,6 +280,9 @@ def _quality_view(
     return res
 
 
+_KST_TZ = __import__("zoneinfo").ZoneInfo("Asia/Seoul")
+
+
 class RawStoreHealthEngine:
     """자산별 결측일 계산 결과를 원본 파일 mtime 기준으로 캐싱한다 (메모리 + 디스크)."""
 
@@ -398,6 +401,11 @@ class RawStoreHealthEngine:
         candle_sym = candle_store.symbol_from_path(file_path)
         if candle_sym and candle_store.is_day_layout(candle_sym):
             lost_days |= {d for d, e in candle_store.days(candle_sym).items() if e["status"] == "LOST"}
+        # 일자 저장소(틱·1분봉)는 D+1 06:00(KST)이 지나야 그날을 완결로 저장한다 — 그 전의 날은 결측이 아니라 '대기'
+        pending_after = None
+        if tick_sym or (candle_sym and candle_store.is_day_layout(candle_sym)):
+            from CAiModelBaker.core.tick_day_store import complete_through
+            pending_after = complete_through(datetime.now(_KST_TZ))
         sorted_found = sorted(dates_set)
         min_found = sorted_found[0] if sorted_found else None
         max_found = sorted_found[-1] if sorted_found else None
@@ -416,6 +424,8 @@ class RawStoreHealthEngine:
                 status = "holiday"
             elif min_found and d_str < min_found:
                 status = "out_of_range"
+            elif pending_after and d_str > pending_after:
+                status = "pending"       # 아직 완결 시각 전(다음 수집에서 저장)
             elif d_str in lost_days or any(a < d_str < b for a, b in lost_ranges):
                 status = "lost"          # 원장에 '영구 결손'으로 기록된 날
                 lost_dates.append(d_str)
