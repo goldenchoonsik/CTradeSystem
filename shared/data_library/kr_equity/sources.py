@@ -40,6 +40,7 @@ STEPS: List[dict] = [
     {"key": "creon_daily_unadj", "title": "Creon 무수정 일봉", "runner": "creon", "desc": "상장 종목 무수정 일봉 증분"},
     {"key": "creon_daily_ext", "title": "Creon 주식수·시총·외국인·기관", "runner": "creon", "desc": "일별 보조 지표 증분(--full: 전체 재수집)"},
     {"key": "creon_index", "title": "Creon 지수 일봉", "runner": "creon", "desc": "KOSPI·KOSDAQ·업종·K200 계열 128개 증분"},
+    {"key": "creon_bronze", "title": "Creon 일봉 원천 적재", "runner": "linux", "desc": "착륙 구역의 무수정 일봉 → raw/creon/candle_1d_unadj, 기업행위 원장 raw/creon/corporate_actions 갱신 (Creon 일봉 수집 뒤 실행)"},
     {"key": "panel", "title": "분석 패널 빌드", "runner": "linux", "desc": "derived/*.parquet 재생성 + quality/panel_quality.json (수집 후 실행)"},
 ]
 LINUX_STEPS = {s["key"] for s in STEPS if s["runner"] == "linux"}
@@ -363,8 +364,14 @@ def run_dart_shares() -> bool:
     return True
 
 
+def run_creon_bronze() -> bool:
+    from . import bronze
+    return bronze.run(log=log)["failed"] == 0
+
+
 RUNNERS = {"kind": run_kind, "naver": run_naver, "dart_corpcode": run_dart_corpcode, "dart_fnltt": run_dart_fnltt,
-           "dart_events": run_dart_events, "dart_list": run_dart_list, "dart_shares": run_dart_shares}
+           "dart_events": run_dart_events, "dart_list": run_dart_list, "dart_shares": run_dart_shares,
+           "creon_bronze": run_creon_bronze}
 
 
 def run(step: str) -> bool:

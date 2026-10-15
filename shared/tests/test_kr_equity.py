@@ -164,3 +164,34 @@ def test_read_creon_restores_regular_session_from_1m(stage, monkeypatch):
     assert d.loc["2026-09-14", "close"] == pytest.approx(212) and d.loc["2026-09-14", "close_unadj"] == 106      # 정규장 종가 × 계수 2
     assert d.loc["2026-09-14", "volume"] == 25 and d.loc["2026-09-14", "reg_fix"] == 1
     assert np.isnan(d.loc["2026-09-15", "close"]) and d.loc["2026-09-15", "reg_fix"] == 2                       # 1분봉 없음 → NaN
+
+
+# ---- Creon 일봉 원천 적재 (임시 DataVault 로만)
+def _landing(tmp, code, adj_close, raw_close):
+    import os
+    for kind, closes in (("candle_1d", adj_close), ("candle_1d_unadj", raw_close)):
+        d = tmp / "staging" / "kr_equity" / "raw" / "creon" / kind
+        os.makedirs(d, exist_ok=True)
+        ts = pd.bdate_range("2024-01-02", periods=len(closes))
+        pd.DataFrame({"timestamp": [t.strftime("%Y-%m-%d 00:00:00") for t in ts], "upbit_open": closes, "upbit_high": closes,
+                      "upbit_low": closes, "upbit_close": closes, "upbit_volume": 1000, "upbit_trade_price": 0}
+                     ).to_csv(d / f"{code}_1d.csv", index=False)
+
+
+def test_creon_bronze_ingest_is_unadjusted_and_idempotent(tmp_path, monkeypatch):
+    from shared.data_library import paths
+    from shared.data_library.kr_equity import bronze
+    monkeypatch.setattr(paths, "DATA_VAULT_ROOT", str(tmp_path))
+    # 4:1 병합이 5번째 날 반영: 수정 종가는 병합 전 날이 4배
+    raw_c = [1000.0] * 4 + [4000.0] * 6
+    adj_c = [4000.0] * 10
+    _landing(tmp_path, "A000001", adj_c, raw_c)
+    r1 = bronze.ingest_code("A000001", log=lambda *_: None)
+    out = pd.read_csv(bronze.unadj_path("A000001"))
+    assert list(out.columns) == bronze.COLUMNS and out["close"].tolist() == raw_c       # 원천은 무수정
+    assert r1["events_added"] == 1
+    r2 = bronze.ingest_code("A000001", log=lambda *_: None)
+    assert r2["added_rows"] == 0 and r2["events_added"] == 0                           # 다시 돌려도 같은 결과
+    from shared.data_library import corporate_actions as ca
+    ev = ca.events(bronze.actions_root(), "A000001")
+    assert abs(ev[0]["price_factor"] - 4.0) < 0.01
