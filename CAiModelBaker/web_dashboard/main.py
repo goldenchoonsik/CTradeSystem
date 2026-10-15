@@ -4600,7 +4600,7 @@ async def run_active_feeds_sync_worker(
                 _troot = _dvp_t("raw", "creon", "tick")
                 for _d in (sorted(os.listdir(_troot)) if os.path.isdir(_troot) else []):
                     if _d.startswith("A") and os.path.isdir(os.path.join(_troot, _d)):
-                        _new = _tds.lock_sealed(_troot, _d)
+                        _new = _tds.lock_sealed(_troot, _d[1:])   # 폴더 A{종목} → 종목 (6자 선물·지수 'A10100' 을 그대로 넘기면 AA10100 을 찾는다)
                         if _new:
                             await log_fn(f"   🔒 [DayStore] {_d}: 봉인 파일 잠금 {len(_new)}일 ({_new[-1]})")
             except Exception as _le:
@@ -4612,7 +4612,7 @@ async def run_active_feeds_sync_worker(
                 _croot = _cs.candle_root()
                 for _d in (sorted(os.listdir(_croot)) if os.path.isdir(_croot) else []):
                     if _d.startswith("A") and os.path.isdir(os.path.join(_croot, _d)):
-                        _new = _cds.lock_sealed(_croot, _d)
+                        _new = _cds.lock_sealed(_croot, _d[1:])
                         if _new:
                             await log_fn(f"   🔒 [DayStore 1m] {_d}: 봉인 파일 잠금 {len(_new)}일 ({_new[-1]})")
             except Exception as _le:

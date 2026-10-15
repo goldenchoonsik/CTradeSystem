@@ -30,7 +30,9 @@ TICK = os.path.join(RAW, "tick")
 
 
 def daily_csv(sym):
-    for p in (os.path.join(RAW, "candle_1d", f"A{sym}_1d.csv"), os.path.join(RAW, "candle_1d", f"{sym}_1d.csv")):
+    """1분봉(무수정) 거래량 상한 = 무수정 일봉(수집기 _candle_day_seal 과 같은 규칙). 없으면 옛 수정 일봉."""
+    for p in (os.path.join(RAW, "candle_1d_unadj", f"A{sym}_1d.csv"),
+              os.path.join(RAW, "candle_1d", f"A{sym}_1d.csv"), os.path.join(RAW, "candle_1d", f"{sym}_1d.csv")):
         if os.path.exists(p):
             return p
     return None

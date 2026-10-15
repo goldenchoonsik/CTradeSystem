@@ -189,3 +189,16 @@ def test_real_vault_candle_day_store_ratchet():
     assert not broken, f"일자 저장소 검증 실패: {broken}"
     assert not stale, f"마감 후 3일 넘게 판정되지 않은 날: {stale}"
     assert not quarantined, f"봉인 검사에서 격리된 날: {quarantined}"
+
+
+def test_lock_sealed_six_char_futures_folder(tmp_path):
+    """선물·지수 폴더(A10100, AU180)는 종목 코드가 6자 — 폴더 이름 'A10100' 을 그대로 넘기면 core_symbol 이 A 를 떼지 않아
+    AA10100 을 찾고 아무것도 잠그지 않았다(2026-10-12~14 봉인본 미잠금). 호출부는 폴더 이름에서 A 를 떼고 넘긴다."""
+    import json
+    for folder in ("A10100", "AU180", "A069500"):
+        d = tmp_path / folder
+        d.mkdir()
+        (d / "2026-01-02.csv").write_text("timestamp,upbit_volume\n")
+        (d / "2026-01-02.meta.json").write_text(json.dumps({"date": "2026-01-02", "status": "VALID"}))
+        assert cds.lock_sealed(str(tmp_path), folder[1:]) == ["2026-01-02"]
+        assert not os.access(d / "2026-01-02.csv", os.W_OK)
