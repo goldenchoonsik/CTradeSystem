@@ -123,6 +123,22 @@ def krx_session(day: Any) -> KrxSession:
     return _load_krx_session_calendar().get(day, _REGULAR_SESSION)
 
 
+def krx_regular_bar_mask(timestamps: Any, label: str = "BAR_CLOSE") -> pd.Series:
+    """KRX 정규장 봉만 True. **분봉이 정규장에 속하는지의 유일한 판정** (장 일정 원장 krx_session 기준).
+
+    label = 봉 라벨 규약(timestamp_convention): BAR_CLOSE 면 (개장, 마감], BAR_OPEN 이면 [개장, 마감).
+    2026-09-14 NXT(대체거래소) 개장 이후 Creon 은 개별 주식 1분봉에 08:00~20:00 통합 체결을 준다 — 정규장 시계열은
+    이 판정으로 거른다(ETF·지수는 원래 정규장 봉만 있어 결과가 같다)."""
+    ts = pd.to_datetime(pd.Series(timestamps))
+    days = ts.dt.normalize()
+    sess = {d: krx_session(d) for d in days.unique()}
+    o = days.map(lambda d: pd.Timestamp.combine(d.date(), sess[d].open))
+    c = days.map(lambda d: pd.Timestamp.combine(d.date(), sess[d].close))
+    if str(label).upper() == "BAR_OPEN":
+        return (ts >= o) & (ts < c)
+    return (ts > o) & (ts <= c)
+
+
 def _ts_and_session(ts: Any):
     """(time-of-day, 그날 세션). 날짜 없는 time 이면 평일 기본 세션."""
     if isinstance(ts, time):

@@ -372,6 +372,21 @@ def build_normalized_candle_stock(
         cutoff = pd.Timestamp(f"{end_date} 23:59:59")
         df = df[df['timestamp'] <= cutoff].reset_index(drop=True)
 
+    # KRX 정규장 봉만 — 2026-09-14 NXT 개장 이후 개별 주식 원천에 08:00~20:00 통합 체결이 들어온다(원천은 그대로 보존).
+    # 정규화는 정규장 시계열이어야 참조 결합(backward)이 아침 첫 봉에 전날 20:00 값을 끌어오지 않고, 학습 이력(09-14 이전)과 뜻이 같다.
+    from shared.core.market_utils import krx_regular_bar_mask
+    from shared.config.market_policies import timestamp_convention
+    try:
+        _label = timestamp_convention(clean_sym, "1m")
+    except Exception:
+        _label = "BAR_CLOSE"                      # Creon 1분봉 원장 규약
+    _reg = krx_regular_bar_mask(df['timestamp'], _label).to_numpy()
+    if not _reg.all():
+        _out = df.loc[~_reg, 'timestamp']
+        local_log(f"  🕘 [KRX 정규장] {clean_sym}: 정규장 밖 봉 {int((~_reg).sum()):,}개 제외 "
+                  f"({_out.min():%Y-%m-%d}~{_out.max():%Y-%m-%d}, NXT 프리/애프터마켓)")
+        df = df[_reg].reset_index(drop=True)
+
 
     # 표준 컬럼 정규화
     close_col = 'upbit_close' if 'upbit_close' in df.columns else ('close' if 'close' in df.columns else 'trade_price')
@@ -582,7 +597,7 @@ KRX_NXT_FROM = "2026-09-14"
 
 def krx_regular_session_bars(clean_sym: str, days) -> pd.DataFrame:
     """1분봉 일자 저장소 → 날짜별 정규장 OHLCV(무수정). 봉 종료 라벨이므로 (개장, 마감] 구간. 파일 없는 날은 빠진다."""
-    from shared.core.market_utils import krx_session
+    from shared.core.market_utils import krx_regular_bar_mask
     from shared.data_library.paths import data_vault_path
     rows = []
     for day in days:
@@ -590,9 +605,7 @@ def krx_regular_session_bars(clean_sym: str, days) -> pd.DataFrame:
         if not os.path.exists(fp):
             continue
         m = pd.read_csv(fp, usecols=["timestamp", "upbit_open", "upbit_high", "upbit_low", "upbit_close", "upbit_volume", "upbit_trade_price"])
-        t = pd.to_datetime(m["timestamp"]).dt.time
-        ses = krx_session(day)
-        m = m[(t > ses.open) & (t <= ses.close)]
+        m = m[krx_regular_bar_mask(m["timestamp"], "BAR_CLOSE").to_numpy()]     # Creon 1분봉 = 봉 종료 라벨
         if m.empty or m["upbit_volume"].sum() <= 0:
             continue
         rows.append({"timestamp": pd.Timestamp(day).normalize(), "open": float(m["upbit_open"].iloc[0]), "high": float(m["upbit_high"].max()),
