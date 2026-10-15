@@ -146,13 +146,20 @@ def test_parse_naver_and_shares():
 
 
 def test_read_creon_restores_regular_session_from_1m(stage, monkeypatch):
+    from shared.data_library import paths
+    from shared.data_library.kr_equity import bronze
+    monkeypatch.setattr(paths, "DATA_VAULT_ROOT", str(stage.parent))
+    monkeypatch.setattr(bronze, "LANDING", (stage.name, "raw", "creon"))
     base = stage / "raw" / "creon"
     (base / "candle_1d").mkdir(parents=True)
     (base / "candle_1d_unadj").mkdir(parents=True)
     hdr = "timestamp,upbit_open,upbit_high,upbit_low,upbit_close,upbit_volume,upbit_trade_price\n"
-    rows = "2026-09-11 00:00:00,100,110,90,100,10,1000\n2026-09-14 00:00:00,100,120,95,118,30,3000\n2026-09-15 00:00:00,118,119,117,119,5,500\n"
-    (base / "candle_1d" / "A000001_1d.csv").write_text(hdr + rows.replace(",100,110,90,100,", ",200,220,180,200,").replace(",100,120,95,118,", ",200,240,190,236,").replace(",118,119,117,119,", ",236,238,234,238,"))
-    (base / "candle_1d_unadj" / "A000001_1d.csv").write_text(hdr + rows)
+    # 2:1 분할이 09-14 에 반영 → 09-11 수정가는 무수정의 2배(계수 2), 09-14 이후는 같다
+    adj = "2026-09-11 00:00:00,200,220,180,200,10,1000\n2026-09-14 00:00:00,100,120,95,118,30,3000\n2026-09-15 00:00:00,118,119,117,119,5,500\n"
+    raw = "2026-09-11 00:00:00,100,110,90,100,10,1000\n2026-09-14 00:00:00,100,120,95,118,30,3000\n2026-09-15 00:00:00,118,119,117,119,5,500\n"
+    (base / "candle_1d" / "A000001_1d.csv").write_text(hdr + adj)
+    (base / "candle_1d_unadj" / "A000001_1d.csv").write_text(hdr + raw)
+    bronze.ingest_code("A000001", log=lambda *_: None)
     m1 = stage / "m1" / "A000001"
     m1.mkdir(parents=True)
     (m1 / "2026-09-14.csv").write_text("timestamp,upbit_open,upbit_high,upbit_low,upbit_close,upbit_volume,upbit_trade_price\n"
@@ -160,8 +167,8 @@ def test_read_creon_restores_regular_session_from_1m(stage, monkeypatch):
                                        "2026-09-14 20:00:00,110,120,110,118,5,500\n")
     monkeypatch.setattr(panel, "M1_STORE", str(stage / "m1"))
     d = panel.read_creon("A000001").set_index("date")
-    assert d.loc["2026-09-11", "close"] == 200 and d.loc["2026-09-11", "reg_fix"] == 0
-    assert d.loc["2026-09-14", "close"] == pytest.approx(212) and d.loc["2026-09-14", "close_unadj"] == 106      # 정규장 종가 × 계수 2
+    assert d.loc["2026-09-11", "close"] == pytest.approx(200) and d.loc["2026-09-11", "reg_fix"] == 0
+    assert d.loc["2026-09-14", "close"] == pytest.approx(106) and d.loc["2026-09-14", "close_unadj"] == 106      # 정규장 종가 × 계수 1
     assert d.loc["2026-09-14", "volume"] == 25 and d.loc["2026-09-14", "reg_fix"] == 1
     assert np.isnan(d.loc["2026-09-15", "close"]) and d.loc["2026-09-15", "reg_fix"] == 2                       # 1분봉 없음 → NaN
 
@@ -195,3 +202,16 @@ def test_creon_bronze_ingest_is_unadjusted_and_idempotent(tmp_path, monkeypatch)
     from shared.data_library import corporate_actions as ca
     ev = ca.events(bronze.actions_root(), "A000001")
     assert abs(ev[0]["price_factor"] - 4.0) < 0.01
+
+
+def test_silver_price_is_raw_times_ledger_factor(tmp_path, monkeypatch):
+    from shared.data_library import paths
+    from shared.data_library.kr_equity import bronze, panel
+    monkeypatch.setattr(paths, "DATA_VAULT_ROOT", str(tmp_path))
+    monkeypatch.setattr(panel, "NXT_FROM", pd.Timestamp("2100-01-01"))
+    raw_c = [1000.0] * 4 + [4000.0] * 6
+    _landing(tmp_path, "A000001", [4000.0] * 10, raw_c)
+    bronze.ingest_code("A000001", log=lambda *_: None)
+    d = panel.read_creon("A000001")
+    assert np.allclose(d.close, 4000.0, rtol=0.01) and d.close_unadj.tolist() == raw_c   # 수정가는 원장 계수로, 무수정가는 그대로
+    assert np.allclose(d.volume[:4], 250.0, rtol=0.01) and (d.reg_fix == 0).all()

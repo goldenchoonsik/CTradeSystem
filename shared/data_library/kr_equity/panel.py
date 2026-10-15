@@ -59,15 +59,19 @@ def _reg_session(code, day):
 
 
 def read_creon(code: str) -> pd.DataFrame:
-    base = path("raw", "creon")
-    a = pd.read_csv(os.path.join(base, "candle_1d", f"{code}_1d.csv"), parse_dates=["timestamp"]).rename(columns=COLS)
-    a = a[a.date >= START].drop_duplicates("date").sort_values("date")
-    u = pd.read_csv(os.path.join(base, "candle_1d_unadj", f"{code}_1d.csv"), parse_dates=["timestamp"]).rename(columns=COLS)
-    u = u[u.date >= START].drop_duplicates("date")
-    d = a.merge(u[["date"] + OHLCV].add_suffix("_u").rename(columns={"date_u": "date"}), on="date", how="left")
-    for c in OHLCV + ["close_u"]:                     # 정수로 읽힌 열에 소수(복원값×계수)를 넣을 수 있게
-        d[c] = d[c].astype("float64")
-    d["factor"] = d.close / d.close_u
+    """실버 가격: 원천(raw/creon/candle_1d_unadj, 무수정) × 기업행위 원장 계수(raw/creon/corporate_actions). 착륙 구역의 수정 일봉은 쓰지 않는다."""
+    from shared.data_library import corporate_actions
+    from . import bronze
+    u = pd.read_csv(bronze.unadj_path(code), parse_dates=["timestamp"]).rename(columns={"timestamp": "date"})
+    u = u[u.date >= START].drop_duplicates("date").sort_values("date").reset_index(drop=True)
+    d = u[["date"] + OHLCV].copy()
+    d[OHLCV] = d[OHLCV].astype("float64")
+    d["close_u"] = d.close
+    f = corporate_actions.cumulative_factor(corporate_actions.events(bronze.actions_root(), code), d.date).to_numpy()
+    for c in ("open", "high", "low", "close"):
+        d[c] = d[c] * f
+    d["volume"] = d.volume / f
+    d["factor"] = f
     d["reg_fix"] = np.int8(0)
     for i in d.index[d.date >= NXT_FROM]:
         reg = _reg_session(code, d.at[i, "date"])
@@ -114,18 +118,22 @@ def read_naver(code: str):
 
 def build_prices() -> pd.DataFrame:
     uni = universe()
-    parts, t0 = [], time.time()
+    parts, missing, t0 = [], [], time.time()
     for i, r in enumerate(uni.itertuples(), 1):
         try:
             d = read_creon(r.code) if r.price_source == "creon" else read_naver(r.code)
         except FileNotFoundError:
             d = None
+            if r.price_source == "creon":
+                missing.append(r.code)
         if d is not None and len(d):
             for c in OHLCV + ["close_unadj", "factor"]:
                 d[c] = d[c].astype("float32")
             parts.append(d)
         if i % 500 == 0:
             log(f"[panel] prices {i}/{len(uni)} ({time.time() - t0:.0f}s)", "build_panel.txt")
+    if missing:
+        raise RuntimeError(f"원천(raw/creon/candle_1d_unadj)에 없는 상장 종목 {len(missing)}개 {missing[:5]} — creon_bronze 단계를 먼저 실행하세요")
     p = pd.concat(parts, ignore_index=True)
     p["code"] = p.code.astype("category")
     p["src"] = p.src.astype("category")

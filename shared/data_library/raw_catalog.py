@@ -31,11 +31,20 @@ from typing import Any, Dict, List, Optional
 from shared.data_library.paths import data_vault_path
 
 STALE_TRADING_DAYS = 5                                  # 확정된 마지막 거래일보다 이만큼(거래일) 뒤처지면 '최신일 지연'
-UNIVERSE_DIRS = {"yahoo": ("candle_1d", "US")}        # 원천 폴더 → (하위 폴더, 시장) — 유니버스 원천
+UNIVERSE_DIRS = {"yahoo": ("candle_1d", "US"), "creon": ("candle_1d_unadj", "KRX")}   # 원천 폴더 → (하위 폴더, 시장) — 유니버스 원천
 _CACHE_PATH = data_vault_path("temp", "cache", "raw_catalog.json")
 _LOCK = threading.Lock()
 _MEM: Dict[str, Any] = {"at": 0.0, "data": None}
 _MEM_TTL = 60
+
+
+def _kr_listing() -> Dict[str, Dict[str, str]]:
+    """kr_equity 유니버스(universe.csv) → {A코드: {name, status}} — 한국 일봉 원천의 이름·상장 상태."""
+    fp = data_vault_path("staging", "kr_equity", "universe.csv")
+    if not os.path.exists(fp):
+        return {}
+    with open(fp, encoding="utf-8") as f:
+        return {r["code"]: {"name": r["name"], "status": r["status"]} for r in csv.DictReader(f)}
 
 
 def _latest_listing() -> Dict[str, Dict[str, str]]:
@@ -177,7 +186,7 @@ def _feed_market(category: str, provider: str) -> str:
 
 
 # 시장별 정규장 마감(현지) — 이 시각이 지나야 그날 일봉이 확정된다
-_SESSION_CLOSE = {"US": ("America/New_York", 16, 0)}
+_SESSION_CLOSE = {"US": ("America/New_York", 16, 0), "KRX": ("Asia/Seoul", 20, 0)}   # KRX 는 시간외(NXT) 종가가 20:00 에 확정
 
 
 def expected_latest(market: str, now: Optional[datetime] = None) -> Optional[str]:
@@ -216,6 +225,7 @@ def build(force: bool = False) -> Dict[str, Any]:
         cache = _load_cache()
         uni = _scan_universe(cache)
         listing = _latest_listing()
+        kr = _kr_listing()
         feeds = _operating_entries()
         feed_paths = {os.path.abspath(e["path"]) for e in feeds if e.get("path")}
         us_feed_syms = {e["symbol"].upper() for e in feeds if str(e.get("category", "")).upper().startswith("US")}
@@ -225,10 +235,15 @@ def build(force: bool = False) -> Dict[str, Any]:
             # 같은 파일이거나 미국 주식·ETF 수집 대상의 같은 티커일 때만 운용 — 심볼 문자열만 같으면 안 된다(유니버스 ES=Eversource ≠ 선물 ES)
             full = os.path.abspath(data_vault_path("raw", key))
             e["tier"] = "운용" if (full in feed_paths or e["symbol"].upper() in us_feed_syms) else "유니버스"
-            meta = listing.get(e["symbol"])
-            e["name"] = (meta or {}).get("name", "")
-            e["etf"] = (meta or {}).get("etf", "") == "Y"
-            e["listing"] = "listed" if meta else ("ended" if listing else "unknown")
+            if e["market"] == "KRX":
+                k = kr.get(e["symbol"])
+                e["name"], e["etf"] = (k or {}).get("name", ""), False
+                e["listing"] = "unknown" if not k else ("ended" if k["status"] == "delisted" else "listed")
+            else:
+                meta = listing.get(e["symbol"])
+                e["name"] = (meta or {}).get("name", "")
+                e["etf"] = (meta or {}).get("etf", "") == "Y"
+                e["listing"] = "listed" if meta else ("ended" if listing else "unknown")
             entries.append(e)
         latest, expected = {}, {}
         by_market = defaultdict(list)
@@ -352,7 +367,12 @@ def detail(key: str, recent: int = 120) -> Dict[str, Any]:
     out = {"key": key, "entry": e, "conflicts": rds.pending_conflicts(p)[:20], "unrecoverable": rds.unrecoverable_ranges(p)}
     sym = os.path.basename(p)[: -len("_1d.csv")]
     act = data_vault_path("raw", "yahoo", "corporate_actions", f"{sym}.csv")
-    if os.path.exists(act):
+    if e.get("provider") == "CREON":
+        from shared.data_library import corporate_actions
+        evs = corporate_actions.events(data_vault_path("raw", "creon", "corporate_actions"), sym)
+        out["actions"] = {"events": [{"ex_date": v["ex_date"], "price_factor": v["price_factor"], "kind_hint": v["kind_hint"]}
+                                     for v in evs[-10:]], "count": len(evs)}
+    elif os.path.exists(act):
         with open(act, encoding="utf-8") as f:
             acts = list(csv.DictReader(f))
         out["actions"] = {"splits": [a for a in acts if a["type"] == "split"][-10:],

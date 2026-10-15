@@ -40,7 +40,7 @@ def kind_hint(r: float) -> str:
     """계수만으로 추정한 종류(확정은 2층). r>1 = 과거 가격을 올림(병합·감자), r<1 = 내림(분할·증자·배당·분배)."""
     if r <= 0:
         return "invalid"
-    frac = Fraction(r).limit_denominator(20)
+    frac = Fraction(r).limit_denominator(100)
     simple = abs(float(frac) / r - 1) < 0.01 and frac != 1
     if simple and r > 1.2:
         return "reverse_split_or_capital_reduction"     # 병합·감자
