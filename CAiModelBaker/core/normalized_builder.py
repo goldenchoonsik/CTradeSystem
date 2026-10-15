@@ -1178,6 +1178,29 @@ def _audit_interval_consistency_artifacts(
     return problems
 
 
+def build_normalized_ctrader_daily(clean_sym: str, out_pq: str, local_log: Optional[Callable[[str], None]] = None) -> str:
+    """cTrader 원천 일봉(raw/ctrader/{sym}_1d.csv, KST 라벨 = 롤오버 시각, 봉 시작) → normalized/candles_1d. 하루 한 봉이 아니면 실패."""
+    local_log = local_log or logging.info
+    raw_csv = dpaths.raw_path("ctrader", f"{clean_sym}_1d.csv")
+    if not os.path.exists(raw_csv):
+        raise FileNotFoundError(f"cTrader 일봉 원천 부재: {raw_csv}")
+    d = pd.read_csv(raw_csv)
+    d["timestamp"] = pd.to_datetime(d["timestamp"])
+    d = d.sort_values("timestamp").drop_duplicates("timestamp").reset_index(drop=True)
+    dup = d["timestamp"].dt.date.duplicated(keep=False)
+    if dup.any():
+        raise ValueError(f"[{clean_sym}] cTrader 일봉에 같은 날 봉이 여러 개 {int(dup.sum())}행 — 원천 정리 필요 "
+                         "(scripts/fix_ctrader_utc_daily_duplicates.py)")
+    out = pd.DataFrame({"timestamp": d["timestamp"], **{c: d[c].astype("float64") for c in ("open", "high", "low", "close", "volume")}})
+    os.makedirs(os.path.dirname(os.path.abspath(out_pq)), exist_ok=True)
+    out.to_parquet(out_pq, index=False, engine="pyarrow", compression="snappy")
+    ManifestManager.create_manifest(data_path=out_pq, provider="ctrader", data_tier="normalized", asset_type="candle_1d", symbol=clean_sym,
+                                    notes=f"cTrader 일봉 ({len(out)} bars, 뉴욕 17:00 롤오버, KST 라벨)",
+                                    extra_meta={"source_interval": "1d", "target_interval": "1d"})
+    local_log(f"  💾 [Normalized Parquet 저장] {out_pq} (총 {len(out):,}행, cTrader 원천 일봉)")
+    return out_pq
+
+
 def build_single_asset_normalized(
     symbol: str,
     local_log: Optional[Callable[[str], None]] = None
@@ -1271,7 +1294,15 @@ def build_single_asset_normalized(
                 artifacts.append(out_p)
 
             # 6. cTrader 글로벌 지수 CFD
+            elif (cat in ["GLOBAL_INDEX_CFD_PROXY", "CFD_PROXY"] or asset.get("primary_source") == "CTRADER") and intv == "1d":
+                # cTrader 일봉은 원천 일봉 그대로(뉴욕 17:00 롤오버 봉, 수집기가 KST 라벨로 저장) — 1분봉을 일봉 경로에 쓰면 안 된다
+                # (2026-10-16 발견: 종전엔 아래 1m 경로가 모든 주기에 1분봉을 써서 candles_1d/*.parquet 가 1분봉 수백만 행이었다)
+                out_pq = dpaths.normalized_path("candles_1d", f"{clean_sym}_1d.parquet")
+                artifacts.append(build_normalized_ctrader_daily(clean_sym, out_pq, local_log=local_log))
+
             elif cat in ["GLOBAL_INDEX_CFD_PROXY", "CFD_PROXY"] or asset.get("primary_source") == "CTRADER":
+                if intv != "1m":
+                    raise ValueError(f"cTrader 정규화는 1m·1d 만 지원합니다(요청 {intv}) — 1분봉을 다른 주기 이름으로 저장하지 않는다")
                 raw_csv = dpaths.raw_path("ctrader", f"{clean_sym}_1m.csv")
                 out_pq = dpaths.normalized_path(f"candles_{intv}", f"{clean_sym}_{intv}.parquet")
                 if os.path.exists(raw_csv):

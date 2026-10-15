@@ -174,6 +174,29 @@ def audit_interval_consistency(
                 if best is None or extrema > best[1]:
                     best = (off, extrema, j, fshift)
 
+    # 일봉 이상: 상위 봉의 시작 시각 자체를 구간 경계로 쓰는 후보 — FX·CFD 일봉은 뉴욕 17:00 롤오버라
+    # 하루 경계가 서머타임에 따라 KST 06:00/07:00 으로 바뀐다(고정 앵커 0h/9h 로는 맞출 수 없다, 2026-10-16)
+    if step >= pd.Timedelta(days=1) and len(c) >= MIN_BARS:
+        cb = c[[ts_col]].drop_duplicates().sort_values(ts_col).rename(columns={ts_col: "_bucket"})
+        cb["_bucket"] = cb["_bucket"].astype("datetime64[ns]")
+        cb["_end"] = cb["_bucket"].shift(-1).fillna(cb["_bucket"] + step)
+        for fshift in _FINE_SHIFT_CANDIDATES:
+            ff = f.drop(columns="_bucket", errors="ignore").assign(_t=(f[ts_col] + fshift * fine_step).astype("datetime64[ns]")).sort_values("_t")
+            a = pd.merge_asof(ff, cb, left_on="_t", right_on="_bucket", direction="backward")
+            a = a[a["_t"] < a["_end"]]
+            agg = a.groupby("_bucket").agg(
+                f_open=(fcols["open"], "first"), f_high=(fcols["high"], "max"),
+                f_low=(fcols["low"], "min"), f_close=(fcols["close"], "last"),
+            ).reset_index()
+            cc = c.rename(columns={ts_col: "_bucket"})
+            cc["_bucket"] = cc["_bucket"].astype("datetime64[ns]")
+            j = agg.merge(cc[["_bucket", "c_open", "c_high", "c_low", "c_close"]], on="_bucket", how="inner")
+            if len(j) < MIN_BARS:
+                continue
+            extrema = float((np.isclose(j.f_high, j.c_high) & np.isclose(j.f_low, j.c_low)).mean())
+            if best is None or extrema > best[1]:
+                best = (0, extrema, j, fshift)
+
     if best is None:
         return None
     offset, extrema_rate, j, fine_shift = best

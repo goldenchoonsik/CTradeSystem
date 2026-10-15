@@ -51,3 +51,36 @@ def test_real_vault_krx_minute_normalized_is_regular_session_only():
         if n:
             bad[f] = n
     assert not bad, f"정규장 밖 봉이 남은 KRX 1분봉 정규화: {bad} — normalized_builder.build_normalized_candle_stock 로 다시 빌드"
+
+
+def test_interval_audit_handles_fx_rollover_daily_bars():
+    """FX·CFD 일봉은 뉴욕 17:00 롤오버 — 하루 경계가 서머타임에 따라 KST 06:00/07:00 으로 바뀐다.
+    고정 앵커(0h/9h)로는 맞출 수 없어 정상 데이터가 '불일치'로 판정됐다(2026-10-16) — 상위 봉 시작 시각을 경계로 쓴다."""
+    import numpy as np
+    from shared.data_library.interval_consistency_audit import audit_interval_consistency
+    rng = np.random.default_rng(0)
+    starts = [pd.Timestamp("2026-03-02 07:00") + pd.Timedelta(days=i) for i in range(20)] + \
+             [pd.Timestamp("2026-03-23 06:00") + pd.Timedelta(days=i) for i in range(20)]      # 서머타임 전환
+    fine, coarse = [], []
+    for s in starts:
+        t = pd.date_range(s, s + pd.Timedelta(hours=23, minutes=59), freq="1min")
+        p = 100 + np.cumsum(rng.normal(0, 0.01, len(t)))
+        fine.append(pd.DataFrame({"timestamp": t, "open": p, "high": p + 0.005, "low": p - 0.005, "close": p}))
+        coarse.append({"timestamp": s, "open": p[0], "high": p.max() + 0.005, "low": p.min() - 0.005, "close": p[-1]})
+    r = audit_interval_consistency(pd.concat(fine), pd.DataFrame(coarse), "FX", "1m", "1d")
+    assert r is not None and r.ok and r.extrema_rate == 1.0
+
+
+def test_real_vault_ctrader_daily_normalized_is_one_bar_per_day():
+    """래칫(실물): cTrader 일봉 정규화가 1분봉을 일봉 이름으로 저장하던 결함(수백만 행) 재발 방지 — 하루 한 봉."""
+    d = os.path.join(ROOT, "DataVault", "normalized", "candles_1d")
+    names = ("USDJPY", "US_500", "XAUUSD", "XTIUSD", "JAPAN_225", "HONG_KONG_50", "US_TECH_100")
+    files = [f"{n}_1d.parquet" for n in names if os.path.exists(os.path.join(d, f"{n}_1d.parquet"))]
+    if not files:
+        pytest.skip("실물 부재")
+    bad = {}
+    for f in files:
+        ts = pd.to_datetime(pd.read_parquet(os.path.join(d, f), columns=["timestamp"])["timestamp"])
+        if ts.dt.date.duplicated().any():
+            bad[f] = int(ts.dt.date.duplicated().sum())
+    assert not bad, f"하루 여러 봉인 일봉 정규화: {bad}"
