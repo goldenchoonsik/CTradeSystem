@@ -215,3 +215,37 @@ def test_silver_price_is_raw_times_ledger_factor(tmp_path, monkeypatch):
     d = panel.read_creon("A000001")
     assert np.allclose(d.close, 4000.0, rtol=0.01) and d.close_unadj.tolist() == raw_c   # 수정가는 원장 계수로, 무수정가는 그대로
     assert np.allclose(d.volume[:4], 250.0, rtol=0.01) and (d.reg_fix == 0).all()
+
+
+# ---- 골드 (지표는 그날까지의 자료만, 라벨은 분리)
+def _px(n=400, seed=0):
+    rng = np.random.default_rng(seed)
+    close = 1000 * np.exp(np.cumsum(rng.normal(0, 0.02, n)))
+    d = pd.bdate_range("2020-01-01", periods=n)
+    return pd.DataFrame({"code": "A000001", "date": d, "open": close, "high": close, "low": close, "close": close,
+                         "volume": rng.integers(1000, 5000, n).astype(float), "value": close * 1000, "close_unadj": close,
+                         "factor": 1.0, "reg_fix": np.int8(0), "src": "creon"})
+
+
+def test_gold_features_use_only_past_data():
+    from shared.data_library.kr_equity import gold
+    p = _px()
+    full = gold.build_features(p).set_index("date")
+    cut = gold.build_features(p[p.date <= p.date.iloc[299]]).set_index("date")      # 미래 100봉을 지운 패널
+    cols = [c for c in cut.columns if c not in ("code", "reg_fix", "resumed")]
+    a, b = full.loc[cut.index, cols].astype("float64"), cut[cols].astype("float64")
+    assert np.allclose(a.to_numpy(), b.to_numpy(), equal_nan=True, rtol=1e-4)       # 미래를 지워도 과거 지표 불변
+
+
+def test_gold_labels_enter_next_close_and_respect_halts():
+    from shared.data_library.kr_equity import gold
+    p = _px(60)
+    lab = gold.build_labels(p).set_index("date")
+    c = p.set_index("date").close
+    d = p.date
+    assert lab.lab_ret_5.iloc[3] == pytest.approx(np.log(c.iloc[3 + 1 + 5] / c.iloc[3 + 1]), rel=1e-4)    # t+1 종가 진입
+    assert np.isnan(lab.lab_ret_20.iloc[-5])                                                              # 미래 없음
+    h = p.copy()
+    h.loc[h.index >= 30, "date"] = h.loc[h.index >= 30, "date"] + pd.Timedelta(days=60)                  # 30번째 봉 앞에 두 달 공백(거래정지)
+    lab2 = gold.build_labels(h)
+    assert lab2.lab_ret_5.iloc[24:29].isna().all() and not np.isnan(lab2.lab_ret_5.iloc[29]) and not np.isnan(lab2.lab_ret_5.iloc[10])           # 공백을 가로지르는 라벨은 NaN
