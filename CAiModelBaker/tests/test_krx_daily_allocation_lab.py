@@ -94,3 +94,21 @@ def test_lab_smoke(tmp_path):
     assert b["규칙 1배 상한 세후"]["tax_pct_per_year"] == 0
     assert b["규칙 2배 상한 세후"]["tax_pct_per_year"] > 0
     assert b["규칙 2배 상한 세후"]["cagr"] < b["규칙 2배 상한 세전"]["cagr"]
+
+
+def test_regular_session_bars_from_minute_store(tmp_path, monkeypatch):
+    """NXT(2026-09-14~) 이후 개별 주식 일봉은 08:00~20:00 통합 시세 — 정규장 OHLCV 는 1분봉(봉 종료 라벨)의 (09:00, 15:30] 에서."""
+    from shared.data_library import paths
+    from CAiModelBaker.core.normalized_builder import krx_regular_session_bars
+    monkeypatch.setattr(paths, "DATA_VAULT_ROOT", str(tmp_path))
+    d = tmp_path / "raw" / "creon" / "candle_1m" / "A005930"
+    d.mkdir(parents=True)
+    hdr = "timestamp,upbit_open,upbit_high,upbit_low,upbit_close,upbit_volume,upbit_trade_price\n"
+    rows = ["2026-10-14 08:30:00,90,99,80,95,5,500",          # 프리마켓 — 제외
+            "2026-10-14 09:01:00,100,105,98,104,10,1000",
+            "2026-10-14 15:30:00,104,108,103,106,15,1500",    # 종가 단일가 봉 — 포함
+            "2026-10-14 20:00:00,110,120,110,118,5,500"]       # 애프터마켓 — 제외
+    (d / "2026-10-14.csv").write_text(hdr + "\n".join(rows) + "\n")
+    r = krx_regular_session_bars("005930", [pd.Timestamp("2026-10-14"), pd.Timestamp("2026-10-15")])
+    assert len(r) == 1
+    assert r.iloc[0][["open", "high", "low", "close", "volume"]].tolist() == [100.0, 108.0, 98.0, 106.0, 25.0]

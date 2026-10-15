@@ -574,6 +574,33 @@ def check_adjusted_daily(daily_close: pd.Series, actual_close: pd.Series) -> Lis
     return problems
 
 
+# Creon 일봉은 2026-09-14(NXT 대체거래소 개장)부터 개별 주식의 일봉이 08:00~20:00 통합 시세다(시가=프리마켓, 종가=20:00 애프터마켓).
+# 정규장 기준이 필요하므로 그날부터는 1분봉 일자 저장소(무수정, 봉 종료 라벨)에서 정규장 OHLCV 를 복원한다.
+# ETF 는 NXT 대상이 아니라 일봉=정규장이므로 복원해도 값이 같다(검사로 확인).
+KRX_NXT_FROM = "2026-09-14"
+
+
+def krx_regular_session_bars(clean_sym: str, days) -> pd.DataFrame:
+    """1분봉 일자 저장소 → 날짜별 정규장 OHLCV(무수정). 봉 종료 라벨이므로 (개장, 마감] 구간. 파일 없는 날은 빠진다."""
+    from shared.core.market_utils import krx_session
+    from shared.data_library.paths import data_vault_path
+    rows = []
+    for day in days:
+        fp = data_vault_path("raw", "creon", "candle_1m", f"A{clean_sym}", f"{pd.Timestamp(day):%Y-%m-%d}.csv")
+        if not os.path.exists(fp):
+            continue
+        m = pd.read_csv(fp, usecols=["timestamp", "upbit_open", "upbit_high", "upbit_low", "upbit_close", "upbit_volume", "upbit_trade_price"])
+        t = pd.to_datetime(m["timestamp"]).dt.time
+        ses = krx_session(day)
+        m = m[(t > ses.open) & (t <= ses.close)]
+        if m.empty or m["upbit_volume"].sum() <= 0:
+            continue
+        rows.append({"timestamp": pd.Timestamp(day).normalize(), "open": float(m["upbit_open"].iloc[0]), "high": float(m["upbit_high"].max()),
+                     "low": float(m["upbit_low"].min()), "close": float(m["upbit_close"].iloc[-1]),
+                     "volume": float(m["upbit_volume"].sum()), "trade_amount": float(m["upbit_trade_price"].sum())})
+    return pd.DataFrame(rows, columns=["timestamp", "open", "high", "low", "close", "volume", "trade_amount"])
+
+
 def build_normalized_krx_daily(
     symbol: str,
     raw_path: Optional[str] = None,
@@ -594,6 +621,26 @@ def build_normalized_krx_daily(
         out = pd.DataFrame({"timestamp": built["timestamp"].to_numpy(), **{c: built[c].to_numpy(dtype=float) for c in ("open", "high", "low", "close", "volume")},
                             "trade_amount": built["value"].to_numpy(dtype=float)})
         local_log(f"  🧾 [KRX 일봉] {clean_sym} 무수정 원천 × 기업행위 원장 계수(이벤트 {int((built['factor'].diff() != 0).sum() - 1)}건)")
+        # NXT 이후: 정규장 OHLCV(1분봉 복원, 무수정) × 그날 계수 — 종가가 정규장과 다른 종목(NXT 거래 주식)만.
+        # ETF 는 가격이 정규장과 100% 같고 거래량만 시간외 단일가만큼 많다(2026-10-16 실측) → 손대지 않는다.
+        nxt = out["timestamp"] >= pd.Timestamp(KRX_NXT_FROM)
+        reg = krx_regular_session_bars(clean_sym, out.loc[nxt, "timestamp"]).set_index("timestamp")
+        cur = out.set_index("timestamp")
+        is_nxt = bool(len(reg)) and not np.allclose(cur.loc[reg.index, "close"].to_numpy() / built.set_index(out["timestamp"]).loc[reg.index, "factor"].to_numpy(),
+                                                    reg["close"].to_numpy())
+        if is_nxt:
+            fac = pd.Series(built["factor"].to_numpy(), index=out["timestamp"]).reindex(reg.index).to_numpy()
+            idx = out.index[out["timestamp"].isin(reg.index)]
+            r = reg.loc[out.loc[idx, "timestamp"]]
+            f = pd.Series(fac, index=reg.index).loc[r.index].to_numpy()
+            for c in ("open", "high", "low", "close"):
+                out.loc[idx, c] = r[c].to_numpy() * f
+            out.loc[idx, "volume"] = r["volume"].to_numpy() / f
+            out.loc[idx, "trade_amount"] = r["trade_amount"].to_numpy()
+            drop = nxt & ~out["timestamp"].isin(reg.index)
+            out = out[~drop].reset_index(drop=True)
+            local_log(f"  🕘 [KRX 일봉] {clean_sym} NXT 통합 시세 → 정규장 복원 {len(reg)}일"
+                      + (f" · 1분봉 아직 없는 {int(drop.sum())}일은 제외(다음 수집 때 채움)" if drop.any() else ""))
     else:
         basis = "creon_adjusted"
         raw_path = raw_path or dpaths.raw_path("creon", "candle_1d", f"A{clean_sym}_1d.csv", fallback=False)
