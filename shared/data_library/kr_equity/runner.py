@@ -25,6 +25,9 @@ CREON_ARGS = {  # universe_driver.py 인자 (cwd = CAiModelBaker/core)
     "creon_daily_ext": ["daily_ext", "--codes-file", "../../DataVault/staging/kr_equity/targets_creon.txt"],
     "creon_index": ["index"],
 }
+# 이 Creon 단계가 끝나면 이어서 원천 적재(creon_bronze)까지 한다 — 착륙 구역(staging)은 받은 그대로의 보존층이고,
+# 원천(raw/creon/candle_1d_unadj·corporate_actions)은 적재해야 생긴다. 사람이 두 번 누르지 않게 묶는다(2026-10-16).
+THEN_BRONZE = {"creon_daily", "creon_daily_unadj"}
 
 
 def _pid_alive(pid: int) -> bool:
@@ -70,7 +73,18 @@ def command(step: str, full: bool = False) -> Tuple[List[str], str]:
     args = py + ["universe_driver.py"] + CREON_ARGS[step] + ["--stage", store.DATASET]
     if full:
         args.append("--full")
+    if step in THEN_BRONZE:
+        # Linux 쪽 감싸개가 Windows 수집을 기다렸다가 성공하면 원천 적재까지 이어서 한다(잠금·로그는 감싸개 프로세스 기준)
+        return [sys.executable, "-m", "shared.data_library.kr_equity.cli", "creon_then_bronze", step] + (["--full"] if full else []), PROJECT_ROOT
     return args, CREON_DRIVER_DIR
+
+
+def creon_argv(step: str, full: bool = False) -> Tuple[List[str], str]:
+    """Creon 단계의 Windows 명령 그 자체(감싸개 없이)."""
+    py = _py_launcher()
+    if not py:
+        raise RuntimeError("Windows Python(py.exe)·PowerShell 을 찾지 못했다 — Creon 단계는 WSL/Windows 에서만")
+    return py + ["universe_driver.py"] + CREON_ARGS[step] + ["--stage", store.DATASET] + (["--full"] if full else []), CREON_DRIVER_DIR
 
 
 def start(step: str, full: bool = False) -> dict:

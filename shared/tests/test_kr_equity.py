@@ -287,3 +287,21 @@ def test_operating_adjusted_from_unadj_and_ledger(tmp_path, monkeypatch):
     assert np.allclose(out.close, 50.0, rtol=0.01) and out.close_unadj.tolist() == raw_c
     assert np.allclose(out.volume[:3], 20.0, rtol=0.01) and np.allclose(out.factor[3:], 1.0)
     assert bronze.operating_adjusted("A122630") is None               # 무수정 원천 없으면 None → 옛 방식
+
+
+def test_creon_daily_steps_chain_bronze(monkeypatch):
+    """Creon 일봉 단계는 Linux 감싸개로 실행돼, Windows 수집이 성공했을 때만 원천 적재(creon_bronze)가 이어진다."""
+    import subprocess
+    from shared.data_library.kr_equity import cli, runner, sources as src
+    monkeypatch.setattr(runner, "_py_launcher", lambda: ["py.exe", "-3.10-32"])
+    argv, _ = runner.command("creon_daily_unadj")
+    assert argv[1:4] == ["-m", "shared.data_library.kr_equity.cli", "creon_then_bronze"] and argv[4] == "creon_daily_unadj"
+    argv, cwd = runner.command("creon_daily_ext")                         # 원천 적재와 무관한 단계는 그대로
+    assert argv[0] == "py.exe" and cwd == runner.CREON_DRIVER_DIR
+    ran = []
+    monkeypatch.setattr(src, "run", lambda step: ran.append(step) or True)
+    monkeypatch.setattr(src, "log", lambda *a, **k: None)
+    monkeypatch.setattr(subprocess, "call", lambda *a, **k: 1)
+    assert cli.creon_then_bronze("creon_daily_unadj", False) == 1 and ran == []      # 수집 실패 → 적재 안 함
+    monkeypatch.setattr(subprocess, "call", lambda *a, **k: 0)
+    assert cli.creon_then_bronze("creon_daily_unadj", False) == 0 and ran == ["creon_bronze"]
