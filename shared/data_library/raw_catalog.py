@@ -90,6 +90,7 @@ def _universe_entry(csv_path: str, provider: str, market: str) -> Dict[str, Any]
                   "last": str(it.get("last_timestamp") or "")[:10], "manifest_size": it.get("byte_size"), "manifest": True})
     except Exception:
         e.update({"rows": None, "first": "", "last": "", "manifest_size": None, "manifest": False})
+    e["blank_bars"] = _tail_blank_bars(csv_path)
     e["conflicts"] = 0
     if os.path.exists(csv_path + ".conflicts.json"):
         try:
@@ -100,6 +101,21 @@ def _universe_entry(csv_path: str, provider: str, market: str) -> Dict[str, Any]
     return e
 
 
+TAIL_BYTES = 4096                                       # 최근 ~60봉 — 미완성 봉은 늘 끝부분에 생긴다
+
+
+def _tail_blank_bars(csv_path: str) -> int:
+    """끝부분에서 가격 칸이 빈 봉 수(마감 직후 받은 미확정 봉 등)."""
+    try:
+        with open(csv_path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            f.seek(max(0, f.tell() - TAIL_BYTES))
+            lines = f.read().decode("utf-8", "ignore").splitlines()[1:]
+        return sum(1 for ln in lines if ln[:2] in ("19", "20") and "" in ln.split(",")[1:5])
+    except OSError:
+        return 0
+
+
 def _scan_universe(cache: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     """유니버스 원천 파일 → 항목(매니페스트 mtime 이 같으면 캐시 재사용)."""
     old = cache.get("universe", {})
@@ -108,10 +124,10 @@ def _scan_universe(cache: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         for p in glob.glob(data_vault_path("raw", provider, sub, "*_1d.csv")):
             key = os.path.relpath(p, data_vault_path("raw"))
             try:
-                sig = [os.stat(p + ".manifest.json").st_mtime_ns, os.path.getsize(p),
+                sig = [os.stat(p + ".manifest.json").st_mtime_ns, os.path.getsize(p), 2,   # 2 = 항목 형식 판(미완성 봉 추가)
                        os.stat(p + ".conflicts.json").st_mtime_ns if os.path.exists(p + ".conflicts.json") else 0]
             except OSError:
-                sig = [0, os.path.getsize(p), 0]
+                sig = [0, os.path.getsize(p), 2, 0]
             hit = old.get(key)
             out[key] = hit if hit and hit.get("_sig") == sig else {**_universe_entry(p, provider, market), "_sig": sig}
     return out
@@ -175,7 +191,7 @@ def expected_latest(market: str, now: Optional[datetime] = None) -> Optional[str
     today = local.strftime("%Y-%m-%d")
     if mc.is_trading_day(today, market) and (local.hour, local.minute) >= (hh, mm):
         return today
-    return mc.prev_trading_day(today, market)
+    return mc.prev_trading_day_strict(today, market)
 
 
 def trading_days_behind(last: str, latest: str, market: str) -> int:
@@ -239,6 +255,8 @@ def _issues(e: Dict[str, Any], market_latest: Optional[str]) -> List[str]:
     out = []
     if e.get("conflicts"):
         out.append("conflict")
+    if e.get("blank_bars"):
+        out.append("incomplete_bar")
     if not e.get("manifest"):
         out.append("no_manifest")
     elif e.get("manifest_size") is not None and e["manifest_size"] != e.get("size"):
@@ -251,7 +269,7 @@ def _issues(e: Dict[str, Any], market_latest: Optional[str]) -> List[str]:
     return out
 
 
-ISSUE_LABELS = {"conflict": "확인 필요", "stale": "최신일 지연", "listing_ended": "상장 종료", "no_manifest": "매니페스트 없음",
+ISSUE_LABELS = {"conflict": "확인 필요", "incomplete_bar": "미완성 봉", "stale": "최신일 지연", "listing_ended": "상장 종료", "no_manifest": "매니페스트 없음",
                 "size_mismatch": "크기 불일치", "missing_days": "결측일", "quality_bad": "품질 불량", "no_file": "원천 없음"}
 # 상장 종료는 '결함'이 아니라 상태다 — 이상 건수에서 빼고 따로 센다
 NOT_ANOMALY = {"listing_ended"}

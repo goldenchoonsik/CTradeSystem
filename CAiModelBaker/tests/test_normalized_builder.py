@@ -23,6 +23,14 @@ from shared.data_library import paths as dpaths
 from shared.data_library.manifest_manager import ManifestManager
 
 
+# 실제 DataVault/normalized 의 정규화 파일을 기본 경로에 다시 만들어 덮어쓰는 실데이터 통합 테스트(2026-10-15 사고: 005930_1m 이
+# end_date=2026-09-02 로 잘려 덮어써짐) — 운영(학습용) 실버를 테스트가 건드리고,
+# 크레온 틱 전체를 읽어 RSS 3GB+ 로 OOM 이 난다(2026-10-15). 기본 실행에서는 건너뛰고 CTRADE_REAL_VAULT_TESTS=1 일 때만 돈다.
+_REAL_VAULT = pytest.mark.skipif(os.environ.get("CTRADE_REAL_VAULT_TESTS") != "1",
+                                 reason="실제 정규화 볼트를 다시 쓰는 통합 테스트 — CTRADE_REAL_VAULT_TESTS=1 로만 실행")
+
+
+@_REAL_VAULT
 def test_build_normalized_10s_stock_schema_and_microstructure():
     """069500 10초 정규화 Parquet 빌드 및 표준 스키마, 마이크로 지표, 동시호가 플래그 검증"""
     out_path = build_normalized_10s_stock("069500")
@@ -83,6 +91,7 @@ def test_build_normalized_10s_stock_schema_and_microstructure():
     assert ok is True
 
 
+@_REAL_VAULT
 def test_build_normalized_candle_stock_vwap():
     """005930 1분봉 정규화 및 VWAP, float32 스키마 검증"""
     out_path = build_normalized_candle_stock("005930", interval="1m", end_date="2026-09-02")
@@ -170,6 +179,7 @@ def test_build_normalized_us_stock():
     assert ok is True
 
 
+@_REAL_VAULT
 def test_build_normalized_crypto():
     """가상자산(KRW-BTC) 24/7 정규화 빌드 및 매니페스트 검증"""
     out_path = build_normalized_crypto("KRW-BTC", interval="10m")
@@ -185,6 +195,7 @@ def test_build_normalized_crypto():
     assert ok is True
 
 
+@_REAL_VAULT
 def test_build_all_active_normalized():
     """SourceMappingManager 연동 17대 전 자산 일괄 정규화 파이프라인 검증"""
     res = build_all_active_normalized()

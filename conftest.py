@@ -269,3 +269,18 @@ def _forbid_writes_to_real_raw_store(monkeypatch):
     monkeypatch.setattr(rds, "resolve_conflicts", guard(rds.resolve_conflicts, 0))
     monkeypatch.setattr(rds, "record_unrecoverable", guard(rds.record_unrecoverable, 0))
     yield
+
+
+# 테스트가 대시보드의 실제 품질 감사 캐시(DataVault/temp/cache/data_quality_cache.json)를 덮어쓰지 못하게 한다 — 2026-10-15 사고:
+# 한 테스트가 캐시 경로를 임시로 바꿔 메모리 캐시(_mem)에 임시 내용을 올린 뒤 경로만 되돌아가고, 다음 실데이터 회귀 테스트가
+# 그 메모리를 실제 경로에 통째로 저장해 전 종목 감사 결과(11MB)가 4항목(그중 하나는 pytest 임시 경로)으로 바뀌었다.
+# 모든 테스트에서 경로와 메모리 상태를 함께 격리한다(끝나면 monkeypatch 가 셋 다 되돌린다).
+@pytest.fixture(autouse=True)
+def _isolate_data_quality_cache(monkeypatch, tmp_path):
+    try:
+        from shared.data_library import data_quality as dq
+    except Exception:
+        return
+    monkeypatch.setattr(dq, "_CACHE_PATH", str(tmp_path / "data_quality_cache.json"))
+    monkeypatch.setattr(dq.DataQualityAuditor, "_mem", {})
+    monkeypatch.setattr(dq.DataQualityAuditor, "_loaded", False)

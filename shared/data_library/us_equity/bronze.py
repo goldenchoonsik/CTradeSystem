@@ -88,7 +88,9 @@ def ingest_response(sym: str, raw: bytes, *, full_history: bool, log: Callable[[
     need_head = any(k in ("full", "head") for _, _, k in raw_ingest.fetch_ranges(target))
     rep = raw_ingest.ingest_dataframe(bars, target, provider=PROVIDER, market=MARKET, interval="1d",
                                       requested_after=before, source_exhausted=full_history, volume_col="volume",
-                                      timezone_name="America/New_York", log=log)
+                                      timezone_name="America/New_York",
+                                      volume_revisions=True,   # Yahoo 는 하루 뒤 거래량을 보정(+늦은 체결·백 주 반올림) — 사람이 고를 일이 아니다
+                                      log=log)
     if rep is None:
         return None
     if need_head and full_history and len(bars):

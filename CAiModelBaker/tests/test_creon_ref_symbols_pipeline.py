@@ -39,6 +39,13 @@ from shared.data_library.symbol_relations_manager import SymbolRelationsManager
 
 class TestCreonRefSymbolsPipeline(unittest.TestCase):
 
+    def setUp(self):
+        # download_all_krx 는 끝에 실데이터 품질 감사(DataQualityAuditor.audit_symbol)를 부른다 — 이 테스트는 수집 대상 선별만 본다.
+        # 실감사는 크레온 틱을 읽어 RSS ~3GB 라 메모리가 빠듯한 PC 에서 OOM 이 났다(2026-10-15). 감사 자체는 test_data_quality 가 검증한다.
+        p = patch("shared.data_library.data_quality.DataQualityAuditor.audit_symbol", return_value={})
+        p.start()
+        self.addCleanup(p.stop)
+
     # 수집 주기는 실제 source_mappings.json 이 아니라 고정값으로 준다 — 운영 설정(예: 449190 틱 중단)이 바뀌어도 깨지지 않게
     @patch("CAiModelBaker.core.creon_collector._get_configured_sources", return_value=["TICK", "1M", "1D"])
     @patch("CAiModelBaker.core.creon_collector.download_daily_data")

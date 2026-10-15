@@ -190,3 +190,11 @@ def test_finished_child_is_not_reported_running(tmp_path, monkeypatch):
         time.sleep(0.05)
     assert collect.running() is None
     assert not (tmp_path / "collect" / ".running.json").exists()
+
+
+def test_partially_blank_bar_is_not_stored():
+    raw = _chart([(2026, 1, 2), (2026, 1, 5)], [10.0, 11.0])
+    j = json.loads(raw)
+    j["chart"]["result"][0]["indicators"]["quote"][0]["close"][1] = None     # 마감 직후: 시가·고가·저가만 있고 종가 없음
+    bars, _, info = parse_chart(json.dumps(j).encode())
+    assert bars["timestamp"].tolist() == ["2026-01-02 00:00:00"] and info["dropped_partial"] == 1

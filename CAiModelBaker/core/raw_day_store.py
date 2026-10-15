@@ -296,6 +296,24 @@ def _backup(target: str, backup_dir: Optional[str], keep: int, log: Callable[[st
 # ─────────────────────────────────────────────────────────────────────────────
 # 병합 (트랜잭션)
 # ─────────────────────────────────────────────────────────────────────────────
+def _same_except_volume(new: List[str], old: List[str], vol_idx: Optional[int]) -> bool:
+    """같은 행 수이고 거래량 열을 뺀 모든 값(부동소수 표기 차이 무시)이 같은가. 빈 칸이 있으면 같다고 보지 않는다."""
+    if vol_idx is None or len(new) != len(old):
+        return False
+    def key(line):
+        vals = list(_norm_line(line))
+        if any(v == "" for i, v in enumerate(vals) if i != vol_idx):
+            return None
+        return tuple(v for i, v in enumerate(vals) if i != vol_idx)
+    kn, ko = [key(l) for l in new], [key(l) for l in old]
+    return None not in kn and kn == ko
+
+
+def _blank_fields(line: str) -> int:
+    """시각 열을 뺀 빈 칸 수."""
+    return sum(1 for x in line.split(",")[1:] if not x.strip())
+
+
 def _norm_line(line: str) -> Tuple:
     """값 비교용 정규화 — 부동소수 표기 차이(432.79998779296875 vs 432.7999877929688)를 같은 값으로 본다."""
     out = []
@@ -359,6 +377,11 @@ def _better(new: List[str], old: List[str], vol_idx: Optional[int], tie_goes_to_
     (tie_goes_to_new). 봉인된 과거 날짜의 충돌은 기존 값을 유지하고 conflicts 로 센다."""
     if len(new) != len(old):
         return len(new) > len(old)
+    # 빈 칸이 있는 행은 빈 칸 없는 행보다 덜 온전하다 — 거래량보다 먼저 본다(2026-10-15 실측: Yahoo 가 마감 직후 종가를 비운 봉을
+    # 주고, 확정 뒤에는 거래량을 백 주 단위로 반올림해 '작게' 준다 → 거래량만 보면 종가 빈 봉이 영영 남는다)
+    nb, ob = sum(_blank_fields(l) for l in new), sum(_blank_fields(l) for l in old)
+    if nb != ob:
+        return nb < ob
     nv, ov = sum(_volume_of(l, vol_idx) for l in new), sum(_volume_of(l, vol_idx) for l in old)
     if nv > ov + 1e-9:
         return True
@@ -389,6 +412,7 @@ def merge_file(new_tmp_csv: str, target_csv: str, *, volume_col: Optional[str] =
                reference_day_volume: Optional[Callable[[str], Optional[float]]] = None,
                newest_first: Optional[bool] = None,
                forming_day: Any = _AUTO, write_ledger: bool = True, conflicts_target: Optional[str] = None,
+               volume_revisions: bool = False,
                log: Callable[[str], None] = print) -> Dict[str, Any]:
     """신규 수신분을 기존 원천에 날짜 단위 불변식을 지키며 병합한다. 반환: 병합 보고서. 실패는 MergeAborted.
 
@@ -402,6 +426,9 @@ def merge_file(new_tmp_csv: str, target_csv: str, *, volume_col: Optional[str] =
                        기본값을 쓰면 모든 과거 날이 느슨한 규칙을 받게 되므로, 저장소 전체의 최신 날을 넘긴다(None = 형성 중인 날 없음).
       write_ledger     False 면 <파일>.days.json 원장을 쓰지 않는다(날짜 메타가 대신한다).
       conflicts_target '확인 필요' 목록을 <conflicts_target>.conflicts.json 에 쓴다(기본: 대상 파일).
+      volume_revisions True 면 봉인된 날이라도 '가격은 같고 거래량만 다른' 재수신을 자동 처리한다(늘면 채택, 줄면 유지).
+                       사후 거래량 보정이 일상인 집계 일봉 원천(Yahoo)용. 검증 뒤 명시적으로 봉인하는 원천(크레온 1분봉
+                       일자 저장소)은 기본값(False) — 거래량만 달라도 '확인 필요'로 남긴다.
     """
     report: Dict[str, Any] = {"target": target_csv, "added_rows": 0, "replaced_groups": 0, "kept_groups": 0,
                               "conflicts": 0, "touched_days": [], "created": False}
@@ -409,6 +436,7 @@ def merge_file(new_tmp_csv: str, target_csv: str, *, volume_col: Optional[str] =
         return report
     new_header, new_groups = _load_new_groups(new_tmp_csv, newest_first)
     found_conflicts: List[Dict[str, Any]] = []
+    blank_filled: set = set()               # 빈 칸 봉을 온전한 봉으로 채운 날(거래량 불변식 예외)
     if not new_groups:
         os.remove(new_tmp_csv)
         return report
@@ -457,6 +485,8 @@ def merge_file(new_tmp_csv: str, target_csv: str, *, volume_col: Optional[str] =
                             emit(w, ts, old_lines)
                         elif _day(ts) == latest_day:
                             if _better(nl, old_lines, vol_idx, tie_goes_to_new=True):
+                                if sum(_blank_fields(x) for x in nl) < sum(_blank_fields(x) for x in old_lines):
+                                    blank_filled.add(_day(ts))     # 빈 칸을 채운 교체 — 확정 거래량이 잠정치보다 작을 수 있다
                                 emit(w, ts, nl); touched.add(_day(ts))
                                 report["replaced_groups"] += 1; report["added_rows"] += len(nl) - len(old_lines)
                             else:
@@ -466,6 +496,13 @@ def merge_file(new_tmp_csv: str, target_csv: str, *, volume_col: Optional[str] =
                             report["replaced_groups"] += 1; report["added_rows"] += len(nl) - len(old_lines)
                         elif len(nl) <= len(old_lines) and _contains(old_lines, nl):           # 부분 재수신 — 기존이 더 온전
                             emit(w, ts, old_lines); report["kept_groups"] += 1
+                        elif volume_revisions and _same_except_volume(nl, old_lines, vol_idx):
+                            # 가격은 같고 거래량만 다름 — 늘었으면 늦게 보고된 체결의 반영(보강), 줄었으면 반올림·잠정치(기존 유지).
+                            # 둘 다 사람이 고를 일이 아니다(2026-10-15 Yahoo 실측: 하루 뒤 거래량 +0.01~1.3% 상향, 비유동 ETF 백 주 반올림)
+                            if _better(nl, old_lines, vol_idx):
+                                emit(w, ts, nl); touched.add(_day(ts)); report["replaced_groups"] += 1
+                            else:
+                                emit(w, ts, old_lines); report["kept_groups"] += 1
                         else:                                                                  # 다른 데이터 — 확인 필요
                             emit(w, ts, old_lines); report["kept_groups"] += 1; report["conflicts"] += 1
                             found_conflicts.append({"day": _day(ts), "ts": ts, "old": old_lines, "new": nl, "status": "pending",
@@ -484,7 +521,7 @@ def merge_file(new_tmp_csv: str, target_csv: str, *, volume_col: Optional[str] =
                 na = out_acc.get(d)
                 if na is None:
                     raise MergeAborted(f"{d}: 기존 날짜가 결과에서 사라졌다")
-                if na.rows < oa.rows or na.volume < oa.volume - 1e-6:
+                if na.rows < oa.rows or (na.volume < oa.volume - 1e-6 and d not in blank_filled):
                     raise MergeAborted(f"{d}: 병합 후 행/거래량이 줄었다 (행 {oa.rows}→{na.rows}, 거래량 {oa.volume:g}→{na.volume:g})")
                 if d not in touched and na.h.hexdigest() != oa.h.hexdigest():
                     raise MergeAborted(f"{d}: 건드리지 않은 과거 날짜의 내용이 바뀌었다")
@@ -1113,6 +1150,7 @@ def ingest_file(new_tmp_csv: str, target_csv: str, *, quarantine_dir: str, inter
                 reference_csv: Optional[str] = None, volume_col: Optional[str] = None, newest_first: Optional[bool] = None,
                 requested_after: Optional[str] = None, source_exhausted: bool = False,
                 lost_days_fn: Optional[Callable[[str, str], List[str]]] = None,
+                volume_revisions: bool = False,
                 log: Callable[[str], None] = print) -> Optional[Dict[str, Any]]:
     """모든 원천 수집기가 거치는 **단일 저장 절차**. 반환: 병합 보고서(실패 시 None — 원본은 그대로, 신규 수신분은 격리).
 
@@ -1175,7 +1213,8 @@ def ingest_file(new_tmp_csv: str, target_csv: str, *, quarantine_dir: str, inter
         if reference_csv and os.path.exists(reference_csv):
             ref_fn = reference_volumes_from_csv(reference_csv).get
         rep = merge_file(new_tmp_csv, target_csv, volume_col=volume_col, newest_first=newest_first,
-                         backup_dir=os.path.join(quarantine_dir, "merge_backups"), reference_day_volume=ref_fn, log=log)
+                         backup_dir=os.path.join(quarantine_dir, "merge_backups"), reference_day_volume=ref_fn,
+                         volume_revisions=volume_revisions, log=log)
     except MergeAborted as e:
         _reject(str(e)); return None
     except Exception as e:

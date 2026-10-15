@@ -82,7 +82,7 @@ def parse_chart(raw: bytes) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
     q = ((r.get("indicators") or {}).get("quote") or [{}])[0]
     bars = pd.DataFrame({"epoch": ts, **{k: q.get(k) or [None] * len(ts) for k in ("open", "high", "low", "close", "volume")}})
     info = {"symbol": meta.get("symbol"), "currency": meta.get("currency"), "instrument_type": meta.get("instrumentType"),
-            "rows_received": len(bars), "dropped_null": 0, "dropped_incomplete": 0}
+            "rows_received": len(bars), "dropped_null": 0, "dropped_partial": 0, "dropped_incomplete": 0}
 
     # 진행 중 세션: 정규장 시작 이후 봉인데 마지막 체결 시각이 정규장 마감 전이면 아직 확정되지 않은 값이다
     reg = (meta.get("currentTradingPeriod") or {}).get("regular") or {}
@@ -91,8 +91,11 @@ def parse_chart(raw: bytes) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
         info["dropped_incomplete"] = int((live & bars["close"].notna()).sum())
         bars = bars[~live]
     null = bars[["open", "high", "low", "close"]].isna().all(axis=1)
+    # 가격이 일부만 빈 봉 = 아직 확정되지 않은 봉(2026-10-15 실측: 마감 직후 응답 3,247종목의 그날 봉이 종가만 비어 있었다) — 저장하지 않고 다음 수집에서 받는다
+    partial = bars[["open", "high", "low", "close"]].isna().any(axis=1) & ~null
     info["dropped_null"] = int(null.sum())
-    bars = bars[~null].copy()
+    info["dropped_partial"] = int(partial.sum())
+    bars = bars[~null & ~partial].copy()
 
     ev = r.get("events") or {}
     sp_raw = list((ev.get("splits") or {}).values())

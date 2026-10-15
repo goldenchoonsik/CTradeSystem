@@ -74,3 +74,12 @@ def test_search_ranks_exact_symbol_first_and_pages(vault):
     assert [e["symbol"] for e in only["items"]] == ["ES"] and only["items"][0]["tier"] == "운용"
     p2 = rc.search(page=2, size=2)
     assert p2["total"] == 5 and len(p2["items"]) == 2
+
+
+def test_blank_price_bar_is_reported_as_incomplete(vault):
+    _uni(vault, "AAA", "2026-10-13")
+    with open(vault / "raw" / "yahoo" / "candle_1d" / "AAA_1d.csv", "a") as f:
+        f.write("2026-10-14 00:00:00,1,2,0.5,,100\n")                 # 종가 미확정
+    _listing(vault, ["AAA"])
+    e = next(x for x in rc.build(force=True)["items"] if x["symbol"] == "AAA" and x["tier"] == "유니버스")
+    assert "incomplete_bar" in e["issues"] and e["blank_bars"] == 1

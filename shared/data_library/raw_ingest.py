@@ -75,7 +75,7 @@ def last_timestamp(csv_path: str) -> Optional[str]:
 def ingest_dataframe(df: pd.DataFrame, target_csv: str, *, provider: str, market: str,
                      interval: Optional[str] = None, requested_after: Optional[str] = None,
                      source_exhausted: bool = False, volume_col: Optional[str] = None,
-                     publish_manifest: bool = True, timezone_name: str = "Asia/Seoul",
+                     publish_manifest: bool = True, timezone_name: str = "Asia/Seoul", volume_revisions: bool = False,
                      log: Callable[[str], None] = print) -> Optional[Dict]:
     """DataFrame(첫 열 = 시각)을 원천 파일에 공통 절차로 저장한다. 반환: 병합 보고서, 실패 시 None(원본 유지, 신규분 격리).
 
@@ -93,7 +93,7 @@ def ingest_dataframe(df: pd.DataFrame, target_csv: str, *, provider: str, market
     rep = rds.ingest_file(tmp, target_csv, quarantine_dir=quarantine_for(target_csv),
                           interval_seconds=interval_seconds(interval), volume_col=volume_col,
                           requested_after=requested_after, source_exhausted=source_exhausted,
-                          lost_days_fn=lost_days_fn(market), log=log)
+                          lost_days_fn=lost_days_fn(market), volume_revisions=volume_revisions, log=log)
     if rep is not None and publish_manifest and os.path.exists(target_csv):
         try:
             from shared.data_library.manifest_manager import ManifestManager

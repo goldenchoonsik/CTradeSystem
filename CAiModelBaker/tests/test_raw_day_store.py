@@ -554,3 +554,39 @@ def test_interval_grid_allows_half_hour_session_offsets_but_not_snapshots():
     assert rds.is_aligned("2026-08-21 18:25:00", 300) and not rds.is_aligned("2026-08-21 18:28:00", 300)
     assert not rds.is_aligned("2026-08-21 15:33:10", 60)         # 진행 중 봉 스냅샷
     assert rds.is_aligned("2026-09-25 00:00:00", 86400 * 2)      # 일봉 이상은 검사하지 않음
+
+
+def test_a_blank_close_on_the_forming_day_is_replaced_even_if_the_final_volume_is_rounded_down(tmp_path):
+    """Yahoo 실측(2026-10-15): 마감 직후 그날 봉은 종가가 비어 있고(거래량 456,143), 확정 뒤에는 종가가 채워지지만 거래량은
+    백 주 단위로 반올림돼 '작게'(456,100) 온다. 거래량만 보면 빈 종가 봉이 남는다 — 빈 칸 없는 쪽이 더 온전하다."""
+    hdr = ["timestamp", "open", "high", "low", "close", "volume"]
+    t, tmp = str(tmp_path / "AMP_1d.csv"), str(tmp_path / "new.tmp")
+    write_csv(tmp, [["2026-10-13 00:00:00", 1, 2, 0.5, 1.5, 420800.0],
+                    ["2026-10-14 00:00:00", 490.54, 496.91, 488.425, "", 456143.0]], header=hdr)
+    rds.merge_file(tmp, t, volume_col="volume", log=lambda m: None)
+    write_csv(tmp, [["2026-10-14 00:00:00", 490.54, 496.91, 488.425, 495.82, 456100.0]], header=hdr)
+    rds.merge_file(tmp, t, volume_col="volume", log=lambda m: None)
+    _, rows = read_rows(t)
+    assert rows[-1] == ["2026-10-14 00:00:00", "490.54", "496.91", "488.425", "495.82", "456100.0"]
+
+
+def test_sealed_day_volume_only_revision_is_resolved_automatically(tmp_path):
+    """봉인된 날: 가격이 같고 거래량만 늘면 보강(늦은 체결 반영), 줄면 기존 유지(반올림) — 둘 다 '확인 필요'가 아니다.
+    가격이 다르면 여전히 '확인 필요'(SKIN 역분할 재처리 중 1/20 가격 같은 오염 방지)."""
+    hdr = ["timestamp", "open", "high", "low", "close", "volume"]
+    t, tmp = str(tmp_path / "X_1d.csv"), str(tmp_path / "new.tmp")
+    base = [["2026-10-12 00:00:00", 1, 2, 0.5, 1.5, 1000.0], ["2026-10-13 00:00:00", 1, 2, 0.5, 1.6, 2000.0],
+            ["2026-10-14 00:00:00", 1, 2, 0.5, 1.7, 3000.0]]
+    write_csv(tmp, base, header=hdr)
+    rds.merge_file(tmp, t, volume_col="volume", log=lambda m: None)
+    write_csv(tmp, [["2026-10-12 00:00:00", 1, 2, 0.5, 1.5, 1013.0],        # 상향 → 채택
+                    ["2026-10-13 00:00:00", 1, 2, 0.5, 1.6, 1900.0]], header=hdr)  # 하향 → 유지
+    rep = rds.merge_file(tmp, t, volume_col="volume", volume_revisions=True, log=lambda m: None)
+    _, rows = read_rows(t)
+    assert rows[0][5] == "1013.0" and rows[1][5] == "2000.0" and rep["conflicts"] == 0
+    write_csv(tmp, [["2026-10-12 00:00:00", 0.05, 0.1, 0.025, 0.075, 20260.0]], header=hdr)   # 가격이 다름 → 확인 필요
+    rep = rds.merge_file(tmp, t, volume_col="volume", volume_revisions=True, log=lambda m: None)
+    assert rep["conflicts"] == 1 and read_rows(t)[1][0][4] == "1.5"
+    write_csv(tmp, [["2026-10-13 00:00:00", 1, 2, 0.5, 1.6, 2500.0]], header=hdr)          # 기본값(선택 안 함) = 종전대로 확인 필요
+    rep = rds.merge_file(tmp, t, volume_col="volume", log=lambda m: None)
+    assert rep["conflicts"] == 1 and read_rows(t)[1][0][4] == "1.5"

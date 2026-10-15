@@ -78,6 +78,13 @@ def test_api_raw_store_toggle_asset(client):
     assert res_restore.json()["is_active"] is True
 
 
+# 실제 DataVault/normalized 의 전 종목 정규화 파일을 다시 만들어 덮어쓰는 실데이터 통합 테스트 — 운영(학습용) 실버를 테스트가 건드리고,
+# 크레온 틱 전체를 읽어 RSS 3GB+ 로 OOM 이 난다(2026-10-15). 기본 실행에서는 건너뛰고 CTRADE_REAL_VAULT_TESTS=1 일 때만 돈다.
+_REAL_VAULT = pytest.mark.skipif(os.environ.get("CTRADE_REAL_VAULT_TESTS") != "1",
+                                 reason="실제 정규화 볼트를 다시 쓰는 통합 테스트 — CTRADE_REAL_VAULT_TESTS=1 로만 실행")
+
+
+@_REAL_VAULT
 def test_api_build_normalized_all(client):
     """POST /api/data_vault/build_normalized_all 엔드포인트 검증"""
     res = client.post("/api/data_vault/build_normalized_all")

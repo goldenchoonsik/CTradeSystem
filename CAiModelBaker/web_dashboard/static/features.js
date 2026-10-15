@@ -9033,7 +9033,7 @@ function renderResearchSymbols(key) {
 // ───────────────────────────────────────────────────────────────────────────
 let _rcPage = 1, _rcTimer = null, _rcOpenKey = null;
 const STALE_NOTE = '5거래일 이상 뒤처지면 최신일 지연';
-const _RC_ISSUE_COLOR = {conflict: '#f87171', stale: '#fbbf24', missing_days: '#fb923c', no_file: '#f87171',
+const _RC_ISSUE_COLOR = {conflict: '#f87171', incomplete_bar: '#fbbf24', stale: '#fbbf24', missing_days: '#fb923c', no_file: '#f87171',
                          no_manifest: '#f87171', size_mismatch: '#f87171', listing_ended: '#94a3b8'};
 
 async function loadRawCatalog(force) {
