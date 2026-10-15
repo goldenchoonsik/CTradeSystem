@@ -276,12 +276,14 @@ class SourceMappingManager:
             logger.warning(f"[SourceMappingManager] 원장 로드 실패 — 자동 탐지를 건너뜁니다: {e}")
             return current_mappings, False
 
+        # 유니버스 원천(미국 1.3만·한국 무수정 일봉 2,700여 매니페스트) — 열어 보지도 않는다 (raw_catalog.UNIVERSE_DIRS 와 같은 폴더)
+        universe_dirs = {os.path.abspath(os.path.join(raw_root(), "yahoo")),
+                         os.path.abspath(os.path.join(raw_root(), "creon", "candle_1d_unadj"))}
         for scan_dir in scan_roots:
             if not os.path.exists(scan_dir):
                 continue
             for root, dirs, files in os.walk(scan_dir):
-                if os.path.abspath(root) == os.path.abspath(raw_root()):
-                    dirs[:] = [d for d in dirs if d.lower() != "yahoo"]   # 유니버스 원천(1.3만 매니페스트) — 열어 보지도 않는다
+                dirs[:] = [d for d in dirs if os.path.abspath(os.path.join(root, d)) not in universe_dirs]
                 for f in files:
                     if f.endswith(".manifest.json") and not f.startswith("."):
                         manifest_path = os.path.join(root, f)

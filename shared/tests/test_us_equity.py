@@ -122,6 +122,10 @@ def test_raw_files_outside_ledger_do_not_become_feeds(vault):
         d = vault / "raw" / prov / "candle_1d"
         d.mkdir(parents=True, exist_ok=True)
         (d / f"{sym}_1d.csv.manifest.json").write_text(json.dumps({"symbol": sym, "provider": prov, "market": "US"}))
+    # 한국 무수정 일봉 유니버스: 원장 종목(삼성전자)이어도 이 폴더는 수집 대상 근거가 아니다
+    d = vault / "raw" / "creon" / "candle_1d_unadj"
+    d.mkdir(parents=True)
+    (d / "A005930_1d.csv.manifest.json").write_text(json.dumps({"symbol": "A005930", "provider": "creon", "market": "KRX"}))
     maps, changed = SourceMappingManager.auto_discover_vault_manifests({})
     assert maps == {} and changed is False
 

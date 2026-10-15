@@ -6,7 +6,8 @@
 규약
 - 지표 t = t 종가까지의 정보. 체결은 t+1 종가를 가정하므로 라벨은 log(close[t+1+h] / close[t+1]) (h = 1·5·20 봉).
 - 수정 종가(원천 무수정 × 원장 계수)로 수익률을 만든다. 가격 '수준'(close_unadj)은 호가·필터용으로만 따로 둔다.
-- 거래정지로 20거래일 넘게 봉이 없다가 재개한 날은 수익률 계산에서 제외(체결 불가한 점프) — resumed=1 로 표시, 그 봉이 낀 창은 NaN.
+- Creon 은 거래정지 기간을 거래량 0 봉으로 채운다 → 가격 지표는 거래된 봉(traded=1)으로만 계산하고, 거래 사이 공백이 달력 28일(약 20거래일)을
+  넘으면 재개(resumed=1)로 보아 그날 수익률·그 재개가 낀 창은 NaN. 라벨도 진입·청산 봉이 거래된 날이어야 한다.
 - 재무는 접수일(rcept_dt) 이후에만 결합(연결 우선, 없으면 별도). 4개 분기가 연속일 때만 TTM.
 - 시총 근사값(상폐 종목, mcap_approx=1)은 그대로 표시해 둔다 — 규모·가치 지표는 근사일 수 있다.
 """
@@ -53,25 +54,30 @@ def build_features(prices: pd.DataFrame, ext: Optional[pd.DataFrame] = None, fin
     p = prices.copy()
     p["code"] = p.code.astype(str)
     p = p.sort_values(["code", "date"]).reset_index(drop=True)
-    g = p.groupby("code", sort=False)
-    gap = g["date"].diff().dt.days
-    p["resumed"] = (gap > GAP_CAL_DAYS).astype("int8")
-    lc = np.log(p.close.astype("float64"))
-    r1 = lc.groupby(p.code, sort=False).diff()
-    r1 = r1.where(p.resumed == 0)                                   # 재개일 점프 제외
-    p["ret_1"] = r1
-    # 창 수익률: 창 안에 재개일이 끼면 NaN (누적 재개 횟수가 같을 때만 유효)
-    epoch = p.resumed.groupby(p.code, sort=False).cumsum()
+    # Creon 은 거래정지 기간을 거래량 0 봉(가격 고정)으로 채운다(신라젠 2020-05~2022-10 등) — 가격 지표는 실제 거래된 봉으로만 계산
+    p["traded"] = ((p.volume > 0) & np.isfinite(p.close.astype("float64"))).astype("int8")
+    t = p[p.traded == 1].copy()
+    gt = t.groupby("code", sort=False)
+    t["resumed"] = (gt["date"].diff().dt.days > GAP_CAL_DAYS).astype("int8")
+    lc = np.log(t.close.astype("float64"))
+    r1 = lc.groupby(t.code, sort=False).diff().where(t.resumed == 0)     # 재개일 점프 제외
+    t["ret_1"] = r1
+    # 창 수익률: 창 안에 재개가 끼면 NaN (누적 재개 횟수가 같을 때만 유효)
+    epoch = t.resumed.groupby(t.code, sort=False).cumsum()
     for w in RET_WINDOWS[1:]:
-        past = lc.groupby(p.code, sort=False).shift(w)
-        same = epoch.groupby(p.code, sort=False).shift(w) == epoch
-        p[f"ret_{w}"] = (lc - past).where(same)
-    p["mom_250_20"] = (p["ret_250"] - p["ret_20"])
+        past = lc.groupby(t.code, sort=False).shift(w)
+        same = epoch.groupby(t.code, sort=False).shift(w) == epoch
+        t[f"ret_{w}"] = (lc - past).where(same)
+    t["mom_250_20"] = t["ret_250"] - t["ret_20"]
     for w in (20, 60):
-        p[f"vol_{w}"] = r1.groupby(p.code, sort=False).rolling(w, min_periods=int(w * 0.8)).std().reset_index(level=0, drop=True)
-    p["max5_20"] = r1.groupby(p.code, sort=False).rolling(20, min_periods=16).apply(lambda x: np.sort(x)[-5:].mean(), raw=True).reset_index(level=0, drop=True)
-    hi = p.close.groupby(p.code, sort=False).rolling(250, min_periods=120).max().reset_index(level=0, drop=True)
-    p["hi_250_ratio"] = p.close / hi
+        t[f"vol_{w}"] = r1.groupby(t.code, sort=False).rolling(w, min_periods=int(w * 0.8)).std().reset_index(level=0, drop=True)
+    t["max5_20"] = r1.groupby(t.code, sort=False).rolling(20, min_periods=16).apply(lambda x: np.sort(x)[-5:].mean(), raw=True).reset_index(level=0, drop=True)
+    hi = t.close.groupby(t.code, sort=False).rolling(250, min_periods=120).max().reset_index(level=0, drop=True)
+    t["hi_250_ratio"] = t.close / hi
+    price_cols = ["resumed", "ret_1"] + [f"ret_{w}" for w in RET_WINDOWS[1:]] + ["mom_250_20", "vol_20", "vol_60", "max5_20", "hi_250_ratio"]
+    p = p.join(t[price_cols])                                            # 거래 없는 봉은 가격 지표 NaN
+    p["resumed"] = p.resumed.fillna(0).astype("int8")
+    # 유동성 지표는 거래량 0 봉도 그대로 센다(거래가 없던 날도 유동성의 일부)
     v = p.volume.astype("float64")
     ma = v.groupby(p.code, sort=False).rolling(20, min_periods=16).mean().reset_index(level=0, drop=True)
     p["vol_ratio_20"] = (v / ma.groupby(p.code, sort=False).shift(1)).replace([np.inf, -np.inf], np.nan)   # 전날까지의 20일 평균 대비
@@ -94,7 +100,7 @@ def build_features(prices: pd.DataFrame, ext: Optional[pd.DataFrame] = None, fin
         p["opa"] = p.op_ttm / p.assets
         p["sales_to_mcap"] = p.sales_ttm / mc
         p = p.sort_values(["code", "date"]).reset_index(drop=True)
-    keep = ["code", "date", "reg_fix", "resumed", "close_unadj"] + [c for c in p.columns if c.startswith(("ret_", "vol_", "mom_", "max5", "hi_", "adv_", "turnover", "log_mcap", "foreign", "d_foreign", "bm", "ep", "opa", "sales_to", "mcap_approx", "market_cap"))]
+    keep = ["code", "date", "reg_fix", "traded", "resumed", "close_unadj"] + [c for c in p.columns if c.startswith(("ret_", "vol_", "mom_", "max5", "hi_", "adv_", "turnover", "log_mcap", "foreign", "d_foreign", "bm", "ep", "opa", "sales_to", "mcap_approx", "market_cap"))]
     out = p[keep].copy()
     for c in out.columns:
         if out[c].dtype == "float64":
@@ -104,21 +110,22 @@ def build_features(prices: pd.DataFrame, ext: Optional[pd.DataFrame] = None, fin
 
 
 def build_labels(prices: pd.DataFrame) -> pd.DataFrame:
-    """라벨 = log(close[t+1+h] / close[t+1]). 그 사이에 거래정지 재개가 끼면 NaN."""
-    p = prices[["code", "date", "close"]].copy()
+    """라벨 = log(close[t+1+h] / close[t+1]) — 진입 봉(t+1)과 청산 봉(t+1+h)이 실제 거래된 날이고
+    그 사이에 거래정지 재개(거래 봉 사이 달력 28일 초과)가 없을 때만. 아니면 NaN."""
+    p = prices[["code", "date", "close", "volume"]].copy()
     p["code"] = p.code.astype(str)
     p = p.sort_values(["code", "date"]).reset_index(drop=True)
-    g = p.groupby("code", sort=False)
-    resumed = (g["date"].diff().dt.days > GAP_CAL_DAYS).astype(int)
-    epoch = resumed.groupby(p.code, sort=False).cumsum()
-    lc = np.log(p.close.astype("float64"))
-    entry = lc.groupby(p.code, sort=False).shift(-1)
-    e_epoch = epoch.groupby(p.code, sort=False).shift(-1)
+    traded = (p.volume > 0) & np.isfinite(p.close.astype("float64"))
+    last_trade = p.date.where(traded).groupby(p.code, sort=False).ffill()
+    prev_trade = last_trade.groupby(p.code, sort=False).shift(1)
+    resumed = traded & ((p.date - prev_trade).dt.days > GAP_CAL_DAYS)
+    epoch = resumed.astype(int).groupby(p.code, sort=False).cumsum()
+    lc = np.log(p.close.astype("float64")).where(traded)
+    g = lambda s, k: s.groupby(p.code, sort=False).shift(k)
+    entry, e_epoch = g(lc, -1), g(epoch, -1)
     out = p[["code", "date"]].copy()
     for h in LABEL_H:
-        fut = lc.groupby(p.code, sort=False).shift(-(1 + h))
-        same = epoch.groupby(p.code, sort=False).shift(-(1 + h)) == e_epoch
-        out[f"lab_ret_{h}"] = (fut - entry).where(same).astype("float32")
+        out[f"lab_ret_{h}"] = (g(lc, -(1 + h)) - entry).where(g(epoch, -(1 + h)) == e_epoch).astype("float32")
     out["code"] = out.code.astype("category")
     return out
 
