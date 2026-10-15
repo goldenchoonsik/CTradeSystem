@@ -48,7 +48,7 @@ class TestCreonRefSymbolsPipeline(unittest.TestCase):
 
     # 수집 주기는 실제 source_mappings.json 이 아니라 고정값으로 준다 — 운영 설정(예: 449190 틱 중단)이 바뀌어도 깨지지 않게
     @patch("CAiModelBaker.core.creon_collector._get_configured_sources", return_value=["TICK", "1M", "1D"])
-    @patch("CAiModelBaker.core.creon_collector.download_daily_data")
+    @patch("CAiModelBaker.core.creon_collector.download_daily_pair")
     @patch("CAiModelBaker.core.creon_collector.download_tick_data")
     @patch("CAiModelBaker.core.creon_collector.download_index_minute_data")
     @patch("CAiModelBaker.core.creon_collector.download_futures_minute_data")
@@ -140,7 +140,7 @@ class TestCreonRefSymbolsPipeline(unittest.TestCase):
 
         self.assertNotIn("069500", krx_refs, "타겟 자신은 참조 목록에서 제외되어야 합니다.")
 
-    @patch("CAiModelBaker.core.creon_collector.download_daily_data")
+    @patch("CAiModelBaker.core.creon_collector.download_daily_pair")
     @patch("CAiModelBaker.core.creon_collector.download_tick_data")
     @patch("CAiModelBaker.core.creon_collector.download_index_minute_data")
     @patch("CAiModelBaker.core.creon_collector.download_futures_minute_data")

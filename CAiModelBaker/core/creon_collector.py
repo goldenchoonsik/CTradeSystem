@@ -270,7 +270,8 @@ def _candle_day_resume(key, local_log=print):
 
 def _candle_day_seal(key, local_log=print):
     """마감된 1분봉 날을 봉인한다 — 구조 · 일봉 상한(일봉 파일이 있으면) · 틱 대조(틱이 봉인돼 있으면). 다른 데이터를 기다리지 않는다."""
-    daily = os.path.join(_DATA_VAULT_ROOT, "raw", "creon", "candle_1d", f"{key}_1d.csv")
+    # 1분봉(무수정)의 거래량 상한은 무수정 일봉과 비교해야 한다 — 수정 일봉 거래량은 분할 전 날이 부풀어 거짓 격리가 났다(2026-10-11)
+    daily = os.path.join(_DATA_VAULT_ROOT, "raw", "creon", "candle_1d_unadj", f"{key}_1d.csv")
     cds = _load_candle_day_store()
     cds.seal_closed_days(_candle_day_root(), key, daily_csv=daily if os.path.exists(daily) else None,
                          tick_root=os.path.join(_DATA_VAULT_ROOT, "raw", "creon", "tick"), log=local_log)
@@ -686,10 +687,23 @@ def download_minute_data(symbol, interval=1, count=99999999, save_path=None, for
     return final_path
 
 
-def download_daily_data(symbol, count=99999999, save_path=None, force_full=False, progress_callback=None, local_log=print):
+def download_daily_pair(symbol, count=99999999, force_full=False, local_log=print):
+    """운용 일봉 = 무수정(원천, raw/creon/candle_1d_unadj) + 수정(기업행위 원장 근거, raw/creon/candle_1d).
+    수정가는 과거 전체가 받은 날 기준으로 다시 계산돼 원천으로는 불안정하다 — 계산은 무수정 × 원장 계수로 한다(2026-10-16)."""
+    out = download_daily_data(symbol=symbol, count=count, force_full=force_full, local_log=local_log)
+    try:
+        download_daily_data(symbol=symbol, count=count, force_full=force_full, local_log=local_log, adjusted=False)
+    except Exception as e:
+        local_log(f"   ⚠️ [Creon] {symbol} 무수정 일봉 수집 예외: {e}")
+    return out
+
+
+def download_daily_data(symbol, count=99999999, save_path=None, force_full=False, progress_callback=None, local_log=print,
+                        adjusted=True):
     """
     대신증권 StockChart COM 객체를 통한 일봉(Day) 데이터 장기 대량 수집 (수십 년 치 전 기간 일봉 아카이브)
-    - 수정주가(SetInputValue 9, ord('1')) 적용으로 증자/배당락 무결성 100% 보장
+    - adjusted=True : 수정주가(SetInputValue 9, '1') → raw/creon/candle_1d (열 upbit_*) — 기업행위 원장의 근거
+    - adjusted=False: 무수정(9, '0') → raw/creon/candle_1d_unadj (표준 열 open..value) — 원천
     """
     if not IS_WINDOWS:
         local_log("[Creon] Windows 환경이 아닙니다. Windows 32-bit Python 환경에서 실행해야 합니다.")
@@ -706,7 +720,7 @@ def download_daily_data(symbol, count=99999999, save_path=None, force_full=False
     elif len(clean_sym) == 6 and clean_sym.isalnum():
         clean_sym = f"A{clean_sym}"
         
-    vault_candle_dir = os.path.join(_DATA_VAULT_ROOT, "raw", "creon", "candle_1d")
+    vault_candle_dir = os.path.join(_DATA_VAULT_ROOT, "raw", "creon", "candle_1d" if adjusted else "candle_1d_unadj")
     out_csv = save_path or os.path.join(vault_candle_dir, f"{clean_sym}_1d.csv")
     os.makedirs(os.path.dirname(os.path.abspath(out_csv)), exist_ok=True)
     
@@ -727,14 +741,14 @@ def download_daily_data(symbol, count=99999999, save_path=None, force_full=False
     headers = [
         "timestamp", "upbit_open", "upbit_high", "upbit_low", "upbit_close", 
         "upbit_volume", "upbit_trade_price"
-    ]
+    ] if adjusted else ["timestamp", "open", "high", "low", "close", "volume", "value"]
     
     stock_chart.SetInputValue(0, clean_sym)
     stock_chart.SetInputValue(1, ord('2'))       # 개수로 요청
     stock_chart.SetInputValue(4, count)          # 요청 개수
     stock_chart.SetInputValue(5, fields)         # 필드 목록
     stock_chart.SetInputValue(6, ord('D'))       # 'D': 일봉
-    stock_chart.SetInputValue(9, ord('1'))       # 1: 수정주가 적용 (장기 시계열 필수)
+    stock_chart.SetInputValue(9, ord('1' if adjusted else '0'))   # 1: 수정주가, 0: 무수정
     
     total_received = 0
     tmp_out = _uniq_tmp(out_csv, "stream")
@@ -819,7 +833,7 @@ def download_daily_data(symbol, count=99999999, save_path=None, force_full=False
                 asset_type="candle_1d",
                 symbol=_clean_sym(clean_sym),
                 market="KRX",
-                notes="대신증권 일봉(Day) 장기 아카이브"
+                notes="대신증권 일봉(Day) 장기 아카이브" + ("" if adjusted else " (무수정)")
             )
             local_log(f"   📜 [Manifest] 사이드카 매니페스트 발행 완료: {final_path}.manifest.json")
         except Exception as me:
@@ -1218,7 +1232,7 @@ def download_all_krx(target_symbol, futures_symbol, index_symbol, interval=1, co
     # 0. 타겟 ETF 일봉 — 1분봉 봉인이 일봉 거래량 상한을 쓰므로 1분봉보다 먼저 받는다
     if "1D" in tgt_sources:
         try:
-            download_daily_data(symbol=target_symbol, count=count, force_full=force_full, local_log=local_log)
+            download_daily_pair(symbol=target_symbol, count=count, force_full=force_full, local_log=local_log)
         except Exception as e:
             local_log(f"   ⚠️ [1/6] 타겟 ETF 일봉 수집 예외: {e}")
     else:
@@ -1316,7 +1330,7 @@ def download_all_krx(target_symbol, futures_symbol, index_symbol, interval=1, co
             if not is_futures:
                 if "1D" in ref_sources:
                     try:
-                        download_daily_data(symbol=clean_ref, count=count, force_full=force_full, local_log=local_log)
+                        download_daily_pair(symbol=clean_ref, count=count, force_full=force_full, local_log=local_log)
                     except Exception as e:
                         local_log(f"      ⚠️ 대장주 {clean_ref} 일봉 수집 예외: {e}")
                 else:

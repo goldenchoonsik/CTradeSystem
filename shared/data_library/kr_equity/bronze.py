@@ -43,6 +43,40 @@ def _read(fp: str) -> Optional[pd.DataFrame]:
     return pd.read_csv(fp) if os.path.exists(fp) else None
 
 
+def update_actions(code: str, adj: Optional[pd.DataFrame], unadj: Optional[pd.DataFrame]) -> int:
+    """수정·무수정 일봉(같은 Creon 출처)의 종가 계수 변화 → 기업행위 원장에 추가. 반환: 새 이벤트 수.
+    두 파일의 마지막 날이 다를 수 있으므로 겹치는 날 범위만 관측 기간으로 기록한다."""
+    if adj is None or unadj is None or adj.empty or unadj.empty:
+        return 0
+    both = sorted(set(adj["timestamp"]) & set(unadj["timestamp"]))
+    if len(both) < 2:
+        return 0
+    ev = corporate_actions.detect(adj, unadj)
+    return len(corporate_actions.update(actions_root(), code, ev, (both[0][:10], both[-1][:10]))["added"])
+
+
+def operating_adjusted(code: str, unadj: Optional[pd.DataFrame] = None) -> Optional[pd.DataFrame]:
+    """운용 종목: raw/creon/candle_1d(수정, 원장 근거)와 raw/creon/candle_1d_unadj(원천)로 원장을 갱신하고,
+    무수정 × 원장 계수로 만든 수정 일봉(표준 열 + close_unadj·factor)을 돌려준다. 무수정 원천이 없으면 None."""
+    fp = unadj_path(code)
+    if unadj is None:
+        if not os.path.exists(fp):
+            return None
+        unadj = pd.read_csv(fp)
+    adj = _read(data_vault_path("raw", PROVIDER, "candle_1d", f"{code}_1d.csv"))
+    update_actions(code, adj, unadj)
+    d = unadj.drop_duplicates("timestamp").sort_values("timestamp").reset_index(drop=True)
+    f = corporate_actions.cumulative_factor(corporate_actions.events(actions_root(), code), pd.to_datetime(d["timestamp"]).dt.normalize()).to_numpy()
+    out = d[["timestamp"]].copy()
+    for c in ("open", "high", "low", "close"):
+        out[c] = d[c].astype(float).to_numpy() * f
+    out["volume"] = d["volume"].astype(float).to_numpy() / f
+    out["value"] = d["value"].astype(float).to_numpy()
+    out["close_unadj"] = d["close"].astype(float).to_numpy()
+    out["factor"] = f
+    return out
+
+
 def ingest_code(code: str, log: Callable[[str], None] = print) -> Optional[Dict]:
     """한 종목: 무수정 일봉을 원천에 반영하고 기업행위 원장을 갱신. 착륙 구역에 없으면 None."""
     raw = _read(landing("candle_1d_unadj", code))
@@ -55,15 +89,8 @@ def ingest_code(code: str, log: Callable[[str], None] = print) -> Optional[Dict]
                                       source_exhausted=True, volume_col="volume", log=log)
     if rep is None:
         return None
-    n_events = 0
     adj = _read(landing("candle_1d", code))
-    if adj is not None and not adj.empty:
-        # 같은 날 범위 안에서만 비교(착륙 구역 두 파일의 마지막 날이 다를 수 있다)
-        ev = corporate_actions.detect(adj, raw)
-        both = sorted(set(adj["timestamp"]) & set(raw["timestamp"]))
-        if len(both) >= 2:
-            rep_ca = corporate_actions.update(actions_root(), code, ev, (both[0][:10], both[-1][:10]))
-            n_events = len(rep_ca["added"])
+    n_events = update_actions(code, adj, raw)
     return {"added_rows": rep.get("added_rows", 0), "conflicts": rep.get("conflicts", 0), "events_added": n_events}
 
 

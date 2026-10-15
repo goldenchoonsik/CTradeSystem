@@ -51,10 +51,15 @@ def kind_hint(r: float) -> str:
     return "rights_issue_or_other"
 
 
+def _close_series(df: pd.DataFrame) -> pd.Series:
+    """일봉 → 날짜 색인 종가. 옛 수집 열(upbit_close)과 표준 열(close) 둘 다 받는다."""
+    d = df.drop_duplicates("timestamp")
+    return d.set_index(pd.to_datetime(d["timestamp"]))["upbit_close" if "upbit_close" in d else "close"]
+
+
 def detect(adj: pd.DataFrame, raw: pd.DataFrame, observed_at: Optional[str] = None) -> List[dict]:
-    """수정·무수정 일봉(timestamp/upbit_close) → 이벤트 목록. 같은 출처·같은 정의의 종가끼리만 비교한다."""
-    a = adj.drop_duplicates("timestamp").set_index(pd.to_datetime(adj.drop_duplicates("timestamp")["timestamp"]))["upbit_close"]
-    r = raw.drop_duplicates("timestamp").set_index(pd.to_datetime(raw.drop_duplicates("timestamp")["timestamp"]))["upbit_close"]
+    """수정·무수정 일봉(timestamp + upbit_close 또는 close) → 이벤트 목록. 같은 출처·같은 정의의 종가끼리만 비교한다."""
+    a, r = _close_series(adj), _close_series(raw)
     df = pd.DataFrame({"a": a, "r": r}).dropna().sort_index()
     df = df[(df["a"] > 0) & (df["r"] > 0)]
     if len(df) < 2:

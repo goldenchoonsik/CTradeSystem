@@ -580,26 +580,38 @@ def build_normalized_krx_daily(
     output_parquet_path: Optional[str] = None,
     local_log: Optional[Callable[[str], None]] = None,
 ) -> str:
-    """Creon 수정주가 일봉 → normalized/candles_1d/{sym}_1d.parquet. 1m 실제 종가와 대조해 수정 기준 혼합이면 실패."""
+    """KRX 일봉 → normalized/candles_1d/{sym}_1d.parquet (수정가). 무수정 원천이 있으면 원장 계수로 수정, 없으면 Creon 수정 일봉.
+    어느 쪽이든 1m 실제 종가와 대조해 수정 기준이 섞였으면 실패."""
     if local_log is None:
         local_log = logging.info
     clean_sym = SourceMappingManager.clean_symbol(symbol)
-    raw_path = raw_path or dpaths.raw_path("creon", "candle_1d", f"A{clean_sym}_1d.csv", fallback=False)
-    if not os.path.exists(raw_path):
-        raise FileNotFoundError(f"[NormalizedBuilder] KRX 일봉 원천 부재: {raw_path} — Creon 일봉 수집(--type daily --force) 필요")
-
-    df = candle_store.read_csv(raw_path)
-    df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.normalize()
-    df = df.dropna(subset=["timestamp"]).drop_duplicates(subset=["timestamp"], keep="last").sort_values("timestamp")
-    out = pd.DataFrame({
-        "timestamp": df["timestamp"].to_numpy(),
-        "open": pd.to_numeric(df["upbit_open"], errors="coerce").to_numpy(dtype=float),
-        "high": pd.to_numeric(df["upbit_high"], errors="coerce").to_numpy(dtype=float),
-        "low": pd.to_numeric(df["upbit_low"], errors="coerce").to_numpy(dtype=float),
-        "close": pd.to_numeric(df["upbit_close"], errors="coerce").to_numpy(dtype=float),
-        "volume": pd.to_numeric(df["upbit_volume"], errors="coerce").to_numpy(dtype=float),
-        "trade_amount": pd.to_numeric(df["upbit_trade_price"], errors="coerce").to_numpy(dtype=float),
-    })
+    # 원천 우선순위: 무수정(raw/creon/candle_1d_unadj) × 기업행위 원장 계수 → 없으면 옛 방식(Creon 수정 일봉 그대로)
+    from shared.data_library.kr_equity import bronze
+    built = None if raw_path else bronze.operating_adjusted(f"A{clean_sym}")
+    if built is not None:
+        basis = "unadjusted_x_ledger"
+        built["timestamp"] = pd.to_datetime(built["timestamp"]).dt.normalize()
+        out = pd.DataFrame({"timestamp": built["timestamp"].to_numpy(), **{c: built[c].to_numpy(dtype=float) for c in ("open", "high", "low", "close", "volume")},
+                            "trade_amount": built["value"].to_numpy(dtype=float)})
+        local_log(f"  🧾 [KRX 일봉] {clean_sym} 무수정 원천 × 기업행위 원장 계수(이벤트 {int((built['factor'].diff() != 0).sum() - 1)}건)")
+    else:
+        basis = "creon_adjusted"
+        raw_path = raw_path or dpaths.raw_path("creon", "candle_1d", f"A{clean_sym}_1d.csv", fallback=False)
+        if not os.path.exists(raw_path):
+            raise FileNotFoundError(f"[NormalizedBuilder] KRX 일봉 원천 부재: {raw_path} — Creon 일봉 수집(--type daily --force) 필요")
+        df = candle_store.read_csv(raw_path)
+        df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.normalize()
+        df = df.dropna(subset=["timestamp"]).drop_duplicates(subset=["timestamp"], keep="last").sort_values("timestamp")
+        out = pd.DataFrame({
+            "timestamp": df["timestamp"].to_numpy(),
+            "open": pd.to_numeric(df["upbit_open"], errors="coerce").to_numpy(dtype=float),
+            "high": pd.to_numeric(df["upbit_high"], errors="coerce").to_numpy(dtype=float),
+            "low": pd.to_numeric(df["upbit_low"], errors="coerce").to_numpy(dtype=float),
+            "close": pd.to_numeric(df["upbit_close"], errors="coerce").to_numpy(dtype=float),
+            "volume": pd.to_numeric(df["upbit_volume"], errors="coerce").to_numpy(dtype=float),
+            "trade_amount": pd.to_numeric(df["upbit_trade_price"], errors="coerce").to_numpy(dtype=float),
+        })
+        local_log(f"  ℹ️ [KRX 일봉] {clean_sym} 무수정 원천 없음 — Creon 수정 일봉 그대로 사용(다음 일봉 수집 때 무수정도 받는다)")
     bad = out["close"].isna() | (out["close"] <= 0)
     if bad.any():
         raise ValueError(f"[NormalizedBuilder] {clean_sym} 일봉 종가 결측/0 이하 {int(bad.sum())}행")
@@ -627,9 +639,9 @@ def build_normalized_krx_daily(
         data_tier="normalized",
         asset_type="candle_1d",
         symbol=clean_sym,
-        notes=f"KRX 수정주가 일봉 ({len(out)} bars)",
+        notes=f"KRX 수정주가 일봉 ({len(out)} bars, {basis})",
         extra_meta={
-            "price_adjustment": "creon_adjusted",
+            "price_adjustment": basis,
             "adjustment_basis_date": str(out["timestamp"].iloc[-1].date()),
             "adjustment_check": checked,
             "source_interval": "1d",

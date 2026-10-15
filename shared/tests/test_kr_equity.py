@@ -249,3 +249,41 @@ def test_gold_labels_enter_next_close_and_respect_halts():
     h.loc[h.index >= 30, "date"] = h.loc[h.index >= 30, "date"] + pd.Timedelta(days=60)                  # 30번째 봉 앞에 두 달 공백(거래정지)
     lab2 = gold.build_labels(h)
     assert lab2.lab_ret_5.iloc[24:29].isna().all() and not np.isnan(lab2.lab_ret_5.iloc[29]) and not np.isnan(lab2.lab_ret_5.iloc[10])           # 공백을 가로지르는 라벨은 NaN
+
+
+def test_gold_zero_volume_halt_is_not_a_return():
+    """Creon 은 거래정지 기간을 거래량 0·가격 고정 봉으로 채운다 — 재개일 점프는 수익률·라벨에 들어가면 안 된다."""
+    from shared.data_library.kr_equity import gold
+    p = _px(120)
+    halt = (p.index >= 50) & (p.index < 90)                     # 40봉 정지(달력 56일)
+    p.loc[halt, "volume"] = 0.0
+    p.loc[halt, ["open", "high", "low", "close"]] = p.close.iloc[49]
+    p.loc[p.index >= 90, ["open", "high", "low", "close"]] *= 3.0          # 재개일 +200% 점프
+    f = gold.build_features(p).set_index(p.date)
+    assert f.resumed.iloc[90] == 1 and np.isnan(f.ret_1.iloc[90]) and np.isnan(f.ret_20.iloc[95])
+    assert f.ret_1.iloc[50:90].isna().all() and (f.traded.iloc[50:90] == 0).all()
+    assert np.nanmax(np.abs(f.ret_1.to_numpy())) < 0.2                    # 점프가 어디에도 안 남음
+    lab = gold.build_labels(p)
+    assert lab.lab_ret_5.iloc[44:89].isna().all()                         # 정지 중 진입·정지를 가로지르는 보유 = NaN
+    assert not lab.lab_ret_5.iloc[[43, 89]].isna().any()                  # 정지 전에 끝나는 보유·재개일 진입은 유효
+    assert not np.isnan(lab.lab_ret_5.iloc[95]) and not np.isnan(lab.lab_ret_5.iloc[30])
+
+
+def test_operating_adjusted_from_unadj_and_ledger(tmp_path, monkeypatch):
+    """운용 종목: 수정 일봉(upbit_* 열, 원장 근거) + 무수정 원천(표준 열) → 원장 갱신, 수정가 = 무수정 × 계수."""
+    from shared.data_library import paths
+    from shared.data_library.kr_equity import bronze
+    monkeypatch.setattr(paths, "DATA_VAULT_ROOT", str(tmp_path))
+    ts = [t.strftime("%Y-%m-%d 00:00:00") for t in pd.bdate_range("2024-01-02", periods=8)]
+    raw_c = [100.0] * 3 + [50.0] * 5                         # 1:2 분할
+    d = tmp_path / "raw" / "creon"
+    (d / "candle_1d").mkdir(parents=True)
+    (d / "candle_1d_unadj").mkdir(parents=True)
+    pd.DataFrame({"timestamp": ts, "upbit_open": 50.0, "upbit_high": 50.0, "upbit_low": 50.0, "upbit_close": 50.0,
+                  "upbit_volume": 10, "upbit_trade_price": 0}).to_csv(d / "candle_1d" / "A069500_1d.csv", index=False)
+    pd.DataFrame({"timestamp": ts, "open": raw_c, "high": raw_c, "low": raw_c, "close": raw_c, "volume": 10.0,
+                  "value": 1000.0}).to_csv(d / "candle_1d_unadj" / "A069500_1d.csv", index=False)
+    out = bronze.operating_adjusted("A069500")
+    assert np.allclose(out.close, 50.0, rtol=0.01) and out.close_unadj.tolist() == raw_c
+    assert np.allclose(out.volume[:3], 20.0, rtol=0.01) and np.allclose(out.factor[3:], 1.0)
+    assert bronze.operating_adjusted("A122630") is None               # 무수정 원천 없으면 None → 옛 방식
