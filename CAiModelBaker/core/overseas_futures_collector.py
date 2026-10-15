@@ -361,11 +361,12 @@ def download_and_save_us_stock(symbol: str, interval: str = "1m", range_str: str
         last = raw_ingest._kst(raw_ingest.last_timestamp(target))
         period1 = PERIOD1_ALL if last is None else int((last - timedelta(days=14)).timestamp())
         raw, why = fetch_chart(sym_clean, period1=period1, log=local_log)
+        got = time.time()
         if raw is None:
             local_log(f"  ❌ [US Market] {sym_clean} (1d) 데이터 다운로드 실패: {why}")
             return ""
         bronze.save_response(sym_clean, raw, datetime.now().strftime("%Y%m%d"))
-        rep = bronze.ingest_response(sym_clean, raw, full_history=last is None, log=local_log)
+        rep = bronze.ingest_response(sym_clean, raw, full_history=last is None, fetched_at=got, log=local_log)
         if rep is None:
             local_log(f"  ❌ [US Market] {sym_clean} (1d) 저장 실패 — 기존 원천은 그대로입니다")
             return ""

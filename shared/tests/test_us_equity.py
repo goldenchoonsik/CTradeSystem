@@ -198,3 +198,55 @@ def test_partially_blank_bar_is_not_stored():
     j["chart"]["result"][0]["indicators"]["quote"][0]["close"][1] = None     # 마감 직후: 시가·고가·저가만 있고 종가 없음
     bars, _, info = parse_chart(json.dumps(j).encode())
     assert bars["timestamp"].tolist() == ["2026-01-02 00:00:00"] and info["dropped_partial"] == 1
+
+
+def test_illiquid_symbol_closed_bar_kept_when_fetched_after_close():
+    # 마지막 체결이 마감 전(15:30)이어도 응답을 마감 뒤에 받았으면 그날 봉은 확정이다 (2026-10-15 실측: 2,166종목 누락)
+    start = _day(2026, 1, 6)
+    end = start + 6 * 3600 + 1800
+    raw = _chart([(2026, 1, 5), (2026, 1, 6)], [10.0, 11.0], period=(start, end), market_time=end - 1800)
+    bars, _, info = parse_chart(raw, fetched_at=end + 3 * 3600)
+    assert bars["timestamp"].tolist() == ["2026-01-05 00:00:00", "2026-01-06 00:00:00"] and info["dropped_incomplete"] == 0
+    bars, _, info = parse_chart(raw, fetched_at=end - 60)                      # 장중에 받은 응답은 여전히 뺀다
+    assert bars["timestamp"].tolist() == ["2026-01-05 00:00:00"] and info["dropped_incomplete"] == 1
+
+
+def test_chart_run_skips_symbols_already_at_latest_trading_day(vault, monkeypatch):
+    from shared.data_library import raw_catalog
+    from shared.data_library.us_equity import collect
+    q = lambda m: None
+    bronze.ingest_response("DONE", _chart([(2026, 1, 5), (2026, 1, 6)], [10.0, 11.0]), full_history=True, log=q)
+    bronze.ingest_response("OLD", _chart([(2026, 1, 5)], [10.0]), full_history=True, log=q)
+    monkeypatch.setattr(collect, "log", q)
+    monkeypatch.setattr(collect, "PAUSE", 0)
+    monkeypatch.setattr(collect, "fetch_lists", lambda day: [{"yahoo_symbol": s, "etf": "N"} for s in ("DONE", "OLD")])
+    monkeypatch.setattr(raw_catalog, "expected_latest", lambda market: "2026-01-06")
+    asked = []
+    monkeypatch.setattr(collect, "fetch_chart", lambda sym, **k: (asked.append(sym), (_chart([(2026, 1, 6)], [11.0]), None))[1])
+    collect.run_chart("20260107")
+    assert asked == ["OLD"]
+    assert raw_ingest_last("OLD") == "2026-01-06 00:00:00"
+
+
+def raw_ingest_last(sym):
+    from shared.data_library import raw_ingest
+    return raw_ingest.last_timestamp(bronze.candle_path(sym))
+
+
+def test_same_day_rerun_refetches_when_saved_response_lacked_latest_bar(vault, monkeypatch):
+    # 아침 응답엔 최신일 자리가 비어 있었다(Yahoo 늦은 반영) → 같은 날 다시 누르면 보존 응답을 재사용하지 말고 다시 받아 dayr 에 보존
+    from shared.data_library import raw_catalog
+    from shared.data_library.us_equity import collect
+    q = lambda m: None
+    bronze.ingest_response("LATE", _chart([(2026, 1, 5)], [10.0]), full_history=True, log=q)
+    bronze.save_response("LATE", _chart([(2026, 1, 5), (2026, 1, 6)], [10.0, None]), "20260107")
+    monkeypatch.setattr(collect, "log", q)
+    monkeypatch.setattr(collect, "PAUSE", 0)
+    monkeypatch.setattr(collect, "fetch_lists", lambda day: [{"yahoo_symbol": "LATE", "etf": "Y"}])
+    monkeypatch.setattr(raw_catalog, "expected_latest", lambda market: "2026-01-06")
+    monkeypatch.setattr(collect, "fetch_chart", lambda sym, **k: (_chart([(2026, 1, 5), (2026, 1, 6)], [10.0, 11.0]), None))
+    collect.run_chart("20260107")
+    assert raw_ingest_last("LATE") == "2026-01-06 00:00:00"
+    assert bronze.latest_response("LATE", "20260107").endswith("20260107r/LATE.json.gz")
+    st = collect.job_status()["last"]
+    assert st["done"] == 1 and st["fetched"] == 1 and st["behind_latest"] == 0

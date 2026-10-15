@@ -69,11 +69,11 @@ def _local_dates(epochs, tz: str) -> pd.Series:
     return pd.to_datetime(pd.Series(e), unit="s", utc=True).dt.tz_convert(tz).dt.strftime("%Y-%m-%d")
 
 
-def parse_chart(raw: bytes) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
+def parse_chart(raw: bytes, fetched_at: Optional[float] = None) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
     """응답 → (무수정 일봉, 기업행위, 요약).
 
     일봉: timestamp='거래소 현지 세션 날짜 00:00:00'. 빼는 행 — 전부 빈 행(무거래일·장 전 자리표시),
-    진행 중 세션 봉(regularMarketTime < 정규장 마감). 분할 이전 봉은 가격×누적분할, 거래량÷누적분할로 되돌린다.
+    진행 중 세션 봉(응답을 받은 시각 fetched_at(epoch 초) < 정규장 마감). 분할 이전 봉은 가격×누적분할, 거래량÷누적분할로 되돌린다.
     """
     r = json.loads(raw)["chart"]["result"][0]
     meta = r.get("meta") or {}
@@ -84,9 +84,12 @@ def parse_chart(raw: bytes) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
     info = {"symbol": meta.get("symbol"), "currency": meta.get("currency"), "instrument_type": meta.get("instrumentType"),
             "rows_received": len(bars), "dropped_null": 0, "dropped_partial": 0, "dropped_incomplete": 0}
 
-    # 진행 중 세션: 정규장 시작 이후 봉인데 마지막 체결 시각이 정규장 마감 전이면 아직 확정되지 않은 값이다
+    # 진행 중 세션: 정규장 시작 이후 봉인데 응답을 받은 시각이 정규장 마감 전이면 아직 확정되지 않은 값이다.
+    # 마지막 체결 시각(regularMarketTime)으로 판정하면 마감 전에 거래가 끊긴 저유동 종목의 확정 봉까지 버린다
+    # (2026-10-15 실측: 마감 3시간 뒤 응답인데 2,166종목의 10-14 봉이 빠졌다) — 받은 시각을 모를 때만 대신 쓴다.
     reg = (meta.get("currentTradingPeriod") or {}).get("regular") or {}
-    if reg.get("start") and reg.get("end") and (meta.get("regularMarketTime") or 0) < reg["end"]:
+    seen = fetched_at if fetched_at is not None else (meta.get("regularMarketTime") or 0)
+    if reg.get("start") and reg.get("end") and seen < reg["end"]:
         live = bars["epoch"] >= reg["start"]
         info["dropped_incomplete"] = int((live & bars["close"].notna()).sum())
         bars = bars[~live]

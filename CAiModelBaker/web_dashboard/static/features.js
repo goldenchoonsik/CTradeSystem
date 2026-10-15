@@ -9095,8 +9095,9 @@ async function loadUsUniverseJob() {
         btn.disabled = true;
         _usJobTimer = setTimeout(loadUsUniverseJob, 15000);
     } else {
-        el.textContent = L.updated_at ? `미국 마지막 갱신 ${String(L.updated_at).replace('T', ' ').slice(0, 16)}${L.finished ? '' : ' (중단됨)'}` : '';
-        el.style.color = L.finished === false ? '#fbbf24' : '#94a3b8';
+        const behind = L.finished && L.behind_latest ? ` · 최신 봉 아직 없음 ${L.behind_latest.toLocaleString()}종목(다시 누르면 그 종목만 요청)` : '';
+        el.textContent = L.updated_at ? `미국 마지막 갱신 ${String(L.updated_at).replace('T', ' ').slice(0, 16)}${L.finished ? '' : ' (중단됨)'}${behind}` : '';
+        el.style.color = L.finished === false || behind ? '#fbbf24' : '#94a3b8';
         btn.disabled = false;
     }
 }

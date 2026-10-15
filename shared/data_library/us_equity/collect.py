@@ -171,45 +171,63 @@ class Job:
         os.replace(self.p + ".tmp", self.p)
 
 
-def _ingest(sym: str, raw: bytes, full: bool, job: Job, quiet) -> None:
+def _ingest(sym: str, raw: bytes, full: bool, job: Job, quiet, fetched_at: float, count: bool = True) -> Optional[str]:
+    """응답 반영. 실패면 사유를 돌려준다. count=False 면 진행 상태에 세지 않는다(호출자가 센다)."""
     try:
-        rep = bronze.ingest_response(sym, raw, full_history=full, log=quiet)
+        rep = bronze.ingest_response(sym, raw, full_history=full, fetched_at=fetched_at, log=quiet)
     except Exception as e:                       # 응답 원본은 이미 보존됨 — import 로 다시 반영할 수 있다
-        job.tick(failed=f"{sym}:ingest:{type(e).__name__}:{e}")
-        return
-    if rep is None:
-        job.tick(failed=f"{sym}:ingest:rejected")
+        why = f"{sym}:ingest:{type(e).__name__}:{e}"
     else:
-        if rep.get("conflicts") or rep.get("action_conflicts"):
+        why = None if rep is not None else f"{sym}:ingest:rejected"
+        if rep and (rep.get("conflicts") or rep.get("action_conflicts")):
             log(f"{sym} 확인 필요: 일봉 충돌 {rep.get('conflicts')} · 기업행위 충돌 {rep.get('action_conflicts')}")
-        job.tick(fetched=True)
+    if count:
+        job.tick(fetched=why is None, failed=why)
+    return why
 
 
 def run_chart(day: str, limit: int = 0) -> None:
+    from shared.data_library.raw_catalog import expected_latest
     uni = fetch_lists(day)[: limit or None]
-    log(f"수집 시작 {day}: 대상 {len(uni)} (ETF {sum(r['etf'] == 'Y' for r in uni)})")
+    latest = expected_latest("US")            # 일봉이 확정된 마지막 미국 거래일 — 이미 가진 종목은 요청하지 않는다
+    log(f"수집 시작 {day}: 대상 {len(uni)} (ETF {sum(r['etf'] == 'Y' for r in uni)}) · 확정 최신일 {latest}")
     job = Job("yahoo_chart_1d", f"Yahoo 일봉 ({day})", len(uni))
     sess = requests.Session()
     quiet = lambda m: None
     for i, r in enumerate(uni, 1):
         sym = r["yahoo_symbol"]
-        resp = os.path.join(bronze.responses_dir(day), f"{sym}.json.gz")
-        if os.path.exists(resp):                 # 이어받기: 응답은 있으니 원천 반영만(멱등)
-            _ingest(sym, gzip.open(resp).read(), not os.path.exists(bronze.candle_path(sym)), job, quiet)
+        last_raw = raw_ingest.last_timestamp(bronze.candle_path(sym))
+        if latest and last_raw and last_raw[:10] >= latest:
+            job.tick(skipped=True)
             continue
-        last = raw_ingest._kst(raw_ingest.last_timestamp(bronze.candle_path(sym)))
+        resp = bronze.latest_response(sym, day)
+        if resp:                                 # 이어받기: 응답은 있으니 원천 반영만(멱등)
+            why = _ingest(sym, gzip.open(resp).read(), not os.path.exists(bronze.candle_path(sym)), job, quiet,
+                          bronze.response_time(resp), count=False)
+            last_raw = raw_ingest.last_timestamp(bronze.candle_path(sym))
+            if why or not latest or (last_raw and last_raw[:10] >= latest):
+                job.tick(fetched=why is None, failed=why)
+                continue
+            # 보존 응답에 최신 봉이 없었다(Yahoo 가 마감 몇 시간 뒤에도 그날 값을 비워 둔다 — 10-15 실측 1,264종목) → 다시 받는다
+        last = raw_ingest._kst(last_raw)
         period1 = PERIOD1_ALL if last is None else int((last - timedelta(days=TAIL_OVERLAP_DAYS)).timestamp())
         raw, why = fetch_chart(sym, period1=period1, session=sess, log=log)
+        got = time.time()
         if raw is None:
             job.tick(failed=f"{sym}:{why}")
         else:
             bronze.save_response(sym, raw, day)
-            _ingest(sym, raw, last is None, job, quiet)
+            _ingest(sym, raw, last is None, job, quiet, got)
         if i % 500 == 0:
-            log(f"{i}/{len(uni)} 반영 {job.s['fetched']} 실패 {job.s['failed_n']}")
+            log(f"{i}/{len(uni)} 반영 {job.s['fetched']} 최신 건너뜀 {job.s['skipped']} 실패 {job.s['failed_n']}")
         time.sleep(PAUSE)
+    failed = {f.split(":", 1)[0] for f in job.all_failed}
+    behind = sum(1 for r in uni if latest and r["yahoo_symbol"] not in failed
+                 and (raw_ingest.last_timestamp(bronze.candle_path(r["yahoo_symbol"])) or "")[:10] < latest)
+    job.s["behind_latest"] = behind
     job.finish(day)
-    log(f"수집 끝 {day}: 반영 {job.s['fetched']} 실패 {job.s['failed_n']}")
+    log(f"수집 끝 {day}: 반영 {job.s['fetched']} 최신 건너뜀 {job.s['skipped']} 실패 {job.s['failed_n']}"
+        + (f" · 최신일 {latest} 봉 아직 없음 {behind}종목(다시 누르면 그 종목만 다시 요청)" if behind else ""))
 
 
 def run_import(day: str, limit: int = 0) -> None:
@@ -221,7 +239,8 @@ def run_import(day: str, limit: int = 0) -> None:
     quiet = lambda m: None
     for i, fn in enumerate(files, 1):
         sym = fn[: -len(".json.gz")]
-        _ingest(sym, gzip.open(os.path.join(d, fn)).read(), not os.path.exists(bronze.candle_path(sym)), job, quiet)
+        fp = os.path.join(d, fn)
+        _ingest(sym, gzip.open(fp).read(), not os.path.exists(bronze.candle_path(sym)), job, quiet, bronze.response_time(fp))
         if i % 1000 == 0:
             log(f"{i}/{len(files)} 반영 {job.s['fetched']} 실패 {job.s['failed_n']}")
     job.finish(day)
@@ -315,5 +334,5 @@ def job_status() -> dict:
             st = json.load(f)
     except Exception:
         pass
-    return {"running": running(), "last": {k: st.get(k) for k in ("title", "target", "done", "fetched", "failed_n",
-                                                                   "started_at", "updated_at", "finished")} if st else None}
+    return {"running": running(), "last": {k: st.get(k) for k in ("title", "target", "done", "fetched", "skipped", "failed_n",
+                                                                   "behind_latest", "started_at", "updated_at", "finished")} if st else None}
