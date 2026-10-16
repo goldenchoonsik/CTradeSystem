@@ -9196,10 +9196,10 @@ async function rawCatalogDetail(encKey) {
         ${res.recent_window && res.recent_window.length ? `<div>최근 거래일(${_esc(res.recent_window[0])}~${_esc(res.recent_window[1])}, 거래일 달력) 중 빠진 날${res.recent_after_last ? ` (마지막 봉 이후 ${res.recent_after_last}거래일은 미수집)` : ''}: ${miss.length ? `<span style="color:#fb923c;">${miss.length}일</span> ${_esc(miss.slice(0, 12).join(', '))}${miss.length > 12 ? ' …' : ''}` : '<span style="color:#4ade80;">없음</span>'}</div>` : ''}
         <div>확인 필요: ${conf.length ? `<span style="color:#f87171;">${conf.length}건</span> ${_esc(conf.slice(0, 5).map(c => c.ts).join(', '))}` : '없음'}</div>
         <div>영구 결손: ${(res.unrecoverable || []).length ? _esc(res.unrecoverable.map(r => r.join('~')).join(', ')) : '없음'}</div>
+        ${a.events ? `<div>기업행위 원장 ${a.count}건${a.events.length ? ' (최근) ' + _esc(a.events.map(e => `${e.ex_date} ×${(+e.price_factor).toFixed(4)}`).join(', ')) : ''}</div>` : ''}
         ${a.splits ? `<div>분할 ${a.splits.length}건${a.splits.length ? ': ' + _esc(a.splits.map(x => `${x.date} ${(+x.numerator)}:${(+x.denominator)}`).join(', ')) : ''} · 배당 ${a.dividends}건${a.last_dividend ? ` (최근 ${_esc(a.last_dividend.date)} ${_esc(a.last_dividend.amount)})` : ''}</div>` : ''}
     </div>`;
 }
-        ${a.events ? `<div>기업행위 원장 ${a.count}건${a.events.length ? ' (최근) ' + _esc(a.events.map(e => `${e.ex_date} ×${(+e.price_factor).toFixed(4)}`).join(', ')) : ''}</div>` : ''}
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -9269,7 +9269,7 @@ function renderUnifiedUpdate(data) {
         <div>
           <div style="font-size:14.5px; font-weight:bold; color:#f8fafc;">🔄 통합 업데이트</div>
           <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
-            체크한 항목을 순서대로 실행합니다: 운용 데이터 → (미국 ∥ 한국 동시) → 실물 검사.
+            체크한 항목을 순서대로 실행합니다: 3단계 메달리온 빌드 → (미국 ∥ 한국 동시) → 실물 검사. 메달리온만 돌리려면 그 항목만 체크하세요.
             저녁 20:00 이후 권장 — 한국 틱·1분봉은 다음 날 06:00에 완결되므로 저녁에는 전날 분까지 들어옵니다.
           </div>
         </div>

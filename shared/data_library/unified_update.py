@@ -1,7 +1,8 @@
 """통합 업데이트 — 대시보드 버튼 하나로 고른 갱신 항목을 정해진 순서로 실행하고 상태를 남긴다.
 
 순서(의존·자원 기준)
-  1. ops      운용 데이터(Creon·선물·cTrader·가상자산 수집 → 정규화 → 피처) — 대시보드 안의 메달리온 워커가 실행(호출부가 넘긴다)
+  1. ops      3단계 메달리온 빌드 = 운용 데이터(Creon·선물·cTrader·가상자산 수집 → 정규화 → 피처) — 대시보드 안의 메달리온 워커.
+              따로 있던 '메달리온 일괄 빌드' 버튼은 이 항목으로 합쳤다(같은 일을 하는 버튼 두 개 → 하나)
   2. 동시에:  us   미국 전 종목 일봉(Yahoo, 네트워크만 씀)
               kr   한국 전 종목 일봉: Creon 무수정(→원천 적재) → Creon 수정(→기업행위 원장) → [kr_ext] → 패널 → 골드
      Creon 을 쓰는 항목(ops·kr·kr_ext)은 한 줄로만 돈다 — 같은 Creon 세션·요청 한도를 나눠 쓰면 서로 느려지거나 실패한다.
@@ -22,7 +23,8 @@ from typing import Callable, Dict, List, Optional
 from shared.data_library.paths import PROJECT_ROOT, data_vault_path
 
 ITEMS: List[dict] = [
-    {"key": "ops", "title": "운용 데이터", "desc": "Creon 틱·1분봉·일봉, 선물, cTrader, 가상자산 수집 → 정규화 → 피처 결합", "est_min": 15},
+    {"key": "ops", "title": "3단계 메달리온 빌드 (운용 데이터)",
+     "desc": "1 원천 수집(Creon 틱·1분봉·일봉, 선물, cTrader, 가상자산) → 2 정규화 → 3 피처 결합 — 진행 막대가 이 카드 아래에 뜬다", "est_min": 15},
     {"key": "us", "title": "미국 전 종목 일봉", "desc": "Yahoo 1.3만 종목 증분(최신 종목은 건너뜀) — 며칠 밀리면 더 걸린다", "est_min": 25},
     {"key": "kr", "title": "한국 전 종목 일봉", "desc": "Creon 무수정·수정 일봉 → 원천 적재·기업행위 원장 → 분석 패널 → 골드", "est_min": 70},
     {"key": "kr_ext", "title": "한국 주식수·시총·외국인·기관", "desc": "Creon 일별 보조 지표 증분(패널 빌드 전에 실행)", "est_min": 17},
