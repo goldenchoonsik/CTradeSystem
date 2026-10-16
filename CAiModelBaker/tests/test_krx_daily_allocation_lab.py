@@ -84,6 +84,7 @@ def _have_real_daily(*syms):
 
 
 @pytest.mark.skipif(not _have_real_daily("069500", "122630"), reason="정규화 일봉 없음")
+@pytest.mark.real_vault
 def test_lab_smoke(tmp_path):
     from CAiModelBaker.core import allocation_lab
     R = allocation_lab.main(["--signal", "069500", "--instruments", "069500,122630",

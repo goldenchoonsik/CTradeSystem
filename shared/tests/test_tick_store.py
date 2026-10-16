@@ -68,6 +68,7 @@ def test_logical_path_bridge(store):
     assert ts.symbol_from_path(str(tmp_path / "other" / "A000001_tick.csv")) is None
 
 
+@pytest.mark.real_vault
 def test_real_069500_day_layout_is_consistent():
     """실물(읽기 전용): 069500 은 일자 저장소 — 범위 읽기 행 수가 메타 합과 같고 시각이 오름차순이다."""
     if not ts.has_data("069500"):

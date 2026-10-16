@@ -190,6 +190,7 @@ def test_lost_days_recorded_when_source_exhausted(tmp_path, st):
     assert tds.read_meta(st[0], "000001", "2026-09-29")["status"] == "LOST"
     assert tds.verify(st[0], "000001") == {}
 
+@pytest.mark.real_vault
 def test_real_vault_tick_day_store_ratchet():
     """래칫(실물, 읽기만 함): 틱은 모두 일자 저장소다 — 통합 CSV 가 없고, 모든 종목이 구조 검증을 통과하고,
     마감 후 3일이 지나도록 판정되지 않은(OPEN) 날이 없다(수집을 하루 건너뛴 것은 허용)."""

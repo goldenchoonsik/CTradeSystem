@@ -38,6 +38,7 @@ def test_stock_minute_builder_drops_nxt_bars(tmp_path):
     assert got == ["2026-09-11 09:01", "2026-09-11 15:30", "2026-09-14 09:01", "2026-09-14 15:30"]
 
 
+@pytest.mark.real_vault
 def test_real_vault_krx_minute_normalized_is_regular_session_only():
     """래칫(실물, 읽기만 함): KRX 주식·ETF 1분봉 정규화에는 정규장 밖 봉이 없다(선물·지수는 normalized/macro 라 대상 아님)."""
     d = os.path.join(ROOT, "DataVault", "normalized", "candles_1m")
@@ -71,6 +72,7 @@ def test_interval_audit_handles_fx_rollover_daily_bars():
     assert r is not None and r.ok and r.extrema_rate == 1.0
 
 
+@pytest.mark.real_vault
 def test_real_vault_ctrader_daily_normalized_is_one_bar_per_day():
     """래칫(실물): cTrader 일봉 정규화가 1분봉을 일봉 이름으로 저장하던 결함(수백만 행) 재발 방지 — 하루 한 봉."""
     d = os.path.join(ROOT, "DataVault", "normalized", "candles_1d")

@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from CAiModelBaker.web_dashboard.main import app
 
 
+@pytest.mark.real_vault
 def test_audit_symbol_incremental_structure():
     """단일 자산의 증분 감사(full=False) 결과가 규격화된 dict 구조를 반환하는지 검증"""
     res = DataQualityAuditor.audit_symbol("069500", force=False, full=False)
@@ -23,6 +24,7 @@ def test_audit_symbol_incremental_structure():
         assert "total" in a["summary"]
 
 
+@pytest.mark.real_vault
 def test_audit_all_symbols_parallel_and_callback():
     """병렬 감사 엔진이 콜백을 정확히 호출하고 완료 결과를 집계하는지 검증"""
     called_records = []
@@ -56,6 +58,7 @@ def test_raw_store_health_engine_clear_cache():
     assert RawStoreHealthEngine._loaded_from_disk is False
 
 
+@pytest.mark.real_vault
 def test_quality_audit_api_endpoints():
     """품질 감사 상태 조회 및 일괄 감사 실행 API 엔드포인트 검증"""
     client = TestClient(app)

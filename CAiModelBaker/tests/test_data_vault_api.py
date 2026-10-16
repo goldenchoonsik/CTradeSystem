@@ -17,6 +17,7 @@ def client():
     return TestClient(app)
 
 
+@pytest.mark.real_vault
 def test_api_get_medallion_status(client):
     """GET /api/data_vault/medallion_status 엔드포인트 무결성 검증"""
     res = client.get("/api/data_vault/medallion_status")
@@ -30,6 +31,7 @@ def test_api_get_medallion_status(client):
     assert data["coverage_summary"]["target"]["trading_days"] >= 38
 
 
+@pytest.mark.real_vault
 def test_api_compose_features_v2(client):
     """POST /api/data_vault/compose_features 엔드포인트 검증"""
     import pandas as pd
@@ -179,6 +181,7 @@ def test_api_features_inventory(client):
     assert isinstance(data["inventory"], list)
 
 
+@pytest.mark.real_vault
 def test_api_features_compose(client):
     """POST /api/features/compose 엔드포인트 검증"""
     payload = {
@@ -197,6 +200,7 @@ def test_api_features_compose(client):
     assert "cross_005930_spread" in data["columns"]
 
 
+@pytest.mark.real_vault
 def test_api_features_correlation_matrix(client):
     """GET /api/features/correlation_matrix 엔드포인트 검증"""
     res = client.get("/api/features/correlation_matrix?symbol=069500&interval=10s&max_features=8")

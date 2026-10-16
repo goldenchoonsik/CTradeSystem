@@ -8,6 +8,7 @@ from CAiModelBaker.core.feature_composer import FeatureComposer
 from shared.features.feature_engine import run_feature_engineering
 
 
+@pytest.mark.real_vault
 def test_krw_btc_15m_medallion_composition():
     """KRW-BTC 15m 온디맨드 결합 및 바이낸스 선물/파생 컬럼 자동 투영 검증"""
     composer = FeatureComposer()

@@ -8,6 +8,9 @@ from shared.data_library.raw_store_health import RawStoreHealthEngine, _extract_
 from CAiModelBaker.core.creon_collector import get_existing_last_timestamp
 from shared.data_library import candle_store
 
+# 실물 검사(real_vault): 실제 DataVault 데이터 상태를 본다 — 수집 시점에 따라 결과가 바뀐다. `pytest -m real_vault` 로 따로 돌린다.
+pytestmark = pytest.mark.real_vault
+
 
 def test_health_matrix_caching_performance():
     """파일 mtime 불변 시 날짜 추출이 디스크 캐시를 통해 초고속(1ms 이하)으로 반환되는지 검증"""

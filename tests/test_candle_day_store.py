@@ -163,6 +163,7 @@ def _write(tmp_path, name, day, vols):
     return p
 
 
+@pytest.mark.real_vault
 def test_real_vault_candle_day_store_ratchet():
     """래칫(실물, 읽기만 함): Creon 1분봉은 모두 일자 저장소다 — 통합 CSV 가 없고, 모든 종목이 구조 검증을 통과하고,
     마감 후 3일이 지나도록 판정되지 않은(OPEN) 날이 없고, 격리(QUARANTINED)된 날이 없다(있으면 원인을 보고 해결해야 한다)."""

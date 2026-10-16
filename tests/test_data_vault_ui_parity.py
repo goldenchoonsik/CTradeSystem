@@ -22,6 +22,7 @@ def test_us_tech_100_registered_as_macro_proxy():
     assert info["is_active"] is True, "US_TECH_100 must be active"
 
 
+@pytest.mark.real_vault
 def test_all_vault_raw_manifests_have_source_mapping():
     """DataVault/raw에 유효한 매니페스트가 있는 모든 물리 자산이 대장에 존재하는지 전수 검증 (누락 원천 차단)"""
     mappings = SourceMappingManager.load_all_mappings(force_refresh=True)
@@ -253,6 +254,7 @@ def test_get_feed_registry_status_includes_live_connection():
 
 
 @pytest.mark.asyncio
+@pytest.mark.real_vault
 async def test_medallion_status_dynamic_target_resolution():
     """api_get_medallion_status가 타겟 종목을 동적으로 파싱하고 관계를 조회하는지 검증"""
     from CAiModelBaker.web_dashboard.main import api_get_medallion_status

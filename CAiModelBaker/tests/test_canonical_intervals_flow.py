@@ -71,6 +71,7 @@ def test_api_update_intervals_and_inventory(client):
     SourceMappingManager.update_canonical_intervals("BTCUSDT", ["1m", "10m", "15m"])
 
 
+@pytest.mark.real_vault
 def test_build_single_asset_normalized():
     """단일 자산 일괄 정규화 빌더 실행 검증"""
     raw_btc_csv = dpaths.raw_path("crypto", "binance", "BTCUSDT_15m.csv")

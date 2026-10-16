@@ -50,6 +50,7 @@ def test_require_contiguous_false_unifies_all_segments():
     assert any("비연속 유효일 통합 모드" in w for w in plan.get("warnings", []))
 
 
+@pytest.mark.real_vault
 def test_real_gold_snapshot_plan_split_if_exists():
     """실제 DataVault/features/069500/data_snapshot_10s.csv 스냅샷이 있는 경우 검증"""
     snap_path = "DataVault/features/069500/data_snapshot_10s.csv"

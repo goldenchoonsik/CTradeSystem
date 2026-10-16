@@ -269,6 +269,7 @@ def test_quality_view_distinguishes_unchecked_from_healthy():
 
 
 # ── 실데이터 회귀 (DataVault 가 있을 때만): 오늘 사고가 다시 '정상'으로 보이면 실패 ─────────────────
+@pytest.mark.real_vault
 def test_real_069500_regression_known_bad_and_good_days():
     import os
     try:

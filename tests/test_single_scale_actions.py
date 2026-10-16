@@ -142,6 +142,7 @@ def test_delete_single_scale_normalized(client):
         assert not os.path.exists(dummy_mf)
 
 
+@pytest.mark.real_vault
 def test_health_matrix_intervals_crypto_multi_scale(client):
     """가상자산(UPBIT) 원천 복수 그래뉼러리티(1M, 1D 등) 자동 탐색 검증"""
     from shared.data_library.raw_store_health import RawStoreHealthEngine

@@ -17,6 +17,9 @@ from shared.data_library.symbol_relations_manager import SymbolRelationsManager
 from CAiModelBaker.core.feature_composer import FeatureComposer
 from shared.features.feature_engine import run_feature_engineering
 
+# 실물 검사(real_vault): 실제 DataVault 데이터 상태를 본다 — 수집 시점에 따라 결과가 바뀐다. `pytest -m real_vault` 로 따로 돌린다.
+pytestmark = pytest.mark.real_vault
+
 
 def test_cross_registry_zero_drift():
     """1단계: symbol_relations.json의 참조 종목이 대장에 100% 자동 등재되고 HEALTHY 상태인지 검증"""
