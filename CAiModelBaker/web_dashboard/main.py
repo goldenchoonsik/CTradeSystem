@@ -5067,6 +5067,7 @@ async def run_medallion_full_pipeline_worker(mode: str, payload: dict):
             "status": "success",
             "message": "3단계 메달리온 일괄 빌드 완결"
         }))
+        return True, "수집 → 정규화 → 피처 결합 완결"
     except Exception as e:
         await log_fn(f"🛑 [Medallion Pipeline 중단] {e}")
         await manager.broadcast(json.dumps({
@@ -5075,6 +5076,73 @@ async def run_medallion_full_pipeline_worker(mode: str, payload: dict):
             "status": "error",
             "error": str(e)
         }))
+        return False, str(e)
+
+
+# ---------------------------------------------------------------------------
+# 통합 업데이트 — 체크한 갱신 항목을 정해진 순서로 실행(shared/data_library/unified_update.py)
+# ---------------------------------------------------------------------------
+_UNIFIED_TASK = {"task": None}
+
+
+async def run_unified_update_worker(selected: list):
+    from shared.data_library import unified_update as uu
+    log_fn = get_log_fn("UNIFIED-UPDATE")
+    loop = asyncio.get_event_loop()
+    await log_fn(f"🔄 [통합 업데이트] 시작: {', '.join(selected)}")
+    try:
+        if "ops" in selected:
+            uu.set_item("ops", "running", "수집 → 정규화 → 피처 결합")
+            try:
+                ok, msg = await run_medallion_full_pipeline_worker("smart", {"all_projects": True})
+            except Exception as e:
+                ok, msg = False, str(e)
+            uu.set_item("ops", "done" if ok else "failed", msg)
+        # 미국(네트워크)과 한국(Creon)은 자원이 겹치지 않아 동시에 — 운용(Creon) 이 끝난 뒤에 시작한다
+        jobs = []
+        if "us" in selected:
+            jobs.append(loop.run_in_executor(None, uu.run_us))
+        if "kr" in selected or "kr_ext" in selected:
+            jobs.append(loop.run_in_executor(None, uu.run_kr, selected))
+        if jobs:
+            await asyncio.gather(*jobs)
+        if "checks" in selected:
+            await loop.run_in_executor(None, uu.run_checks)
+        uu.finish()
+        st = uu.load()
+        bad = [k for k, v in st.get("items", {}).items() if v.get("status") in ("failed", "warn")]
+        await log_fn(f"🏁 [통합 업데이트] 완료" + (f" — 확인 필요: {', '.join(bad)}" if bad else " — 모두 정상"))
+    except Exception as e:
+        await log_fn(f"🛑 [통합 업데이트 중단] {e}")
+        uu.finish(interrupted=True)
+    finally:
+        _UNIFIED_TASK["task"] = None
+
+
+@app.get("/api/unified_update")
+async def api_unified_update_status():
+    """통합 업데이트 항목(예상 시간 포함)과 현재/마지막 실행 상태."""
+    try:
+        from shared.data_library import unified_update as uu
+        uu.mark_interrupted_if_stale(alive=_UNIFIED_TASK["task"] is not None and not _UNIFIED_TASK["task"].done())
+        return {"status": "ok", **uu.overview()}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/unified_update")
+async def api_unified_update_start(payload: dict):
+    """체크한 항목으로 통합 업데이트 시작. payload: {items: [ops, us, kr, kr_ext, checks]}"""
+    try:
+        from shared.data_library import unified_update as uu
+        if _UNIFIED_TASK["task"] is not None and not _UNIFIED_TASK["task"].done():
+            return {"status": "error", "message": "통합 업데이트가 이미 실행 중입니다."}
+        uu.mark_interrupted_if_stale(alive=False)
+        st = uu.begin(list(payload.get("items") or []))
+        _UNIFIED_TASK["task"] = asyncio.create_task(run_unified_update_worker(st["selected"]))
+        return {"status": "ok", "message": f"통합 업데이트 시작 — 예상 약 {st['est_total_min']}분", "state": st}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 @app.post("/api/data_vault/run_full_pipeline")

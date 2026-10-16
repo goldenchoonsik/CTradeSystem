@@ -31,11 +31,23 @@ THEN_BRONZE = {"creon_daily", "creon_daily_unadj"}
 
 
 def _pid_alive(pid: int) -> bool:
+    """살아 있는 프로세스인가. 대시보드가 띄운 자식은 끝나도 회수 전까지 좀비로 남아 kill(0) 이 성공한다
+    (미국 수집기에서 10-15 실측한 결함과 같다) — 우리 자식이면 회수하고, /proc 상태가 Z 면 끝난 것으로 본다."""
     try:
-        os.kill(pid, 0)
-        return True
+        done, _ = os.waitpid(pid, os.WNOHANG)
+        if done == pid:
+            return False
+    except ChildProcessError:
+        pass
+    try:
+        with open(f"/proc/{pid}/stat", encoding="utf-8") as f:
+            return f.read().rsplit(")", 1)[1].split()[0] != "Z"
     except OSError:
-        return False
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
 
 
 def running() -> Optional[dict]:
@@ -88,6 +100,21 @@ def creon_argv(step: str, full: bool = False) -> Tuple[List[str], str]:
 
 
 def start(step: str, full: bool = False) -> dict:
+    return _spawn(step, full)[1]
+
+
+def run_sync(step: str, full: bool = False) -> int:
+    """단계를 실행하고 끝날 때까지 기다린다(통합 업데이트용). 반환: 종료 코드. 잠금·로그는 start 와 같다."""
+    proc, _ = _spawn(step, full)
+    rc = proc.wait()
+    try:
+        os.remove(store.path(*LOCK))
+    except OSError:
+        pass
+    return rc
+
+
+def _spawn(step: str, full: bool = False):
     cur = running()
     if cur:
         raise RuntimeError(f"이미 실행 중: {cur['step']} (pid {cur['pid']}, {cur['started_at']})")
@@ -110,7 +137,7 @@ def start(step: str, full: bool = False) -> dict:
     with open(store.path(*LOCK), "w", encoding="utf-8") as f:
         import json
         json.dump(info, f, ensure_ascii=False)
-    return info
+    return proc, info
 
 
 def log_tail(n: int = 30) -> List[str]:

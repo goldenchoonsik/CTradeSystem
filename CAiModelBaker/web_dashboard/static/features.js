@@ -9199,3 +9199,168 @@ async function rawCatalogDetail(encKey) {
         ${a.splits ? `<div>분할 ${a.splits.length}건${a.splits.length ? ': ' + _esc(a.splits.map(x => `${x.date} ${(+x.numerator)}:${(+x.denominator)}`).join(', ')) : ''} · 배당 ${a.dividends}건${a.last_dividend ? ` (최근 ${_esc(a.last_dividend.date)} ${_esc(a.last_dividend.amount)})` : ''}</div>` : ''}
     </div>`;
 }
+        ${a.events ? `<div>기업행위 원장 ${a.count}건${a.events.length ? ' (최근) ' + _esc(a.events.map(e => `${e.ex_date} ×${(+e.price_factor).toFixed(4)}`).join(', ')) : ''}</div>` : ''}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔄 통합 업데이트 — 체크한 갱신 항목을 정해진 순서로 실행 (/api/unified_update, shared/data_library/unified_update.py)
+// ─────────────────────────────────────────────────────────────────────────────
+const UU_ICON = { pending: '⏳', running: '🔄', done: '✅', warn: '⚠️', failed: '❌', skipped: '⏭️', off: '—' };
+const UU_LABEL = { pending: '대기', running: '진행 중', done: '완료', warn: '확인 필요', failed: '실패', skipped: '건너뜀', off: '선택 안 함' };
+let _uuTimer = null, _uuData = null;
+
+function _uuSelected() {
+    const boxes = document.querySelectorAll('#unifiedUpdateCard input[data-uu]');
+    return Array.from(boxes).filter(b => b.checked).map(b => b.dataset.uu);
+}
+
+function _uuTotal(sel, est) {
+    const p = k => (sel.includes(k) ? (est[k] || 0) : 0);
+    return p('ops') + Math.max(p('us'), p('kr') + p('kr_ext')) + p('checks');   // 운용 → (미국 ∥ 한국) → 검사
+}
+
+function _uuMin(m) {
+    m = Math.max(0, Math.round(m));
+    return m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`;
+}
+
+function _uuElapsed(fromIso, toIso) {
+    if (!fromIso) return 0;
+    const a = new Date(fromIso), b = toIso ? new Date(toIso) : new Date();
+    return (b - a) / 60000;
+}
+
+function _uuSaveSel() {
+    try { localStorage.setItem('unifiedUpdateSel', JSON.stringify(_uuSelected())); } catch (e) { /* 저장 불가해도 기본값(전체)로 동작 */ }
+}
+
+function _uuLoadSel(keys) {
+    try {
+        const v = JSON.parse(localStorage.getItem('unifiedUpdateSel') || 'null');
+        if (Array.isArray(v)) return v.filter(k => keys.includes(k));
+    } catch (e) { /* 무시 */ }
+    return keys;                                                                // 기본값: 전체 체크
+}
+
+function _uuUpdateTotal() {
+    if (!_uuData) return;
+    const est = Object.fromEntries(_uuData.items.map(i => [i.key, i.est_min]));
+    const sel = _uuSelected();
+    const btn = document.getElementById('btnUnifiedUpdate');
+    if (btn) {
+        btn.disabled = !sel.length;
+        btn.textContent = sel.length ? `🔄 통합 업데이트 시작 (예상 약 ${_uuMin(_uuTotal(sel, est))})` : '항목을 고르세요';
+    }
+    _uuSaveSel();
+}
+
+function renderUnifiedUpdate(data) {
+    const el = document.getElementById('unifiedUpdateCard');
+    if (!el || !data) return;
+    _uuData = data;
+    const st = data.state || {};
+    const running = st.status === 'running';
+    const keys = data.items.map(i => i.key);
+    const sel = running ? (st.selected || []) : _uuLoadSel(keys);
+    const est = Object.fromEntries(data.items.map(i => [i.key, i.est_min]));
+
+    const head = `
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-size:14.5px; font-weight:bold; color:#f8fafc;">🔄 통합 업데이트</div>
+          <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
+            체크한 항목을 순서대로 실행합니다: 운용 데이터 → (미국 ∥ 한국 동시) → 실물 검사.
+            저녁 20:00 이후 권장 — 한국 틱·1분봉은 다음 날 06:00에 완결되므로 저녁에는 전날 분까지 들어옵니다.
+          </div>
+        </div>
+        ${running ? '' : `<button class="btn btn-sm" id="btnUnifiedUpdate" onclick="startUnifiedUpdate()"
+            style="background:linear-gradient(135deg,#22c55e,#06b6d4); color:#fff; font-weight:bold; font-size:13px; padding:8px 18px; border:none; border-radius:6px;"></button>`}
+      </div>`;
+
+    let body = '';
+    if (running) {
+        const elapsed = _uuElapsed(st.started_at);
+        const total = st.est_total_min || 0;
+        const left = total - elapsed;
+        body += `<div style="margin-top:10px; font-size:12px; color:#e2e8f0;">
+            진행 중 · 경과 ${_uuMin(elapsed)} / 예상 ${_uuMin(total)} ·
+            ${left > 0 ? `남은 시간 약 ${_uuMin(left)}` : `<span style="color:#fbbf24;">예상보다 늦어지고 있습니다</span>`}
+            <span style="color:#64748b;">(시작 ${_esc((st.started_at || '').replace('T', ' '))})</span></div>`;
+    }
+    body += `<div style="margin-top:10px; display:grid; gap:6px;">`;
+    for (const it of data.items) {
+        const s = (st.items || {})[it.key] || {};
+        const status = running ? (s.status || 'off') : null;
+        const took = s.started_at ? _uuElapsed(s.started_at, s.finished_at) : null;
+        const timeTxt = running
+            ? (status === 'running' ? `경과 ${_uuMin(took)} / 예상 약 ${_uuMin(s.est_min ?? it.est_min)}`
+               : (['done', 'warn', 'failed'].includes(status) && took != null ? `${_uuMin(took)} 걸림` : `예상 약 ${_uuMin(s.est_min ?? it.est_min)}`))
+            : `예상 약 ${_uuMin(it.est_min)}`;
+        const off = running && status === 'off';
+        body += `<div style="display:flex; gap:10px; align-items:flex-start; padding:6px 10px; border-radius:6px; background:rgba(0,0,0,0.25);${off ? ' opacity:0.4;' : ''}">
+            ${running
+                ? `<span style="width:20px; text-align:center;" title="${UU_LABEL[status] || ''}">${UU_ICON[status] || ''}</span>`
+                : `<input type="checkbox" data-uu="${it.key}" ${sel.includes(it.key) ? 'checked' : ''} onchange="_uuUpdateTotal()" style="margin-top:3px;">`}
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:12.5px; color:#f1f5f9; font-weight:600;">${_esc(it.title)}
+                ${off ? '' : `<span style="font-weight:normal; color:#94a3b8; font-size:11px; margin-left:6px;">${timeTxt}</span>`}
+                ${running ? `<span style="font-weight:normal; font-size:11px; margin-left:6px; color:${status === 'failed' ? '#f87171' : status === 'warn' ? '#fbbf24' : '#94a3b8'};">${UU_LABEL[status] || ''}</span>` : ''}
+              </div>
+              <div style="font-size:11px; color:#94a3b8;">${_esc(running && s.detail ? s.detail : it.desc)}</div>
+            </div>
+          </div>`;
+    }
+    body += `</div>`;
+
+    // 마지막 실행 결과(실행 중이 아닐 때)
+    if (!running && st.started_at) {
+        const items = st.items || {};
+        const bad = Object.entries(items).filter(([, v]) => ['failed', 'warn'].includes(v.status));
+        const title = st.status === 'interrupted' ? '⚠️ 마지막 실행이 중단되었습니다' : (bad.length ? '⚠️ 마지막 실행: 확인 필요 항목 있음' : '✅ 마지막 실행: 모두 정상');
+        body += `<div style="margin-top:10px; padding:8px 10px; border-radius:6px; background:rgba(0,0,0,0.3); font-size:11.5px; color:#cbd5e1;">
+            <div style="font-weight:600;">${title}
+              <span style="color:#64748b; font-weight:normal;">(${_esc((st.started_at || '').replace('T', ' '))} ~ ${_esc((st.finished_at || '').slice(11))}, ${_uuMin(_uuElapsed(st.started_at, st.finished_at))})</span></div>
+            ${data.items.filter(i => items[i.key] && items[i.key].status !== 'off').map(i => {
+                const v = items[i.key];
+                return `<div>${UU_ICON[v.status] || ''} ${_esc(i.title)} — ${UU_LABEL[v.status] || ''}${v.detail ? ` · ${_esc(v.detail)}` : ''}</div>`;
+            }).join('')}
+            ${((items.checks || {}).failures || []).length ? `<div style="margin-top:4px; color:#fbbf24;">실물 검사에서 걸린 항목 (데이터 상태 신호 — 코드 오류 아님):</div>
+              ${(items.checks.failures).map(f => `<div style="padding-left:12px;">• ${_esc(f.about || f.test)}
+                  <div style="padding-left:12px; color:#94a3b8;">${_esc(f.message)} <span style="color:#64748b;">(${_esc(f.test)})</span></div></div>`).join('')}` : ''}
+          </div>`;
+    }
+    el.innerHTML = head + body;
+    if (!running) _uuUpdateTotal();
+
+    clearTimeout(_uuTimer);
+    if (running) _uuTimer = setTimeout(loadUnifiedUpdate, 5000);
+}
+
+async function loadUnifiedUpdate() {
+    try {
+        const res = await apiGet('/api/unified_update');
+        if (res && res.status === 'ok') renderUnifiedUpdate(res);
+        else { const el = document.getElementById('unifiedUpdateCard'); if (el) el.innerHTML = `<div style="color:#f87171; font-size:12px;">통합 업데이트 상태를 불러오지 못했습니다: ${_esc(res?.message || '')}</div>`; }
+    } catch (e) { /* 다음 갱신 때 다시 */ }
+}
+
+async function startUnifiedUpdate() {
+    const sel = _uuSelected();
+    if (!sel.length) return;
+    const btn = document.getElementById('btnUnifiedUpdate');
+    if (btn) btn.disabled = true;
+    try {
+        const res = await apiPost('/api/unified_update', { items: sel });
+        if (typeof showToast === 'function') showToast(res.status === 'ok' ? `✅ ${res.message}` : `❌ ${res.message}`, res.status === 'ok' ? 'success' : 'danger');
+    } catch (e) {
+        if (typeof showToast === 'function') showToast(`❌ 통합 업데이트 시작 실패: ${e}`, 'danger');
+    }
+    loadUnifiedUpdate();
+}
+
+window.startUnifiedUpdate = startUnifiedUpdate;
+window.loadUnifiedUpdate = loadUnifiedUpdate;
+window._uuUpdateTotal = _uuUpdateTotal;
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadUnifiedUpdate);
+else loadUnifiedUpdate();
+

@@ -307,11 +307,29 @@ def _alive(pid: int) -> bool:
 
 def start_background(step: str = "chart", day: Optional[str] = None) -> dict:
     """python -m shared.data_library.us_equity.collect <step> 을 새 세션으로 띄운다. 이미 돌고 있으면 그 정보를 돌려준다."""
-    import subprocess
-    import sys
     cur = running()
     if cur:
         return {"started": False, "reason": "already_running", **cur}
+    return {"started": True, **_spawn(step, day)[1]}
+
+
+def run_sync(step: str = "chart", day: Optional[str] = None) -> int:
+    """수집을 실행하고 끝날 때까지 기다린다(통합 업데이트용). 이미 돌고 있으면 RuntimeError. 반환: 종료 코드."""
+    cur = running()
+    if cur:
+        raise RuntimeError(f"미국 수집이 이미 실행 중입니다 (pid {cur.get('pid')}, {cur.get('started_at')})")
+    proc, _ = _spawn(step, day)
+    rc = proc.wait()
+    try:
+        os.remove(stage(*RUN_LOCK))
+    except OSError:
+        pass
+    return rc
+
+
+def _spawn(step: str, day: Optional[str]):
+    import subprocess
+    import sys
     day = day or datetime.now().strftime("%Y%m%d")
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     os.makedirs(stage("logs"), exist_ok=True)
@@ -323,7 +341,7 @@ def start_background(step: str = "chart", day: Optional[str] = None) -> dict:
     with open(stage(*RUN_LOCK), "w", encoding="utf-8") as f:
         json.dump(info, f, ensure_ascii=False)
     log(f"대시보드에서 시작: {step} {day} (pid {p.pid})")
-    return {"started": True, **info}
+    return p, info
 
 
 def job_status() -> dict:

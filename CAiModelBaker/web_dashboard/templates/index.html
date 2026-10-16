@@ -10,7 +10,7 @@
     <!-- Plotly (수익률 분포 히스토그램 + WFA 타임라인용 유지) -->
     <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
     <script src="/static/lwc_charts.js?v=20260811"></script>
-    <script src="/static/features.js?v=20261016_usjob1"></script>
+    <script src="/static/features.js?v=20261016_unified3"></script>
     <script src="/static/timeline_manager.js?v=20260806"></script>
     <script src="/static/feature_charts.js?v=20260811"></script>
 </head>
@@ -474,6 +474,11 @@
                         <div class="metric-label">크기</div>
                         <div class="metric-value" id="dataSize">-</div>
                     </div>
+                </div>
+
+                <!-- 🔄 통합 업데이트 — 체크한 갱신 항목을 정해진 순서로 실행 (features.js renderUnifiedUpdate) -->
+                <div class="card" id="unifiedUpdateCard" style="border:1px solid rgba(74,222,128,0.45); background:linear-gradient(90deg, rgba(74,222,128,0.08), rgba(15,23,42,0.85)); margin-bottom:16px; padding:14px 18px;">
+                    <div style="color:#94a3b8; font-size:12px;">통합 업데이트 불러오는 중...</div>
                 </div>
 
                 <!-- 🚀 3단계 메달리온 일괄 빌드 마스터 컨트롤 바 -->
