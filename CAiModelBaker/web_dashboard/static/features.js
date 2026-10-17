@@ -8817,51 +8817,97 @@ function _rdJob(j) {
         + `${j.note ? ' · ' + _esc(j.note) : ''} · 마지막 갱신 ${_esc((j.updated_at || '-').replace('T', ' '))}</div>`;
 }
 
+const _rdOpen = new Set();   // 30초 자동 갱신에도 펼친 섹션을 유지
+function _rdTog(el) { const k = el.dataset.k; if (el.open) _rdOpen.add(k); else _rdOpen.delete(k); }
+
+function _rdBadge(text, color) {
+    return `<span style="font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid ${color};color:${color};white-space:nowrap;">${text}</span>`;
+}
+
+function _rdTile(label, value, sub) {
+    return `<div style="flex:1;min-width:130px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);">`
+        + `<div style="font-size:11px;color:#94a3b8;">${label}</div><div style="font-size:18px;font-weight:700;margin-top:2px;">${value}</div>`
+        + (sub ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;">${sub}</div>` : '') + `</div>`;
+}
+
+function _rdSection(dname, id, title, summary, body, forceOpen) {
+    const k = dname + ':' + id;
+    return `<details data-k="${_esc(k)}" ontoggle="_rdTog(this)" ${(forceOpen || _rdOpen.has(k)) ? 'open' : ''} style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">`
+        + `<summary style="cursor:pointer;font-size:13px;padding:2px 0;"><b>${title}</b> <span style="font-size:12px;color:#94a3b8;margin-left:6px;">${summary}</span></summary>`
+        + `<div style="margin-top:6px;">${body}</div></details>`;
+}
+
 function _rdDataset(d) {
-    const row = (k, v) => `<div style="display:flex;gap:10px;padding:3px 0;border-top:1px solid rgba(255,255,255,0.05);"><span style="color:#94a3b8;min-width:120px;">${k}</span><span>${v}</span></div>`;
-    let h = `<div style="padding:12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;margin-bottom:12px;">`;
-    h += `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;"><b style="font-size:14px;">${_esc(d.title)}</b>`
-       + `<span style="font-size:11px;color:#94a3b8;">${_esc(d.name)} · ${d.size_bytes != null ? _fmtGB(d.size_bytes) : '크기 계산 중'} · 원장 미등록</span></div>`;
-    if (d.purpose) h += `<div style="font-size:12px;color:#cbd5e1;margin:4px 0 8px;">${_esc(d.purpose)}</div>`;
-    (d.jobs || []).forEach(j => h += _rdJob(j));
+    const kv = (k, v) => `<div style="display:flex;gap:10px;padding:3px 0;font-size:12px;"><span style="color:#94a3b8;min-width:110px;">${k}</span><span style="flex:1;">${v}</span></div>`;
+    const jobs = d.jobs || [];
+    const running = jobs.filter(j => j.state === 'running').length, stopped = jobs.filter(j => j.state === 'stopped').length;
+    const failedJobs = jobs.filter(j => j.failed_n).length;
+    let badge = '';
+    if (d.status_note) badge = _rdBadge('종결', '#94a3b8');
+    else if (running) badge = _rdBadge('⏳ 수집 중', '#38bdf8');
+    else if (stopped) badge = _rdBadge('⛔ 멈춤', '#f87171');
+    else if (failedJobs) badge = _rdBadge('⚠ 실패 있음', '#fbbf24');
+    else if (jobs.length || d.collect_1m) badge = _rdBadge('✔ 수집 완료', '#4ade80');
+    let h = `<div style="padding:16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;margin-bottom:16px;">`;
+    h += `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">`
+       + `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><b style="font-size:16px;">${_esc(d.title)}</b>${badge}</div>`
+       + `<span style="font-size:11px;color:#94a3b8;">폴더 ${_esc(d.name)} · ${d.size_bytes != null ? _fmtGB(d.size_bytes) : '크기 계산 중'}</span></div>`;
+    if (d.purpose) h += `<div style="font-size:13px;color:#cbd5e1;margin:6px 0 4px;line-height:1.5;">${_esc(d.purpose)}</div>`;
+    if (d.status_note || d.result) {
+        h += `<div style="margin:8px 0;padding:8px 12px;border-left:3px solid #fbbf24;background:rgba(251,191,36,0.06);font-size:12px;line-height:1.6;white-space:pre-line;">`
+           + (d.status_note ? `<b>${_esc(d.status_note)}</b>\n` : '') + (d.result ? _esc(d.result) : '') + `</div>`;
+    }
+    // 요약 타일
+    const tiles = [];
+    if (d.universe) {
+        const u = d.universe, bs = u.by_status;
+        tiles.push(_rdTile('종목 수', u.total.toLocaleString(), Object.entries(u.by_market).map(([k, v]) => `${k} ${v.toLocaleString()}`).join(' · ')));
+        if (bs) tiles.push(_rdTile('상장 / 상폐', `${(bs.listed || 0).toLocaleString()} / ${(bs.delisted || 0).toLocaleString()}`, `우선주·스팩 ${u.preferred_or_spac} (분석 제외)`));
+    }
+    if (jobs.length) tiles.push(_rdTile('수집 작업', `${jobs.filter(j => j.state === 'done').length} / ${jobs.length} 완료`, running ? `${running}개 진행 중` : (failedJobs ? `실패 있는 작업 ${failedJobs}개` : '')));
     const c = d.collect_1m;
+    if (c) tiles.push(_rdTile('1분봉 수집', `${c.pct}%`, `${c.done.toLocaleString()} / ${c.target.toLocaleString()} 종목`));
+    const pq = d.panel_quality;
+    if (pq) tiles.push(_rdTile('분석 패널', `${(pq.prices || 0).toLocaleString()}행`, `${pq.codes}종목 · ~${_esc(pq.date_max || '')}`));
+    if (tiles.length) h += `<div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;">${tiles.join('')}</div>`;
+    // 버튼
+    const key = encodeURIComponent(d.name);
+    h += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;">`
+       + (d.has_symbols || d.collect_1m ? `<button class="btn btn-xs" onclick="toggleResearchSymbols('${key}')">📋 종목 보기</button>`
+                                       : `<button class="btn btn-xs" onclick="toggleResearchFiles('${key}')">📂 데이터 보기</button>`)
+       + (d.collector ? `<button class="btn btn-xs" onclick="toggleResearchSteps('${key}')">🔄 데이터 갱신</button>` : '') + `</div>`
+       + `<div id="rdSteps-${_esc(d.name)}" style="display:none;margin-top:8px;"></div>`
+       + `<div id="rdSym-${_esc(d.name)}" style="display:none;margin-top:8px;"></div>`;
+    // 접이식 상세 — 진행 중·멈춤·실패가 있으면 수집 작업을 자동으로 펼친다
+    if (jobs.length) {
+        const sm = running ? `${running}개 진행 중` : stopped ? '멈춘 작업 있음' : failedJobs ? '실패 있음' : '전부 완료';
+        h += _rdSection(d.name, 'jobs', '수집 작업', sm, jobs.map(_rdJob).join(''), running || stopped || failedJobs);
+    }
     if (c) {
         const color = c.failed.length || c.download_fail ? '#f87171' : c.finished ? '#4ade80' : '#38bdf8';
-        const state = c.finished ? '✔ 완료' : `⏳ 수집 중 · ${_rdEta(c.eta_min)}`;
-        h += `<div style="margin-top:6px;"><b>1분봉 수집</b> ${c.done.toLocaleString()} / ${c.target.toLocaleString()} 종목 (${c.pct}%) · ${state}</div>` + _rdBar(c.pct, color);
-        h += `<div style="font-size:12px;color:#94a3b8;">다운로드 실패 ${c.download_fail} · 병합 대기 ${c.inbox_pending} · 병합 실패 ${c.failed.length ? '<span style="color:#f87171;">' + c.failed.map(_esc).join(', ') + '</span>' : 0}`
-           + ` · 마지막 다운로드 ${_esc(c.last_download || '-')} · 마지막 병합 ${_esc(c.last_ingest || '-')}</div>`;
+        const body = _rdBar(c.pct, color) + `<div style="font-size:12px;color:#94a3b8;">${c.finished ? '✔ 완료' : '⏳ 수집 중 · ' + _rdEta(c.eta_min)} · 다운로드 실패 ${c.download_fail} · 병합 대기 ${c.inbox_pending} · 병합 실패 ${c.failed.length ? '<span style="color:#f87171;">' + c.failed.map(_esc).join(', ') + '</span>' : 0}`
+            + ` · 마지막 다운로드 ${_esc(c.last_download || '-')} · 마지막 병합 ${_esc(c.last_ingest || '-')}</div>`;
+        h += _rdSection(d.name, 'm1', '1분봉 수집', `${c.done.toLocaleString()} / ${c.target.toLocaleString()} 종목`, body, !c.finished);
     }
-    if (d.universe) {
-        const bm = Object.entries(d.universe.by_market).map(([k, v]) => `${k} ${v.toLocaleString()}`).join(' · ');
-        const bs = d.universe.by_status ? ` · 상장 ${(d.universe.by_status.listed || 0).toLocaleString()} / 상폐 ${(d.universe.by_status.delisted || 0).toLocaleString()}` : '';
-        h += row('유니버스', `${d.universe.total.toLocaleString()} 종목 (${bm})${bs} · 우선주/스팩 ${d.universe.preferred_or_spac} (분석 제외)`);
-    }
-    const st = Object.entries(d.stores || {}).map(([k, v]) => `${k} ${v.toLocaleString()}`).join(' · ');
-    if (st) h += row('보관 현황', st);
-    const pr = Object.entries(d.progress || {}).filter(([k]) => k !== 'minute')
-        .map(([k, p]) => `${k} ${p.done}/${p.total}${p.fail ? ` <span style="color:#f87171;">실패 ${p.fail}</span>` : ''} (${_esc(p.at)})`).join(' · ');
-    if (pr) h += row('Creon 드라이버', pr);
+    const st = Object.entries(d.stores || {});
+    if (st.length) h += _rdSection(d.name, 'stores', '보관 현황', `${st.length}종류`,
+        `<div style="display:flex;gap:6px;flex-wrap:wrap;">${st.map(([k, v]) => `<span style="font-size:12px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.05);">${_esc(k)} <b>${v.toLocaleString()}</b></span>`).join('')}</div>`);
     const q = d.quality;
     if (q) {
         const iss = Object.entries(q.issues || {}).map(([k, v]) => `${k} ${v}`).join(' · ') || '없음';
         const ds = Object.entries(q.day_status || {}).map(([k, v]) => `${k} ${v.toLocaleString()}`).join(' · ');
-        h += row('품질 점검', `${_esc(q.checked_at.replace('T', ' '))} · ${q.codes} 종목 · 일자 상태 ${ds} · 문제 종목 ${q.codes_with_issue} (${iss}) · 수집 누락일 ${q.missing_traded_days_total} · 거래정지일 ${q.halted_days_total} · 수정주가 적용 종목 ${q.codes_with_adjustment}`);
-    } else if (c) {
-        h += row('품질 점검', '<span style="color:#94a3b8;">아직 실행 안 됨</span>');
+        h += _rdSection(d.name, 'quality', '품질 점검', `문제 종목 ${q.codes_with_issue}`,
+            kv('점검 시각', _esc(q.checked_at.replace('T', ' '))) + kv('대상', `${q.codes} 종목 · 일자 상태 ${ds}`) + kv('문제', `${q.codes_with_issue} 종목 (${iss})`)
+            + kv('기타', `수집 누락일 ${q.missing_traded_days_total} · 거래정지일 ${q.halted_days_total} · 수정주가 적용 종목 ${q.codes_with_adjustment}`));
     }
-    if (d.outputs && d.outputs.length) h += row('연구 산출물', d.outputs.map(_esc).join(', '));
-    if (d.derived && d.derived.length) {
-        const pq = d.panel_quality;
-        const q = pq ? ` · 점검 ${_esc((pq.built_at || '').replace('T', ' '))} · 가격 ${(pq.prices || 0).toLocaleString()}행/${pq.codes}종목 ~${_esc(pq.date_max || '')} · 재무 ${pq.fin_companies}사` : ' · 품질 점검 없음';
-        h += row('분석 패널', `${d.derived.map(_esc).join(', ')}${q}`);
-    }
-    if (d.scripts) h += row('스크립트', `<code>${_esc(d.scripts)}</code>`);
-    const key = encodeURIComponent(d.name);
-    h += `<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-xs" onclick="toggleResearchSymbols('${key}')">📋 종목 보기</button>`
-       + (d.collector ? `<button class="btn btn-xs" onclick="toggleResearchSteps('${key}')">🔄 데이터 갱신</button>` : '') + `</div>`
-       + `<div id="rdSteps-${_esc(d.name)}" style="display:none;margin-top:8px;"></div>`
-       + `<div id="rdSym-${_esc(d.name)}" style="display:none;margin-top:8px;"></div>`;
+    const prog = Object.entries(d.progress || {}).filter(([k]) => k !== 'minute');
+    let more = '';
+    if (prog.length) more += kv('Creon 드라이버', prog.map(([k, p]) => `${k} ${p.done}/${p.total}${p.fail ? ` <span style="color:#f87171;">실패 ${p.fail}</span>` : ''} (${_esc(p.at)})`).join(' · '));
+    if (d.derived && d.derived.length) more += kv('분석 패널 파일', d.derived.map(_esc).join(', ') + (pq ? ` · 점검 ${_esc((pq.built_at || '').replace('T', ' '))} · 재무 ${pq.fin_companies}사` : ''));
+    if (d.outputs && d.outputs.length) more += kv('연구 산출물', d.outputs.map(_esc).join(', '));
+    if (d.scripts) more += kv('스크립트', `<code>${_esc(d.scripts)}</code>`);
+    if (d.details) more = `<div style="font-size:12px;color:#cbd5e1;line-height:1.6;margin-bottom:6px;">${_esc(d.details)}</div>` + more;
+    if (more) h += _rdSection(d.name, 'more', '상세 정보', '구조·스크립트·산출물', more);
     return h + '</div>';
 }
 
@@ -8926,6 +8972,27 @@ async function loadResearchDatasets() {
     if (running && !_researchTimer) _researchTimer = setInterval(loadResearchDatasets, 30000);
     if (!running && _researchTimer) { clearInterval(_researchTimer); _researchTimer = null; }
 }
+
+// 종목 개념이 없는 데이터셋 — 원본 묶음(raw/<묶음>/)별 파일 현황
+async function toggleResearchFiles(key) {
+    const name = decodeURIComponent(key);
+    const box = document.getElementById('rdSym-' + name);
+    if (!box) return;
+    if (box.style.display === 'block') { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    box.innerHTML = '불러오는 중…';
+    let res;
+    try { res = await apiGet(`/api/research_datasets/${key}/files`); } catch (e) { box.textContent = '조회 실패: ' + e; return; }
+    if (!res || res.status !== 'ok') { box.textContent = (res && res.message) || '조회 실패'; return; }
+    const th = (t) => `<th style="text-align:left;padding:4px 6px;position:sticky;top:0;background:#0f172a;">${t}</th>`;
+    const rows = res.groups.map(g => `<tr style="border-top:1px solid rgba(255,255,255,0.05);"><td style="padding:3px 6px;">${_esc(g.group)}</td><td style="padding:3px 6px;">${_esc(g.label)}</td>`
+        + `<td style="padding:3px 6px;">${g.files.toLocaleString()}</td><td style="padding:3px 6px;">${_esc(g.year_from)}${g.year_to && g.year_to !== g.year_from ? ' ~ ' + _esc(g.year_to) : ''}</td>`
+        + `<td style="padding:3px 6px;">${(g.size / 1024).toFixed(0)} KB</td><td style="padding:3px 6px;">${_esc(g.updated)}</td></tr>`).join('');
+    box.innerHTML = `<div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">종목 단위가 아닌 원본 묶음 ${res.groups.length}개 (raw/ 아래 폴더별)</div>`
+        + `<div style="max-height:480px;overflow:auto;"><table style="width:100%;font-size:12px;border-collapse:collapse;"><tr>${['묶음(코드)', '이름', '파일 수', '연도', '크기', '최근 수정'].map(th).join('')}</tr>${rows}</table></div>`;
+}
+window.toggleResearchFiles = toggleResearchFiles;
+window._rdTog = _rdTog;
 
 const _rdSymCache = {};
 const _RD_STATE = {done: ['완료', '#4ade80'], pending_merge: ['병합 대기', '#38bdf8'], waiting: ['수집 대기', '#94a3b8'],

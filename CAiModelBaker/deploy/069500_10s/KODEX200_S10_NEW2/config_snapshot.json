@@ -364,6 +364,12 @@
             "role": "kospi_futures"
         },
         {
+            "symbol": "U180",
+            "key": "u180",
+            "name": "KOSPI 200 현물 지수",
+            "role": "index_benchmark"
+        },
+        {
             "symbol": "000660",
             "key": "000660",
             "name": "SK하이닉스",
@@ -412,6 +418,12 @@
             "key": "10100",
             "name": "KOSPI 200 선물",
             "role": "kospi_futures"
+        },
+        {
+            "symbol": "U180",
+            "key": "u180",
+            "name": "KOSPI 200 현물 지수",
+            "role": "index_benchmark"
         },
         {
             "symbol": "000660",

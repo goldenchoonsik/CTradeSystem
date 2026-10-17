@@ -5255,6 +5255,16 @@ async def api_research_dataset_symbols(name: str):
     return {"status": "ok", "name": name, "symbols": rows}
 
 
+@app.get("/api/research_datasets/{name}/files")
+async def api_research_dataset_files(name: str):
+    """종목 개념이 없는 연구 데이터셋의 원본 묶음별 파일 현황 — 읽기 전용."""
+    from shared.data_library import research_datasets as rd
+    rows = await asyncio.get_event_loop().run_in_executor(None, rd.files, name)
+    if rows is None:
+        return {"status": "error", "message": f"연구 데이터셋 없음: {name}"}
+    return {"status": "ok", "name": name, "groups": rows}
+
+
 @app.get("/api/research_datasets/{name}/steps")
 async def api_research_dataset_steps(name: str):
     """연구 데이터셋의 수집 단계 목록·실행 중 작업·최근 로그 (kr_equity 만 실행 가능)."""

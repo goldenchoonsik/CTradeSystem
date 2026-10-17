@@ -164,7 +164,9 @@ def dataset_status(path: str, with_size: bool = True) -> dict:
     name = os.path.basename(path.rstrip("/"))
     meta = _read_json(os.path.join(path, "dataset.json")) or {}
     st = {"name": name, "path": path, "title": meta.get("title", name), "purpose": meta.get("purpose", ""),
-          "created": meta.get("created"), "scripts": meta.get("scripts"), "registered_in_ledger": False}
+          "created": meta.get("created"), "scripts": meta.get("scripts"), "registered_in_ledger": False,
+          "result": meta.get("result", ""), "details": meta.get("details", ""), "status_note": meta.get("status", "")}
+    st["has_symbols"] = os.path.exists(os.path.join(path, "universe.csv"))
     uni = os.path.join(path, "universe.csv")
     if os.path.exists(uni):
         by_market: Dict[str, int] = {}
@@ -235,6 +237,42 @@ def _safe_dataset_path(name: str, root: Optional[str] = None) -> Optional[str]:
         return None
     p = os.path.join(root, name)
     return p if os.path.isdir(p) else None
+
+
+_XML_TAG = re.compile(r"<(korePrlstNm|hsSgn)>([^<]*)</")
+
+
+def _tree_rows(path: str) -> List[dict]:
+    """종목 개념이 없는 데이터셋(raw/<묶음>/<파일...>)의 묶음별 파일 수·크기·연도 범위. 관세청 XML 이면 품목명도 읽는다."""
+    raw = os.path.join(path, "raw")
+    out = []
+    if not os.path.isdir(raw):
+        return out
+    for grp in sorted(os.listdir(raw)):
+        gp = os.path.join(raw, grp)
+        if not os.path.isdir(gp):
+            continue
+        files = [f for f in os.listdir(gp) if os.path.isfile(os.path.join(gp, f)) and not f.startswith(".")]
+        years = sorted({m.group(1) for f in files for m in [re.search(r"(20\d\d)", f)] if m})
+        size = sum(os.path.getsize(os.path.join(gp, f)) for f in files)
+        mt = max((os.path.getmtime(os.path.join(gp, f)) for f in files), default=None)
+        label = ""
+        if files and sorted(files)[0].endswith(".xml"):
+            try:
+                with open(os.path.join(gp, sorted(files)[0]), "rb") as fh:
+                    tags = dict(_XML_TAG.findall(fh.read(4096).decode("utf-8", errors="replace")))
+                label = tags.get("korePrlstNm", "")
+            except OSError:
+                pass
+        out.append({"group": grp, "label": label, "files": len(files), "size": size,
+                    "year_from": years[0] if years else "", "year_to": years[-1] if years else "",
+                    "updated": datetime.fromtimestamp(mt).strftime("%Y-%m-%d") if mt else ""})
+    return out
+
+
+def files(name: str, root: Optional[str] = None) -> Optional[List[dict]]:
+    path = _safe_dataset_path(name, root)
+    return None if path is None else _tree_rows(path)
 
 
 def symbols(name: str, root: Optional[str] = None) -> Optional[List[dict]]:
