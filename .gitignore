@@ -35,6 +35,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.pytest_cache/
+**/.pytest_cache/
 
 # 2. Virtual Environments
 .venv/
@@ -49,6 +51,7 @@ node_modules/
 # 3. IDEs and Editors
 .vscode/
 .idea/
+.claude/
 *.suo
 *.ntvs*
 *.njsproj

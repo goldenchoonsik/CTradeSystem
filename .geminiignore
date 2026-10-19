@@ -54,11 +54,13 @@ shared/data_library/
 **/*.deb
 CAiModelBaker/deploy/**/reports/
 CAiModelBaker/deploy/**/candidates/
+CAiModelBaker/deploy/*/*/runs/
 CAiModelBaker/deploy_quarantine/
 **/deploy_quarantine/
 
 # 5. Logs, Runtime Dumps & Databases
 **/*.log
+**/*.lock
 **/logs/
 **/vultr_logs/
 **/*.sqlite3
@@ -69,7 +71,11 @@ CAiModelBaker/deploy_quarantine/
 **/trade_history.json
 **/spike_verification_history.json
 
-# 6. Temporary, Scratch & Editor Files
+# 6. Temporary, Scratch, Caches & Editor Files
+**/.pytest_cache/
+.vscode/
+.idea/
+.claude/
 **/scratch/
 **/*.bak
 **/*.bak.*

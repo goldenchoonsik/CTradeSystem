@@ -1,0 +1,656 @@
+[
+  {
+    "exp_id": "EXP-002",
+    "name": "Quintile_Tier_Analysis",
+    "created_at": "2026-10-18 15:13:36",
+    "summary_10y": [
+      {
+        "index": "Tier_1_MegaCap (1~20%)",
+        "Total_Return_Pct": 903.51,
+        "CAGR_Pct": 23.86,
+        "Ann_Vol_Pct": 28.07,
+        "Sharpe_Ratio": 0.9,
+        "MDD_Pct": -43.83,
+        "Correlation": 0.9207,
+        "Beta": 1.16
+      },
+      {
+        "index": "Tier_2_LargeCap (20~40%)",
+        "Total_Return_Pct": 422.89,
+        "CAGR_Pct": 16.59,
+        "Ann_Vol_Pct": 23.27,
+        "Sharpe_Ratio": 0.78,
+        "MDD_Pct": -40.32,
+        "Correlation": 0.894,
+        "Beta": 0.94
+      },
+      {
+        "index": "Tier_3_MidLarge (40~60%)",
+        "Total_Return_Pct": 487.86,
+        "CAGR_Pct": 17.87,
+        "Ann_Vol_Pct": 23.22,
+        "Sharpe_Ratio": 0.83,
+        "MDD_Pct": -33.47,
+        "Correlation": 0.8654,
+        "Beta": 0.9
+      },
+      {
+        "index": "Tier_4_MidCap (60~80%)",
+        "Total_Return_Pct": 623.83,
+        "CAGR_Pct": 20.16,
+        "Ann_Vol_Pct": 20.82,
+        "Sharpe_Ratio": 0.99,
+        "MDD_Pct": -28.62,
+        "Correlation": 0.8014,
+        "Beta": 0.75
+      },
+      {
+        "index": "Tier_5_LowerTail (80~100%)",
+        "Total_Return_Pct": 1189.04,
+        "CAGR_Pct": 26.77,
+        "Ann_Vol_Pct": 28.04,
+        "Sharpe_Ratio": 0.98,
+        "MDD_Pct": -35.94,
+        "Correlation": 0.5746,
+        "Beta": 0.73
+      },
+      {
+        "index": "QQQ_Actual_ETF (기준선)",
+        "Total_Return_Pct": 565.71,
+        "CAGR_Pct": 19.23,
+        "Ann_Vol_Pct": 22.2,
+        "Sharpe_Ratio": 0.91,
+        "MDD_Pct": -35.62,
+        "Correlation": 0.9996,
+        "Beta": 1.0
+      }
+    ],
+    "summary_all": [
+      {
+        "index": "Tier_1_MegaCap (1~20%)",
+        "Total_Return_Pct": 4179.52,
+        "CAGR_Pct": 14.58,
+        "Ann_Vol_Pct": 30.86,
+        "Sharpe_Ratio": 0.59,
+        "MDD_Pct": -74.59,
+        "Correlation": 0.6963,
+        "Beta": 0.61
+      },
+      {
+        "index": "Tier_2_LargeCap (20~40%)",
+        "Total_Return_Pct": 5522.14,
+        "CAGR_Pct": 15.72,
+        "Ann_Vol_Pct": 27.95,
+        "Sharpe_Ratio": 0.66,
+        "MDD_Pct": -57.7,
+        "Correlation": 0.6519,
+        "Beta": 0.52
+      },
+      {
+        "index": "Tier_3_MidLarge (40~60%)",
+        "Total_Return_Pct": 11964.89,
+        "CAGR_Pct": 18.97,
+        "Ann_Vol_Pct": 26.42,
+        "Sharpe_Ratio": 0.79,
+        "MDD_Pct": -58.35,
+        "Correlation": 0.6338,
+        "Beta": 0.48
+      },
+      {
+        "index": "Tier_4_MidCap (60~80%)",
+        "Total_Return_Pct": 18069.13,
+        "CAGR_Pct": 20.74,
+        "Ann_Vol_Pct": 33.03,
+        "Sharpe_Ratio": 0.72,
+        "MDD_Pct": -55.11,
+        "Correlation": 0.435,
+        "Beta": 0.41
+      },
+      {
+        "index": "Tier_5_LowerTail (80~100%)",
+        "Total_Return_Pct": 292670.71,
+        "CAGR_Pct": 33.54,
+        "Ann_Vol_Pct": 34.38,
+        "Sharpe_Ratio": 1.01,
+        "MDD_Pct": -49.88,
+        "Correlation": 0.3574,
+        "Beta": 0.35
+      },
+      {
+        "index": "QQQ_Actual_ETF (기준선)",
+        "Total_Return_Pct": 1327.56,
+        "CAGR_Pct": 10.11,
+        "Ann_Vol_Pct": 35.17,
+        "Sharpe_Ratio": 0.43,
+        "MDD_Pct": -82.96,
+        "Correlation": 1.0,
+        "Beta": 1.0
+      }
+    ]
+  },
+  {
+    "exp_id": "EXP-003",
+    "name": "New_Entrants_Top10_Strategy",
+    "created_at": "2026-10-18 15:26:38",
+    "summary": [
+      {
+        "index": "Newest_10_Entrants (최신 진입 10)",
+        "Total_Return_Pct": 1740.33,
+        "CAGR_Pct": 31.03,
+        "Ann_Vol_Pct": 48.02,
+        "Sharpe_Ratio": 0.79,
+        "MDD_Pct": -69.0,
+        "Correlation": 0.5399,
+        "Beta": 1.17
+      },
+      {
+        "index": "FIFO_10_Entrants (선입선출 10)",
+        "Total_Return_Pct": 2581.92,
+        "CAGR_Pct": 35.69,
+        "Ann_Vol_Pct": 38.38,
+        "Sharpe_Ratio": 0.99,
+        "MDD_Pct": -66.01,
+        "Correlation": 0.6882,
+        "Beta": 1.19
+      },
+      {
+        "index": "QQQ_Actual_ETF (실물 기준선)",
+        "Total_Return_Pct": 565.71,
+        "CAGR_Pct": 19.23,
+        "Ann_Vol_Pct": 22.2,
+        "Sharpe_Ratio": 0.91,
+        "MDD_Pct": -35.62,
+        "Correlation": 0.9996,
+        "Beta": 1.0
+      }
+    ],
+    "entrants": [
+      {
+        "date": "2016-04-01",
+        "ticker": "TEAM"
+      },
+      {
+        "date": "2016-10-03",
+        "ticker": "DELL"
+      },
+      {
+        "date": "2017-01-03",
+        "ticker": "TTD"
+      },
+      {
+        "date": "2017-07-03",
+        "ticker": "OKTA"
+      },
+      {
+        "date": "2018-01-02",
+        "ticker": "MDB"
+      },
+      {
+        "date": "2018-01-02",
+        "ticker": "ROKU"
+      },
+      {
+        "date": "2018-07-02",
+        "ticker": "DOCU"
+      },
+      {
+        "date": "2018-07-02",
+        "ticker": "ZS"
+      },
+      {
+        "date": "2018-10-01",
+        "ticker": "PDD"
+      },
+      {
+        "date": "2019-04-01",
+        "ticker": "MRNA"
+      },
+      {
+        "date": "2019-07-01",
+        "ticker": "ZM"
+      },
+      {
+        "date": "2019-10-01",
+        "ticker": "CRWD"
+      },
+      {
+        "date": "2020-01-02",
+        "ticker": "DDOG"
+      },
+      {
+        "date": "2020-01-02",
+        "ticker": "PTON"
+      },
+      {
+        "date": "2021-01-04",
+        "ticker": "LU"
+      },
+      {
+        "date": "2021-04-01",
+        "ticker": "ABNB"
+      },
+      {
+        "date": "2021-04-01",
+        "ticker": "DASH"
+      },
+      {
+        "date": "2021-04-01",
+        "ticker": "LCID"
+      },
+      {
+        "date": "2021-07-01",
+        "ticker": "COIN"
+      },
+      {
+        "date": "2022-01-03",
+        "ticker": "GFS"
+      },
+      {
+        "date": "2022-01-03",
+        "ticker": "RIVN"
+      },
+      {
+        "date": "2022-07-01",
+        "ticker": "CEG"
+      },
+      {
+        "date": "2023-04-03",
+        "ticker": "GEHC"
+      },
+      {
+        "date": "2024-01-02",
+        "ticker": "ARM"
+      }
+    ]
+  },
+  {
+    "exp_id": "EXP-004",
+    "name": "ETF_10_Stock_Compressed_HeadToHead",
+    "created_at": "2026-10-18 15:50:31",
+    "summary": [
+      {
+        "strategy": "FIFO_10_Entrants (선입선출 10)",
+        "Total Return": 25.819205689765905,
+        "CAGR": 0.35762760531861026,
+        "Volatility": 0.38389330209677996,
+        "Sharpe": 0.8794829278722188,
+        "MDD": -0.6600632398325301,
+        "Correlation": 0.6885235145619688,
+        "Beta": 1.190171746153861
+      },
+      {
+        "strategy": "FPX_3Y_Tenure_10 (신규진입 3년만기 10)",
+        "Total Return": 28.643103363901336,
+        "CAGR": 0.3703203867629634,
+        "Volatility": 0.4380818649253024,
+        "Sharpe": 0.7996687715495749,
+        "MDD": -0.7182641033887874,
+        "Correlation": 0.674644196068922,
+        "Beta": 1.3307926332186588
+      },
+      {
+        "strategy": "FPX_2Y_Tenure_10 (신규진입 2년만기 10)",
+        "Total Return": 16.293294389471907,
+        "CAGR": 0.3033662348698791,
+        "Volatility": 0.42208430251042495,
+        "Sharpe": 0.6713498540090349,
+        "MDD": -0.7664931867476295,
+        "Correlation": 0.6534245664744607,
+        "Beta": 1.2418667049981718
+      },
+      {
+        "strategy": "QQQE_Style_10 (나스닥 균등대표 10)",
+        "Total Return": 6.403124170663166,
+        "CAGR": 0.2045259261339729,
+        "Volatility": 0.24950438459078966,
+        "Sharpe": 0.7395698734377456,
+        "MDD": -0.39617623808707253,
+        "Correlation": 0.7987410054308351,
+        "Beta": 0.8973554131212297
+      },
+      {
+        "strategy": "Mega10_Cap (초대형 메가캡 10)",
+        "Total Return": 15.930159414746157,
+        "CAGR": 0.30079761563167184,
+        "Volatility": 0.33607212976416334,
+        "Sharpe": 0.8355278250199442,
+        "MDD": -0.5428046932239474,
+        "Correlation": 0.8486007818879795,
+        "Beta": 1.2841514608081803
+      },
+      {
+        "strategy": "QQQJ_Style_10 (승격직전 101~110위 10)",
+        "Total Return": 12.787952065809096,
+        "CAGR": 0.2762089271796577,
+        "Volatility": 0.3472532432386751,
+        "Sharpe": 0.7378157934253171,
+        "MDD": -0.46054164267487224,
+        "Correlation": 0.4995297020679032,
+        "Beta": 0.7810663924144181
+      },
+      {
+        "strategy": "QQQ_Actual_ETF",
+        "Total Return": 5.657077625570777,
+        "CAGR": 0.1926912243792167,
+        "Volatility": 0.22208522965752234,
+        "Sharpe": 0.7775898678427371,
+        "MDD": -0.35617218247976423,
+        "Correlation": 0.9999999999999999,
+        "Beta": 1.0
+      },
+      {
+        "strategy": "FPX_Actual_ETF",
+        "Total Return": 2.4505779194898367,
+        "CAGR": 0.12201725678568098,
+        "Volatility": 0.2428139779002812,
+        "Sharpe": 0.4201457332393665,
+        "MDD": -0.4389472910387416,
+        "Correlation": 0.8648067665775333,
+        "Beta": 0.945525154606599
+      },
+      {
+        "strategy": "IPO_Actual_ETF",
+        "Total Return": 1.4556213017751478,
+        "CAGR": 0.08709452269790474,
+        "Volatility": 0.3126534335989467,
+        "Sharpe": 0.2145971081320975,
+        "MDD": -0.6876395639038487,
+        "Correlation": 0.7890898785802909,
+        "Beta": 1.1108872946515085
+      },
+      {
+        "strategy": "QQQE_Actual_ETF",
+        "Total Return": 2.724701445631678,
+        "CAGR": 0.13001860952888356,
+        "Volatility": 0.3986800674171737,
+        "Sharpe": 0.2759571358599212,
+        "MDD": -0.4992987377279102,
+        "Correlation": 0.48797999300180506,
+        "Beta": 0.8760055624059465
+      },
+      {
+        "strategy": "QQQJ_Actual_ETF",
+        "Total Return": 0.6292428198433422,
+        "CAGR": 0.04641766589406027,
+        "Volatility": 0.16247300067241868,
+        "Sharpe": 0.16259726714424444,
+        "MDD": -0.40242892630416777,
+        "Correlation": 0.6476712045616307,
+        "Beta": 0.47382297425417186
+      }
+    ]
+  },
+  {
+    "exp_id": "EXP-005",
+    "name": "Entry_Delay_x_Tenure_Optimization",
+    "created_at": "2026-10-18 16:15:24",
+    "best_strategy": {
+      "Strategy": "Delay_0Q__Tenure_2.5Y",
+      "Delay": "0Q (즉시 진입)",
+      "Tenure": "2.5Y 만기",
+      "Total Return (%)": 5756.188220319384,
+      "CAGR (%)": 45.98492111835757,
+      "Volatility (%)": 46.66776273404095,
+      "Sharpe": 0.9425118870391781,
+      "MDD (%)": -77.26860787513253,
+      "Beta": 1.3485270342463114
+    },
+    "summary": [
+      {
+        "Strategy": "Delay_0Q__Tenure_2.5Y",
+        "Delay": "0Q (즉시 진입)",
+        "Tenure": "2.5Y 만기",
+        "Total Return (%)": 5756.188220319384,
+        "CAGR (%)": 45.98492111835757,
+        "Volatility (%)": 46.66776273404095,
+        "Sharpe": 0.9425118870391781,
+        "MDD (%)": -77.26860787513253,
+        "Beta": 1.3485270342463114
+      },
+      {
+        "Strategy": "Delay_1Q__Tenure_2.5Y",
+        "Delay": "1Q (3개월 대기)",
+        "Tenure": "2.5Y 만기",
+        "Total Return (%)": 4867.831629343465,
+        "CAGR (%)": 43.76943382160017,
+        "Volatility (%)": 45.71331845714293,
+        "Sharpe": 0.9137256981411177,
+        "MDD (%)": -74.62090892831208,
+        "Beta": 1.349405609478569
+      },
+      {
+        "Strategy": "Delay_2Q__Tenure_2.0Y",
+        "Delay": "2Q (6개월 대기)",
+        "Tenure": "2.0Y 만기",
+        "Total Return (%)": 4437.444385432807,
+        "CAGR (%)": 42.56347788579089,
+        "Volatility (%)": 46.54264841013055,
+        "Sharpe": 0.8715335132704174,
+        "MDD (%)": -79.06151196123211,
+        "Beta": 1.3528732156385317
+      },
+      {
+        "Strategy": "Delay_0Q__Tenure_3.0Y",
+        "Delay": "0Q (즉시 진입)",
+        "Tenure": "3.0Y 만기",
+        "Total Return (%)": 2864.3103363901337,
+        "CAGR (%)": 37.03203867629634,
+        "Volatility (%)": 43.80818649253024,
+        "Sharpe": 0.7996687715495749,
+        "MDD (%)": -71.82641033887874,
+        "Beta": 1.3307926332186584
+      },
+      {
+        "Strategy": "Delay_4Q__Tenure_FIFO",
+        "Delay": "4Q (1년 대기)",
+        "Tenure": "FIFO (무기한)",
+        "Total Return (%)": 2818.833515730521,
+        "CAGR (%)": 36.83524987142381,
+        "Volatility (%)": 39.401008918680525,
+        "Sharpe": 0.8841207580069853,
+        "MDD (%)": -64.60228024990904,
+        "Beta": 1.2030242349792177
+      },
+      {
+        "Strategy": "Delay_4Q__Tenure_2.5Y",
+        "Delay": "4Q (1년 대기)",
+        "Tenure": "2.5Y 만기",
+        "Total Return (%)": 2663.3320330189795,
+        "CAGR (%)": 36.140667868325835,
+        "Volatility (%)": 42.929544697324644,
+        "Sharpe": 0.7952720698305815,
+        "MDD (%)": -75.281712227878,
+        "Beta": 1.3136742024191626
+      },
+      {
+        "Strategy": "Delay_4Q__Tenure_2.0Y",
+        "Delay": "4Q (1년 대기)",
+        "Tenure": "2.0Y 만기",
+        "Total Return (%)": 2632.6936430089463,
+        "CAGR (%)": 35.999646296102505,
+        "Volatility (%)": 44.03207460122475,
+        "Sharpe": 0.7721563565655116,
+        "MDD (%)": -74.86972392124356,
+        "Beta": 1.3175404092630534
+      },
+      {
+        "Strategy": "Delay_1Q__Tenure_2.0Y",
+        "Delay": "1Q (3개월 대기)",
+        "Tenure": "2.0Y 만기",
+        "Total Return (%)": 2629.492237874505,
+        "CAGR (%)": 35.984828304351055,
+        "Volatility (%)": 46.13647223768665,
+        "Sharpe": 0.736615234239572,
+        "MDD (%)": -77.3734463124267,
+        "Beta": 1.3352167577581857
+      },
+      {
+        "Strategy": "Delay_0Q__Tenure_FIFO",
+        "Delay": "0Q (즉시 진입)",
+        "Tenure": "FIFO (무기한)",
+        "Total Return (%)": 2581.9205689765904,
+        "CAGR (%)": 35.762760531861026,
+        "Volatility (%)": 38.38933020967799,
+        "Sharpe": 0.8794829278722188,
+        "MDD (%)": -66.00632398325301,
+        "Beta": 1.1901717461538615
+      },
+      {
+        "Strategy": "Delay_4Q__Tenure_3.0Y",
+        "Delay": "4Q (1년 대기)",
+        "Tenure": "3.0Y 만기",
+        "Total Return (%)": 2370.651050634569,
+        "CAGR (%)": 34.731228067824674,
+        "Volatility (%)": 60.160056454158195,
+        "Sharpe": 0.5440691049345304,
+        "MDD (%)": -68.75046314416036,
+        "Beta": 1.2473974813764077
+      },
+      {
+        "Strategy": "Delay_1Q__Tenure_FIFO",
+        "Delay": "1Q (3개월 대기)",
+        "Tenure": "FIFO (무기한)",
+        "Total Return (%)": 2227.9663564905068,
+        "CAGR (%)": 33.98828006780512,
+        "Volatility (%)": 38.154297867542184,
+        "Sharpe": 0.8383925758208622,
+        "MDD (%)": -66.00632398325304,
+        "Beta": 1.1956490875295143
+      },
+      {
+        "Strategy": "Delay_2Q__Tenure_FIFO",
+        "Delay": "2Q (6개월 대기)",
+        "Tenure": "FIFO (무기한)",
+        "Total Return (%)": 2159.9873055677604,
+        "CAGR (%)": 33.619678115092725,
+        "Volatility (%)": 38.180465389556176,
+        "Sharpe": 0.8281637688927154,
+        "MDD (%)": -66.00632398325304,
+        "Beta": 1.1933669884313065
+      },
+      {
+        "Strategy": "Delay_1Q__Tenure_3.0Y",
+        "Delay": "1Q (3개월 대기)",
+        "Tenure": "3.0Y 만기",
+        "Total Return (%)": 2043.9307089895447,
+        "CAGR (%)": 32.966489003331745,
+        "Volatility (%)": 41.35405612762531,
+        "Sharpe": 0.7488138263333624,
+        "MDD (%)": -73.81149539046523,
+        "Beta": 1.2996199362641918
+      },
+      {
+        "Strategy": "Delay_2Q__Tenure_3.0Y",
+        "Delay": "2Q (6개월 대기)",
+        "Tenure": "3.0Y 만기",
+        "Total Return (%)": 1889.2105660968025,
+        "CAGR (%)": 32.043913791063616,
+        "Volatility (%)": 41.257868237449756,
+        "Sharpe": 0.7281984037118224,
+        "MDD (%)": -76.56612548901032,
+        "Beta": 1.3026306651094386
+      },
+      {
+        "Strategy": "Delay_2Q__Tenure_2.5Y",
+        "Delay": "2Q (6개월 대기)",
+        "Tenure": "2.5Y 만기",
+        "Total Return (%)": 1735.3039476303143,
+        "CAGR (%)": 31.059198764546437,
+        "Volatility (%)": 43.04605655294866,
+        "Sharpe": 0.6750722619341973,
+        "MDD (%)": -75.64128438614813,
+        "Beta": 1.3080814314306586
+      },
+      {
+        "Strategy": "Delay_0Q__Tenure_2.0Y",
+        "Delay": "0Q (즉시 진입)",
+        "Tenure": "2.0Y 만기",
+        "Total Return (%)": 1629.3294389471907,
+        "CAGR (%)": 30.33662348698791,
+        "Volatility (%)": 42.20843025104249,
+        "Sharpe": 0.6713498540090349,
+        "MDD (%)": -76.64931867476295,
+        "Beta": 1.2418667049981718
+      }
+    ]
+  },
+  {
+    "exp_id": "EXP-006",
+    "name": "Official_Nasdaq100_Additions_56_FullTest",
+    "created_at": "2026-10-18 16:29:38",
+    "best_strategy": {
+      "Total Return": 8.467557293802576,
+      "CAGR": 0.23238338917009083,
+      "Volatility": 0.26381297351379723,
+      "Sharpe": 0.8050528612800891,
+      "MDD": -0.3531861912972031,
+      "Correlation": 0.8683212528506463,
+      "Beta": 1.0314707197457953
+    },
+    "summary": [
+      {
+        "Total Return": 8.467557293802576,
+        "CAGR": 0.23238338917009083,
+        "Volatility": 0.26381297351379723,
+        "Sharpe": 0.8050528612800891,
+        "MDD": -0.3531861912972031,
+        "Correlation": 0.8683212528506463,
+        "Beta": 1.0314707197457953
+      },
+      {
+        "Total Return": 8.444562967626554,
+        "CAGR": 0.2321048550181819,
+        "Volatility": 0.26968818028515174,
+        "Sharpe": 0.7864818354067844,
+        "MDD": -0.3809309678939702,
+        "Correlation": 0.8074266837388417,
+        "Beta": 0.9804948910244979
+      },
+      {
+        "Total Return": 8.35146191006118,
+        "CAGR": 0.230970782318209,
+        "Volatility": 0.2669317947086725,
+        "Sharpe": 0.7903546392757784,
+        "MDD": -0.3439571796593062,
+        "Correlation": 0.8335507084577966,
+        "Beta": 1.0018729608107853
+      },
+      {
+        "Total Return": 5.693502747427737,
+        "CAGR": 0.19329634386167682,
+        "Volatility": 0.25898125731101596,
+        "Sharpe": 0.6691462759158732,
+        "MDD": -0.38093096789396974,
+        "Correlation": 0.8377670257593604,
+        "Beta": 0.9769490659034492
+      },
+      {
+        "Total Return": 5.657077625570791,
+        "CAGR": 0.19269122437921715,
+        "Volatility": 0.2220852296575223,
+        "Sharpe": 0.7775898678427392,
+        "MDD": -0.3561721824797644,
+        "Correlation": 1.0,
+        "Beta": 1.0
+      },
+      {
+        "Total Return": 4.746859963189806,
+        "CAGR": 0.17650178722038135,
+        "Volatility": 0.28444782018565906,
+        "Sharpe": 0.5501950660695261,
+        "MDD": -0.5056648798188617,
+        "Correlation": 0.8290907240509255,
+        "Beta": 1.0619033492507075
+      },
+      {
+        "Total Return": 2.4505779194898367,
+        "CAGR": 0.12201725678568098,
+        "Volatility": 0.2428139779002812,
+        "Sharpe": 0.4201457332393665,
+        "MDD": -0.4389472910387416,
+        "Correlation": 0.8648067665775332,
+        "Beta": 0.945525154606599
+      }
+    ]
+  }
+]

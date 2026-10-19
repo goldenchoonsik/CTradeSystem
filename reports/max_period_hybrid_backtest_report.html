@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>나스닥 100 최대 28년 하이브리드 전략 백테스트 리포트</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 20px; }
+h1, h2, h3 { color: #38bdf8; }
+.card { background: #1e293b; border-radius: 10px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid #334155; }
+th { background: #0f172a; color: #94a3b8; font-weight: 600; text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+.pos { color: #4ade80; font-weight: 600; }
+.neg { color: #f87171; font-weight: 600; }
+.badge { background: #0284c7; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>🚀 나스닥 100 최대 가용 기간 (1999~2026년, 28개 전 연도) 백테스트 리포트</h1>
+<p>검증 구간: 1999-03-10 ~ 2026-10-14 (총 6,943 거래일, 27.5년) | 거래비용 편도 0.05% (왕복 0.10%) 반영</p>
+
+<div class="card">
+<h2>🏆 전체 27.5년 종합 성과 (1999-03-10 ~ 2026-10-14)</h2>
+<table>
+<tr>
+  <th style="text-align:left;">전략 명칭</th>
+  <th>총 수익률</th>
+  <th>CAGR</th>
+  <th>연 변동성</th>
+  <th>샤프 지수</th>
+  <th>MDD</th>
+  <th>베타</th>
+</tr>
+<tr>
+  <td style="text-align:left; font-weight:bold;">1. Hybrid_Perf_Tenure_10Slots (최종 하이브리드: 꼴찌방출+2.5Y만기)</td>
+  <td class="pos">+18,063.3%</td>
+  <td class="pos">20.74%</td>
+  <td>36.10%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.52</td>
+  <td class="neg">-63.99%</td>
+  <td>0.61</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2. Lowest_Perf_Exit_10Slots (순수 보유수익률 꼴찌 아웃)</td>
+  <td class="pos">+12,953.5%</td>
+  <td class="pos">19.31%</td>
+  <td>31.91%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.54</td>
+  <td class="neg">-63.99%</td>
+  <td>0.56</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">3. EventOnly_FIFO_2.5Y (기존 2.5년 만기 퇴출형)</td>
+  <td class="pos">+14,967.1%</td>
+  <td class="pos">19.93%</td>
+  <td>43.53%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.41</td>
+  <td class="neg">-73.14%</td>
+  <td>0.61</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">4. Lowest_Cap_Exit_10Slots (시총 최하위 꼴찌 아웃)</td>
+  <td class="pos">+9,408.2%</td>
+  <td class="pos">17.94%</td>
+  <td>33.92%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.47</td>
+  <td class="neg">-69.10%</td>
+  <td>0.62</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">5. QQQ_Actual_ETF (실물 기준선)</td>
+  <td class="pos">+1,327.6%</td>
+  <td class="pos">10.11%</td>
+  <td>35.18%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.23</td>
+  <td class="neg">-82.96%</td>
+  <td>1.00</td>
+</tr></table>
+</div>
+
+<div class="card">
+<h2>💎 최근 10년 클린 구간 성과 (2016-01-01 ~ 2026-10-14)</h2>
+<table>
+<tr>
+  <th style="text-align:left;">전략 명칭</th>
+  <th>총 수익률</th>
+  <th>CAGR</th>
+  <th>연 변동성</th>
+  <th>샤프 지수</th>
+  <th>MDD</th>
+  <th>베타</th>
+</tr>
+<tr>
+  <td style="text-align:left; font-weight:bold;">1. Hybrid_Perf_Tenure_10Slots (최종 하이브리드: 꼴찌방출+2.5Y만기)</td>
+  <td class="pos">+495.9%</td>
+  <td class="pos">18.01%</td>
+  <td>32.35%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.50</td>
+  <td class="neg">-56.22%</td>
+  <td>1.17</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2. Lowest_Perf_Exit_10Slots (순수 보유수익률 꼴찌 아웃)</td>
+  <td class="pos">+751.6%</td>
+  <td class="pos">21.99%</td>
+  <td>29.54%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.68</td>
+  <td class="neg">-47.54%</td>
+  <td>1.06</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">3. EventOnly_FIFO_2.5Y (기존 2.5년 만기 퇴출형)</td>
+  <td class="pos">+353.9%</td>
+  <td class="pos">15.07%</td>
+  <td>33.36%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.39</td>
+  <td class="neg">-53.02%</td>
+  <td>1.17</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">4. Lowest_Cap_Exit_10Slots (시총 최하위 꼴찌 아웃)</td>
+  <td class="pos">+1,152.5%</td>
+  <td class="pos">26.44%</td>
+  <td>32.51%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.75</td>
+  <td class="neg">-48.57%</td>
+  <td>1.20</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">5. QQQ_Actual_ETF (실물 기준선)</td>
+  <td class="pos">+565.7%</td>
+  <td class="pos">19.23%</td>
+  <td>22.21%</td>
+  <td style="font-weight:bold; color:#38bdf8;">0.78</td>
+  <td class="neg">-35.62%</td>
+  <td>1.00</td>
+</tr></table>
+</div>
+
+<div class="card">
+<h2>📅 28개 전 연도 연간 성과 매트릭스 (1999 ~ 2026)</h2>
+<table>
+<tr>
+  <th style="text-align:left;">연도</th>
+  <th>하이브리드 10</th>
+  <th>수익률꼴찌 10</th>
+  <th>FIFO 2.5Y</th>
+  <th>시총꼴찌 10</th>
+  <th>실제 QQQ</th>
+</tr>
+<tr>
+  <td style="text-align:left; font-weight:bold;">1999</td>
+  <td class="pos">+31.5%</td>
+  <td class="pos">+31.5%</td>
+  <td class="pos">+61.0%</td>
+  <td class="pos">+62.3%</td>
+  <td class="pos">+78.9%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2000</td>
+  <td class="neg">-23.5%</td>
+  <td class="neg">-23.5%</td>
+  <td class="neg">-5.1%</td>
+  <td class="neg">-25.2%</td>
+  <td class="neg">-38.4%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2001</td>
+  <td class="neg">-8.8%</td>
+  <td class="neg">-8.4%</td>
+  <td class="pos">+22.5%</td>
+  <td class="pos">+3.1%</td>
+  <td class="neg">-27.2%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2002</td>
+  <td class="neg">-8.4%</td>
+  <td class="neg">-12.1%</td>
+  <td class="neg">-24.0%</td>
+  <td class="neg">-26.1%</td>
+  <td class="neg">-39.2%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2003</td>
+  <td class="pos">+38.6%</td>
+  <td class="pos">+54.3%</td>
+  <td class="pos">+63.7%</td>
+  <td class="pos">+75.1%</td>
+  <td class="pos">+43.5%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2004</td>
+  <td class="pos">+36.4%</td>
+  <td class="pos">+37.2%</td>
+  <td class="pos">+73.7%</td>
+  <td class="pos">+18.9%</td>
+  <td class="pos">+9.8%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2005</td>
+  <td class="pos">+33.1%</td>
+  <td class="pos">+19.5%</td>
+  <td class="pos">+47.2%</td>
+  <td class="pos">+13.6%</td>
+  <td class="pos">+2.3%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2006</td>
+  <td class="pos">+31.4%</td>
+  <td class="neg">-2.2%</td>
+  <td class="pos">+43.6%</td>
+  <td class="pos">+0.9%</td>
+  <td class="pos">+4.5%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2007</td>
+  <td class="pos">+61.2%</td>
+  <td class="pos">+36.7%</td>
+  <td class="pos">+81.0%</td>
+  <td class="pos">+40.3%</td>
+  <td class="pos">+18.5%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2008</td>
+  <td class="neg">-10.2%</td>
+  <td class="neg">-31.0%</td>
+  <td class="pos">+27.4%</td>
+  <td class="neg">-42.7%</td>
+  <td class="neg">-41.0%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2009</td>
+  <td class="pos">+21.2%</td>
+  <td class="pos">+53.7%</td>
+  <td class="neg">-58.2%</td>
+  <td class="pos">+44.5%</td>
+  <td class="pos">+47.4%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2010</td>
+  <td class="pos">+51.2%</td>
+  <td class="pos">+32.9%</td>
+  <td class="pos">+21.5%</td>
+  <td class="pos">+8.4%</td>
+  <td class="pos">+17.3%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2011</td>
+  <td class="pos">+2.3%</td>
+  <td class="pos">+2.0%</td>
+  <td class="neg">-1.4%</td>
+  <td class="neg">-9.9%</td>
+  <td class="pos">+0.9%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2012</td>
+  <td class="pos">+35.9%</td>
+  <td class="pos">+15.3%</td>
+  <td class="pos">+11.9%</td>
+  <td class="pos">+11.7%</td>
+  <td class="pos">+14.5%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2013</td>
+  <td class="pos">+46.5%</td>
+  <td class="pos">+55.7%</td>
+  <td class="pos">+35.2%</td>
+  <td class="pos">+43.7%</td>
+  <td class="pos">+30.9%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2014</td>
+  <td class="pos">+38.3%</td>
+  <td class="pos">+34.7%</td>
+  <td class="pos">+45.9%</td>
+  <td class="pos">+24.7%</td>
+  <td class="pos">+18.3%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2015</td>
+  <td class="pos">+21.1%</td>
+  <td class="pos">+37.9%</td>
+  <td class="pos">+23.4%</td>
+  <td class="pos">+26.3%</td>
+  <td class="pos">+8.7%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2016</td>
+  <td class="pos">+4.2%</td>
+  <td class="pos">+11.7%</td>
+  <td class="neg">-5.0%</td>
+  <td class="pos">+10.4%</td>
+  <td class="pos">+8.2%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2017</td>
+  <td class="pos">+29.0%</td>
+  <td class="pos">+39.3%</td>
+  <td class="pos">+31.4%</td>
+  <td class="pos">+33.9%</td>
+  <td class="pos">+30.3%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2018</td>
+  <td class="pos">+2.2%</td>
+  <td class="pos">+18.9%</td>
+  <td class="pos">+7.3%</td>
+  <td class="pos">+12.0%</td>
+  <td class="neg">-2.7%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2019</td>
+  <td class="pos">+60.6%</td>
+  <td class="pos">+33.4%</td>
+  <td class="pos">+54.6%</td>
+  <td class="pos">+50.8%</td>
+  <td class="pos">+37.3%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2020</td>
+  <td class="pos">+81.8%</td>
+  <td class="pos">+64.4%</td>
+  <td class="pos">+72.0%</td>
+  <td class="pos">+117.8%</td>
+  <td class="pos">+45.1%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2021</td>
+  <td class="neg">-12.9%</td>
+  <td class="neg">-0.7%</td>
+  <td class="neg">-3.1%</td>
+  <td class="pos">+18.3%</td>
+  <td class="pos">+28.6%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2022</td>
+  <td class="neg">-28.9%</td>
+  <td class="neg">-20.5%</td>
+  <td class="neg">-31.9%</td>
+  <td class="neg">-39.7%</td>
+  <td class="neg">-33.7%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2023</td>
+  <td class="pos">+68.6%</td>
+  <td class="pos">+63.9%</td>
+  <td class="pos">+69.0%</td>
+  <td class="pos">+101.9%</td>
+  <td class="pos">+54.8%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2024</td>
+  <td class="pos">+36.7%</td>
+  <td class="pos">+56.5%</td>
+  <td class="pos">+10.7%</td>
+  <td class="pos">+31.5%</td>
+  <td class="pos">+27.0%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2025</td>
+  <td class="pos">+14.4%</td>
+  <td class="pos">+30.9%</td>
+  <td class="pos">+20.9%</td>
+  <td class="pos">+22.9%</td>
+  <td class="pos">+20.4%</td>
+</tr><tr>
+  <td style="text-align:left; font-weight:bold;">2026</td>
+  <td class="neg">-5.6%</td>
+  <td class="neg">-18.1%</td>
+  <td class="neg">-8.8%</td>
+  <td class="pos">+1.3%</td>
+  <td class="pos">+18.9%</td>
+</tr></table>
+</div>
+</body>
+</html>
