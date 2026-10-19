@@ -1295,11 +1295,14 @@ def run_auto_research(
         if holdout_start:
             df_train = df_full[df_full['timestamp'] < pd.to_datetime(holdout_start)].copy()
         else:
-            split_idx = int(len(df_full) * 0.8)
-            df_train = df_full.iloc[:split_idx].copy()
-            holdout_start = pd.Timestamp(df_full.iloc[split_idx]['timestamp']).strftime('%Y-%m-%d')
-            holdout_end = pd.Timestamp(df_full.iloc[-1]['timestamp']).strftime('%Y-%m-%d')
-            _sync_log(log_fn, f"ℹ️  홀드아웃 자동 설정: {holdout_start} ~ {holdout_end}")
+            # 홀드아웃 경계 단일 원천 (스크리닝·지표 선정·스마트 분할과 같은 경계). 예전 대체값: 데이터 80% 지점.
+            from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+            _hb = resolve_holdout_boundary(df_full, config)
+            if not _hb.get("ok"):
+                raise ValueError(f"홀드아웃 경계를 정할 수 없습니다: {_hb.get('reason')}")
+            holdout_start, holdout_end = _hb["holdout_start"], _hb["holdout_end"]
+            df_train = df_full[df_full['timestamp'] < pd.to_datetime(holdout_start)].copy()
+            _sync_log(log_fn, f"ℹ️  홀드아웃 자동 설정: {holdout_start} ~ {holdout_end} (마지막 {_hb['holdout_td']}거래일)")
 
         # 📌 [학습 기간 단축 및 WFA 시작점 적용]
         # WFA 시작일(wfa_start_date) 또는 TRAIN_START 이후 데이터만 탐색에 사용

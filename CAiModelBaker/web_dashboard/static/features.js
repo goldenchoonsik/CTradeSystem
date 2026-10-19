@@ -284,7 +284,8 @@ async function selectFeatures() {
     appendLog('🧬 LightGBM Feature Importance 기반 자동 지표 선정을 개시합니다 (약 5~15초 소요)...', '');
     
     try {
-        const res = await apiPost('/api/features/select');
+        const lookback = document.getElementById('screenerLookbackSelect')?.value || '3y';
+        const res = await apiPost('/api/features/select', { lookback_period: lookback });
         if (res.status === 'ok') {
             const selected = res.selected_features || [];
             
@@ -329,6 +330,7 @@ async function selectFeatures() {
             
             showToast('✅ 자동 지표 선별이 완료되었습니다. 활성화된 지표 목록을 확인하고 저장해 주세요!', 'success');
             if (typeof refreshStatus === 'function') refreshStatus();   // 선정 구간(selection_period) 반영
+            if (typeof loadHoldoutBoundary === 'function') loadHoldoutBoundary();
             appendLog('🏆 자동 지표 선별 완료! 변경된 지표 구성을 최종 저장하려면 저장 버튼을 눌러주세요.', '');
         } else {
             showToast(`❌ 지표 선정 실패: ${res.error}`, 'danger');
@@ -2518,8 +2520,8 @@ async function runFeatureScreener() {
 
     const btn = document.getElementById('btnRunScreener');
     const lookbackEl = document.getElementById('screenerLookbackSelect');
-    const lookbackPeriod = lookbackEl ? lookbackEl.value : 'project';
-    const lookbackText = lookbackEl ? lookbackEl.options[lookbackEl.selectedIndex]?.text : '프로젝트 연구 구간';
+    const lookbackPeriod = lookbackEl ? lookbackEl.value : '3y';
+    const lookbackText = lookbackEl ? lookbackEl.options[lookbackEl.selectedIndex]?.text : '홀드아웃 전 3년';
 
     if (btn) {
         btn.disabled = true;

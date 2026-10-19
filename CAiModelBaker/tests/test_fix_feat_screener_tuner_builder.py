@@ -22,9 +22,10 @@ def test_screener_computes_on_full_data_and_real_lead_time(tmp_path, monkeypatch
         return d["target_close"].pct_change(1).fillna(0.0)
 
     monkeypatch.setattr(fs, "DEFAULT_FEATURE_REGISTRY", {"x": {"compute": comp, "params": {}, "name": "x"}})
-    cfg = {"SNAPSHOT_PATH": str(p), "INTERVAL": "1m", "SYMBOL_UPBIT": "KRW-ZZZ", "TRAIN_END": "2099-12-31"}
+    cfg = {"SNAPSHOT_PATH": str(p), "INTERVAL": "1m", "SYMBOL_UPBIT": "KRW-ZZZ", "OPTUNA_CONFIG": {"holdout_td": 1}}
     res = fs.run_full_period_feature_screening(cfg, max_lag_candles=3, lookback_period="all")
-    assert seen["len"] == n  # 다운샘플 없이 전체로 지표 계산
+    last_day = df["timestamp"].dt.normalize().max()
+    assert seen["len"] == int((df["timestamp"] < last_day).sum())  # 다운샘플 없이 홀드아웃(마지막 1일) 앞 전체로 계산
     r = res["ranked_features"][0]
     assert r["optimal_lag"] <= 3 and r["lead_time"].startswith(f"{r['optimal_lag']}.0분")
     assert 0.0 <= r["p_value"] <= 1.0
@@ -140,3 +141,39 @@ def test_basis_level_features_are_regime_context():
     from shared.features.feature_registry import DEFAULT_FEATURE_REGISTRY as R
     assert R["kospi_basis"]["is_regime"] and R["kospi_basis_rate"]["is_regime"]
     assert not R["kospi_basis_z"].get("is_regime", False)   # 단기 변화(z)는 일반 지표로 IC 판정
+
+
+def test_holdout_boundary_is_last_n_trading_days_and_independent_of_wfa():
+    """홀드아웃 경계 단일 원천: 마지막 N 유효 거래일. N = 사용자 지정 > 인터벌 표준. WFA 키는 영향 없음."""
+    from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+    days = pd.bdate_range("2026-08-26", periods=34)
+    ts = pd.DatetimeIndex(np.concatenate([pd.date_range(d + pd.Timedelta(hours=9), periods=50, freq="10s").values
+                                          for d in days]))
+    df = pd.DataFrame({"timestamp": ts, "target_volume": 100.0})
+    base = {"INTERVAL": "10s", "SYMBOL_UPBIT": "122630"}
+    b = resolve_holdout_boundary(df, {**base, "OPTUNA_CONFIG": {"holdout_td": 5}})
+    assert b["holdout_start"] == str(days[-5].date()) and b["research_end"] == str(days[-6].date())
+    b2 = resolve_holdout_boundary(df, {**base, "OPTUNA_CONFIG": {"holdout_td": 5, "wfa_window_count": 9, "wfa_train_months": 3},
+                                       "TRAIN_START": "2026-09-10", "TRAIN_END": "2026-09-20"})
+    assert b2["holdout_start"] == b["holdout_start"]
+    std = resolve_holdout_boundary(df, base)
+    assert std["source"] == "standard" and std["holdout_td"] >= 1
+
+
+def test_smart_split_keeps_holdout_fixed():
+    """스마트 분할·'홀드아웃 앞 전체' 모두 고정 홀드아웃을 바꾸지 않는다 (예전 'full' 은 80/20 으로 다시 잘랐다)."""
+    from CAiModelBaker.core.split_planner import plan_split
+    days = pd.bdate_range("2025-01-01", periods=200)
+    ts = pd.DatetimeIndex(np.concatenate([pd.date_range(d + pd.Timedelta(hours=9), periods=20, freq="1min").values
+                                          for d in days]))
+    df = pd.DataFrame({"timestamp": ts, "target_volume": 100.0})
+    for mode in ("smart", "full"):
+        p = plan_split(df, "1m", market="KRX", mode=mode, holdout_td_override=7)
+        assert p["ok"] and p["holdout_td"] == 7 and p["holdout_start"] == str(days[-7].date()), mode
+
+
+def test_research_loop_holdout_fallback_uses_boundary_not_80pct():
+    from CAiModelBaker.core import research_loop as rl
+    src = open(rl.__file__, encoding="utf-8").read()
+    assert "split_idx = int(len(df_full) * 0.8)" not in src
+    assert "resolve_holdout_boundary(df_full, config)" in src

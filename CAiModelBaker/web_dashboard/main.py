@@ -5389,7 +5389,7 @@ async def api_run_feature_screener(data: Optional[dict] = None):
             if "max_lag_candles" in data:
                 cfg["max_lag_candles"] = int(data["max_lag_candles"])
                 
-        lookback = (data or {}).get("lookback_period", "project")
+        lookback = (data or {}).get("lookback_period", "3y")
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
@@ -5648,9 +5648,10 @@ async def api_get_feature_correlation_matrix(
 
 
 @app.post("/api/features/select")
-async def api_select_features():
-    """학습 전 LightGBM 기여도 기반 자동 지표 선정"""
+async def api_select_features(data: Optional[dict] = None):
+    """학습 전 LightGBM 기여도 기반 자동 지표 선정 (분석 구간 = 스크리닝과 같은 lookback, 끝은 홀드아웃 직전)"""
     config = load_config()
+    lookback = (data or {}).get("lookback_period", "3y")
     try:
         import asyncio
         loop = asyncio.get_event_loop()
@@ -5662,7 +5663,7 @@ async def api_select_features():
         from core.feature_tuner import run_auto_feature_selection
         selected_features = await loop.run_in_executor(
             None,
-            lambda: run_auto_feature_selection(config, log_fn=local_log)
+            lambda: run_auto_feature_selection(config, log_fn=local_log, lookback_period=lookback)
         )
         return {
             "status": "ok",
@@ -6955,6 +6956,22 @@ async def api_auto_research_start(data: dict, background_tasks: BackgroundTasks)
     except Exception as _prep_err:
         return {"status": "error", "message": f"Gold 스냅샷 자동 빌드 중 예외: {_prep_err}"}
 
+    # 홀드아웃 경계는 화면이 보낸 값이 아니라 단일 원천에서 다시 정한다 — 지표 선정·스크리닝이 본 경계와 같아야 한다.
+    # (화면 값은 탭 전환·데이터 갱신 전의 낡은 값일 수 있다, 2026-10-20)
+    try:
+        import pandas as _pd
+        from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+        _snp = get_snapshot_path(config)
+        _hdr = _pd.read_csv(_snp, nrows=1).columns.tolist()
+        _use = ["timestamp"] + [c for c in ("target_volume", "upbit_volume", "volume") if c in _hdr][:1]
+        _hb = resolve_holdout_boundary(_pd.read_csv(_snp, usecols=_use), config)
+        if _hb.get("ok"):
+            if holdout_start and holdout_start != _hb["holdout_start"]:
+                _pre_sync_log(f"ℹ️ 화면의 홀드아웃 시작({holdout_start}) 대신 경계 원천 값({_hb['holdout_start']}) 사용")
+            holdout_start, holdout_end = _hb["holdout_start"], _hb["holdout_end"]
+    except Exception as _hb_err:
+        _pre_sync_log(f"⚠️ 홀드아웃 경계 재계산 실패 — 화면 값 사용: {_hb_err}")
+
     # [가드] 홀드아웃 시작일이 실제 스냅샷 데이터 범위보다 이르면(= 학습용 데이터가
     # 남지 않으면) 즉시 명확한 에러로 반환한다. 스마트 분할 산출이 실패했는데도
     # (예: 스냅샷 미존재) 화면에 이전 종목/세션의 값이 그대로 남아 제출되는 경우를 방지.
@@ -7278,10 +7295,17 @@ async def api_asrl_timeline(
         n_td = len(dates_td)
         available_total_td = n_td
 
-        # 2. 홀드아웃 거래일수 및 구간 산출
-        h_td_eff = holdout_td if holdout_td > 0 else 14
+        # 2. 홀드아웃 = 단일 원천(resolve_holdout_boundary) — 스크리닝·지표 선정·스마트 분할과 같은 경계
+        from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+        _hb = resolve_holdout_boundary(df, config, holdout_td_override=(holdout_td if holdout_td > 0 else None))
         h_end_idx = n_td - 1
-        h_start_idx = max(0, h_end_idx - h_td_eff + 1)
+        if _hb.get("ok"):
+            _hs = pd.Timestamp(_hb["holdout_start"])
+            h_start_idx = next((i for i, d in enumerate(dates_td) if d.normalize() >= _hs), h_end_idx)
+            h_td_eff = _hb["holdout_td"]
+        else:
+            h_td_eff = holdout_td if holdout_td > 0 else 14
+            h_start_idx = max(0, h_end_idx - h_td_eff + 1)
         holdout_start = dates_td[h_start_idx].strftime('%Y-%m-%d')
         holdout_end = dates_td[h_end_idx].strftime('%Y-%m-%d')
 
@@ -7500,6 +7524,35 @@ def _resolve_purge_candles(cfg: dict) -> int:
         return 32
 
 
+@app.get("/api/holdout_boundary")
+async def api_get_holdout_boundary():
+    """홀드아웃 경계(데이터 마지막 N거래일)와 그 앞 스크리닝·지표 선정 범위 — Feature Store·AutoLab 공용."""
+    try:
+        import pandas as pd
+        from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+        cfg = load_config()
+        snap = get_snapshot_path(cfg)
+        if not os.path.exists(snap):
+            return {"ok": False, "reason": "데이터셋(Gold 스냅샷)이 없습니다."}
+        cols = pd.read_csv(snap, nrows=1).columns.tolist()
+        use = ["timestamp"] + [c for c in ("target_volume", "upbit_volume", "volume") if c in cols][:1]
+        b = resolve_holdout_boundary(pd.read_csv(snap, usecols=use), cfg)
+        b["selection_period"] = (cfg.get("FEATURE_CONFIG") or {}).get("selection_period")
+        return b
+    except Exception as e:
+        return {"ok": False, "reason": str(e)}
+
+
+@app.post("/api/holdout_boundary")
+async def api_set_holdout_boundary(data: dict):
+    """홀드아웃 거래일수 지정 (0 이면 인터벌 표준으로 되돌림). OPTUNA_CONFIG.holdout_td 하나에만 쓴다."""
+    cfg = load_config()
+    td = int((data or {}).get("holdout_td") or 0)
+    cfg.setdefault("OPTUNA_CONFIG", {})["holdout_td"] = max(0, td)
+    save_config(cfg)
+    return await api_get_holdout_boundary()
+
+
 @app.get("/api/autolab/smart_split")
 async def api_autolab_smart_split(
     mode: str = "smart",
@@ -7551,9 +7604,13 @@ async def api_autolab_smart_split(
                 use_cols.append(c)
                 break
         df = pd.read_csv(snap_path, usecols=use_cols)
+        # 홀드아웃은 창 설계와 무관한 고정 경계 — 스마트 분할은 그 앞쪽만 WFA 창으로 채운다 (2026-10-20)
+        from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+        _hb = resolve_holdout_boundary(df, cfg)
         plan = plan_split(
             df, itv, market=symbol, mode=mode, purge_candles=purge_n,
-            holdout_mode=holdout_mode, final_test_td=final_test_td, require_contiguous=req_contiguous
+            holdout_mode=holdout_mode, final_test_td=final_test_td, require_contiguous=req_contiguous,
+            holdout_td_override=(_hb["holdout_td"] if _hb.get("ok") else None),
         )
 
         if not plan.get("ok"):

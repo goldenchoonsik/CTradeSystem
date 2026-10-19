@@ -209,7 +209,8 @@ def plan_split(df: pd.DataFrame, interval: str, market: str = "KRX",
                full_holdout_ratio: float = 0.2,
                holdout_mode: str = HOLDOUT_MODE_FULL,
                final_test_td: Optional[int] = None,
-               require_contiguous: bool = False) -> Dict[str, Any]:
+               require_contiguous: bool = False,
+               holdout_td_override: Optional[int] = None) -> Dict[str, Any]:
     """데이터를 스캔하여 WFA·홀드아웃 경계를 **실재 거래일 기준**으로 확정한다 (P-3).
 
     무거래일(Volume 0 / 허수 거래일)을 자동 제외하며, require_contiguous=True 인 경우
@@ -228,6 +229,8 @@ def plan_split(df: pd.DataFrame, interval: str, market: str = "KRX",
         holdout_mode: 'full' (100% 단일 순수 OOS 검증) | 'split' (고정 거래일 2단계 분할)
         final_test_td: holdout_mode='split' 일 때 Final Test 고정 거래일수 (기본 3일)
         require_contiguous: 비정상 결측 Gap 배제 및 연속 유효 구간 기준 분할 여부 (False: 결측일 건너뛰고 전체 통합)
+        holdout_td_override: 홀드아웃 거래일수 고정값 (resolve_holdout_boundary 가 정한 값). 주면 창 설계가 홀드아웃을
+            바꾸지 않는다 — 'full' 모드는 '홀드아웃 앞 전부를 WFA 에' 가 된다.
 
     Returns:
         경계·창 크기·표본 통계·진단·경고 dict. `ok=False` 면 사유(`reason`) 포함.
@@ -275,7 +278,10 @@ def plan_split(df: pd.DataFrame, interval: str, market: str = "KRX",
 
     # ── ① 창 크기 결정 (3-Tier) ──
     if str(mode).lower() == "full":
-        holdout_td = max(1, min(n_td - 1, int(round(n_td * float(full_holdout_ratio)))))
+        if holdout_td_override and int(holdout_td_override) > 0:
+            holdout_td = max(1, min(n_td - 1, int(holdout_td_override)))
+        else:
+            holdout_td = max(1, min(n_td - 1, int(round(n_td * float(full_holdout_ratio)))))
         wfa_td = max(1, n_td - holdout_td)
 
         std = get_standard_split(interval, market=market)
@@ -308,8 +314,8 @@ def plan_split(df: pd.DataFrame, interval: str, market: str = "KRX",
             "standard_met": std_met,
             "scale": 1.0,
             "bucket": bucket,
-            "label": f"전체 80:20 분할 [{std.get('label', bucket)}]",
-            "note": "전체 데이터셋 기준 80% WFA + 20% 홀드아웃 (분봉 표준 윈도우)",
+            "label": f"전체 데이터 분할 [{std.get('label', bucket)}]",
+            "note": "홀드아웃 앞 전체를 WFA 에 사용 (분봉 표준 윈도우)",
             "lookback_td": n_td,
             "train_td": train_td,
             "opt_td": opt_td,
@@ -317,7 +323,7 @@ def plan_split(df: pd.DataFrame, interval: str, market: str = "KRX",
             "holdout_td": holdout_td,
             "expected_wfa_windows": exp_windows,
             "deviations": {},
-            "reason": f"전체 80:20 분할 — WFA {wfa_td}거래일 (창크기 {train_td}/{opt_td}/{test_td}TD) / 홀드아웃 {holdout_td}거래일",
+            "reason": f"전체 데이터 분할 — WFA {wfa_td}거래일 (창크기 {train_td}/{opt_td}/{test_td}TD) / 홀드아웃 {holdout_td}거래일",
         }
     else:
         split_meta = compute_scaled_split(interval, n_td, market=market)
@@ -325,6 +331,9 @@ def plan_split(df: pd.DataFrame, interval: str, market: str = "KRX",
             return {"ok": False, **split_meta,
                     "data": {"first": dates[0], "last": dates[-1], "trading_days": n_td}}
         holdout_td = min(int(split_meta["holdout_td"]), n_td - 1)
+        if holdout_td_override and int(holdout_td_override) > 0:
+            holdout_td = max(1, min(int(holdout_td_override), n_td - 1))
+            split_meta["holdout_td"] = holdout_td
 
     # ── ② 홀드아웃 배치 (최근 데이터부터 역순) ──
     holdout_end_idx = n_td - 1
@@ -683,3 +692,48 @@ def summarize_split(res: Dict[str, Any]) -> str:
         std_lookback = (res.get("standard") or {}).get("lookback_td")
         line2 += f"  | 축소비율 {res.get('scale')} (표준 {std_lookback}거래일)"
     return line1 + "\n" + line2
+
+
+def resolve_holdout_boundary(df: pd.DataFrame, config: Dict[str, Any], ts_col: str = "timestamp",
+                             holdout_td_override: Optional[int] = None) -> Dict[str, Any]:
+    """홀드아웃 경계의 **단일 원천** — 데이터의 마지막 N 유효 거래일 (2026-10-20).
+
+    지표 스크리닝·자동 지표 선정·스마트 분할·WFA 타임라인·연구 루프가 모두 이 함수로 경계를 얻는다.
+    WFA 창 설계(Train/Opt/Test/횟수)와는 독립 — 창을 바꿔도 홀드아웃과 스크리닝 범위는 움직이지 않는다.
+    (종전: 스마트 분할은 창 설계와 함께 홀드아웃을 다시 계산했고, 스크리닝은 WFA 끝(TRAIN_END)에,
+     연구 루프는 홀드아웃이 비면 데이터 80% 지점에 경계를 두었다 — 세 경계가 따로 놀았다.)
+
+    N = holdout_td_override > OPTUNA_CONFIG.holdout_td(사용자 지정) > 인터벌 표준(데이터 길이 비례 축소).
+    research_end = 홀드아웃 직전 거래일 — 그 이후는 어떤 선택(지표·파라미터·트라이얼)에도 쓰지 않는다.
+    """
+    scan = scan_daily_bars(df, ts_col=ts_col, filter_no_trade=True)
+    dates = [str(d) for d in scan.index]
+    n = len(dates)
+    if n < 2:
+        return {"ok": False, "reason": f"유효 거래일이 {n}일뿐입니다 (최소 2일)."}
+
+    interval = str(config.get("INTERVAL", "1m"))
+    market = str(config.get("SYMBOL_UPBIT") or config.get("SYMBOL") or "KRX")
+    user_td = int(((config.get("OPTUNA_CONFIG") or {}).get("holdout_td")) or 0)
+    if holdout_td_override and int(holdout_td_override) > 0:
+        td, source = int(holdout_td_override), "override"
+    elif user_td > 0:
+        td, source = user_td, "user"
+    else:
+        sc = compute_scaled_split(interval, n, market=market)
+        td = int(sc.get("holdout_td") or 0)
+        if td <= 0:
+            td = int(get_minimums_for_bucket(get_standard_split(interval, market=market)["bucket"], market=market)["holdout_td"])
+        source = "standard"
+    td = max(1, min(td, n - 1))
+    return {
+        "ok": True,
+        "holdout_td": td,
+        "source": source,
+        "holdout_start": dates[n - td],
+        "holdout_end": dates[-1],
+        "research_start": dates[0],
+        "research_end": dates[n - td - 1],
+        "trading_days": n,
+        "research_trading_days": n - td,
+    }

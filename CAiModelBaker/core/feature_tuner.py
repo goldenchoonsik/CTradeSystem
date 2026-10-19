@@ -501,7 +501,7 @@ def find_duplicate_feature_columns(df: pd.DataFrame, cols):
     return dup
 
 
-def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
+def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None, lookback_period: str = "3y"):
     """
     LightGBM Feature Importance Auto Feature Selection (Quant Engine v3 - Advanced)
     """
@@ -551,14 +551,13 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
 
     interval = config.get('INTERVAL', '15m')
 
-    train_start = _parse_valid_ts(config.get('TRAIN_START', ''))
-    train_end   = _parse_valid_ts(config.get('TRAIN_END', ''))
-    if train_start is None or train_end is None:
-        # 예전엔 '데이터 앞 60%'로 대신했다 — 나중에 정한 홀드아웃과 겹칠 수 있다. 기간은 지표 선정보다 먼저 정한다.
-        raise ValueError("연구 기간(WFA 시작·종료일)이 설정되지 않았습니다. 연구 기간을 먼저 정한 뒤 지표를 선정하세요.")
-    # 끝날 포함 (스크리너와 같은 규약 — 날짜만 적힌 TRAIN_END 는 그날 장 마감까지)
-    if train_end == train_end.normalize():
-        train_end = train_end + pd.Timedelta(days=1)
+    # 분석 구간 = 지표 스크리닝과 같은 규칙: 끝은 홀드아웃 직전(WFA 창 설계와 무관), 시작은 lookback.
+    # (예전: '데이터 앞 60%' → 10-20 오전: WFA 구간(TRAIN_START~END) — 창 설계를 바꿀 때마다 선정 구간이 움직였다)
+    from CAiModelBaker.core.feature_screener import slice_screening_window
+    _win_df, sel_start, sel_end, sel_desc, _boundary = slice_screening_window(df[['timestamp']], config, lookback_period)
+    train_start = pd.to_datetime(sel_start)
+    train_end = pd.to_datetime(sel_end) + pd.Timedelta(days=1)   # 끝날 포함
+    log_fn(f"   → 분석 구간: {sel_desc}")
 
     df = run_feature_engineering(df, interval, {'enabled_features': [], 'feature_params': {}})
 
@@ -643,7 +642,7 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
     train_df = df[(df['timestamp'] >= train_start) & (df['timestamp'] < train_end)].copy().reset_index(drop=True)
 
     if len(train_df) < 500:
-        raise ValueError(f"연구 기간 데이터가 {len(train_df)}행뿐입니다 (최소 500). 연구 기간 또는 데이터셋을 확인하세요.")
+        raise ValueError(f"분석 구간 데이터가 {len(train_df)}행뿐입니다 (최소 500). 기간 선택 또는 데이터셋을 확인하세요.")
 
     # 이 종목·인터벌에 데이터가 없는 지표는 후보에서도, 그림자 합격선 계산에서도 뺀다.
     dead_cols = find_dead_feature_columns(train_df, eval_feature_cols)
@@ -849,8 +848,9 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
         full_config = load_project_config("CAiModelBaker")
         fc = full_config.get('FEATURE_CONFIG', {})
         fc['enabled_features'] = selected
-        # 어느 연구 기간으로 뽑았나 — 기간이 바뀌면 화면(AutoLab)이 '재선정 필요'를 띄운다
-        fc['selection_period'] = {'start': str(config.get('TRAIN_START', ''))[:10], 'end': str(config.get('TRAIN_END', ''))[:10],
+        # 어느 구간으로 뽑았나 — 홀드아웃 경계가 바뀌면 화면(AutoLab)이 '재선정 필요'를 띄운다
+        fc['selection_period'] = {'start': sel_start, 'end': sel_end, 'lookback': lookback_period,
+                                  'holdout_start': _boundary['holdout_start'],
                                   'method': 'auto_select', 'at': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
         full_config['FEATURE_CONFIG'] = fc
         save_project_config("CAiModelBaker", full_config)

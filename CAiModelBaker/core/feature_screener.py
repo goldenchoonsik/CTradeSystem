@@ -41,12 +41,53 @@ def _get_clean_coin_code(config: dict) -> str:
     return sym.split("-")[-1]
 
 
+
+LOOKBACK_LABELS = {"3y": "최근 3년", "2y": "최근 2년", "1y": "최근 1년", "all": "전체", "project": "AutoLab 학습 구간"}
+
+
+def slice_screening_window(df: pd.DataFrame, config: dict, lookback_period: str = "3y", time_col: str = "timestamp"):
+    """지표 스크리닝·자동 지표 선정이 공유하는 분석 구간 (2026-10-20).
+
+    끝은 언제나 **홀드아웃 직전 거래일**(split_planner.resolve_holdout_boundary — WFA 창 설계와 무관).
+    시작은 lookback: '3y'/'2y'/'1y' = 그 끝에서 N년, 'all' = 데이터 시작, 'project' = AutoLab 학습 구간(TRAIN_START~)
+    — 1차(긴 역사 재현성)와 2차(지금 학습 구간) 확인을 같은 규칙으로 고른다(T-9 설계).
+    반환: (잘린 df, 시작일, 끝일, 설명, 경계 dict)
+    """
+    from CAiModelBaker.core.split_planner import resolve_holdout_boundary
+    df = df.copy()
+    df[time_col] = pd.to_datetime(df[time_col])
+    b = resolve_holdout_boundary(df, config, ts_col=time_col)
+    if not b.get("ok"):
+        raise ValueError(f"홀드아웃 경계를 정할 수 없습니다: {b.get('reason')}")
+    end_dt = pd.to_datetime(b["research_end"]) + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)  # 끝날 포함
+    df = df[df[time_col] <= end_dt]
+    lb = str(lookback_period or "3y")
+    if lb == "project":
+        p_start = config.get("TRAIN_START") or config.get("WFA_START_DATE")
+        if not p_start:
+            raise ValueError("AutoLab 학습 구간(WFA 시작일)이 아직 없습니다 — '최근 N년'·'전체'로 스크리닝하세요.")
+        start_dt = pd.to_datetime(p_start)
+        p_end = config.get("TRAIN_END") or config.get("WFA_END_DATE")
+        if p_end:
+            df = df[df[time_col] <= min(end_dt, pd.to_datetime(p_end) + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1))]
+    elif lb in ("1y", "2y", "3y"):
+        start_dt = pd.to_datetime(b["research_end"]) + pd.Timedelta(days=1) - pd.DateOffset(years=int(lb[0]))
+    else:
+        start_dt = df[time_col].min()
+    df = df[df[time_col] >= start_dt].copy()
+    if len(df) < 50:
+        raise ValueError(f"분석 구간 데이터가 {len(df)}행뿐입니다 (홀드아웃 {b['holdout_start']}~ 제외 후).")
+    start_str = df[time_col].min().strftime("%Y-%m-%d")
+    end_str = df[time_col].max().strftime("%Y-%m-%d")
+    desc = f"{LOOKBACK_LABELS.get(lb, lb)} ({start_str} ~ {end_str}, 홀드아웃 {b['holdout_start']}~ 제외)"
+    return df, start_str, end_str, desc, b
+
 def run_full_period_feature_screening(
     config: dict,
     max_lag_candles: int = 10,
     ic_threshold: float = 0.015,
     min_periods_ratio: float = 0.3,
-    lookback_period: str = "project"
+    lookback_period: str = "3y"
 ) -> Dict[str, Any]:
     """
     수집된 스냅샷 데이터를 대상으로 지정 기간(프로젝트 구간, 최근 1/2/3년, 전체)에 맞추어
@@ -106,47 +147,9 @@ def run_full_period_feature_screening(
             time_col = c
             break
 
-    filtered_desc = "전체 아카이브"
-    start_str, end_str = None, None
-
-    # 홀드아웃 차단 (2026-10-20): 어느 기간을 고르든 연구 기간 끝(TRAIN_END) 이후는 보지 않는다.
-    # 예전엔 '최근 N년'·'전체'가 홀드아웃까지 읽었고, 기간 미설정 시 '프로젝트 구간'도 전체로 넘어갔다 —
-    # 지표를 고르는 것도 선택이라, 마지막 시험 구간을 보고 고르면 최종 검증이 무의미해진다.
-    research_end = config.get("TRAIN_END") or config.get("WFA_END_DATE")
-    if not research_end:
-        raise ValueError("연구 기간(WFA 시작·종료일)이 설정되지 않았습니다. 연구 기간을 먼저 정한 뒤 스크리닝하세요.")
-    if time_col:
-        df[time_col] = pd.to_datetime(df[time_col])
-        research_end_dt = pd.to_datetime(research_end) + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)  # 끝날 포함
-        df = df[df[time_col] <= research_end_dt].copy()
-        if len(df) < 50:
-            raise ValueError(f"연구 기간 끝({research_end}) 이전 데이터가 {len(df)}행뿐입니다.")
-        filtered_desc = f"전체 아카이브 (~ {pd.to_datetime(research_end):%Y-%m-%d}, 홀드아웃 제외)"
-
-    if time_col and lookback_period == "project":
-        # 연구 구간 = 학습(WFA) 구간. 시작일이 없거나 데이터가 모자라면 다른 기간으로 넘어가지 않고 멈춘다.
-        # (2026-10-02: 끝날짜를 쓰이지 않는 옛 키 TEST_END(2026-03-31)에서 읽어, 069500 1m 이 3거래일·762행만으로
-        #  스크리닝되고 있었다 — 사정거리를 바꿔도 결과가 거의 안 바뀐 이유)
-        p_start = config.get("TRAIN_START") or config.get("WFA_START_DATE")
-        if not p_start:
-            raise ValueError("연구 기간 시작일(WFA 시작일)이 설정되지 않았습니다.")
-        start_dt = pd.to_datetime(p_start)
-        mask = df[time_col] >= start_dt
-        if mask.sum() < 50:
-            raise ValueError(f"연구 기간({p_start} ~ {research_end}) 데이터가 {int(mask.sum())}행뿐입니다.")
-        df = df[mask].copy()
-        start_str = start_dt.strftime("%Y-%m-%d")
-        end_str = pd.to_datetime(research_end).strftime("%Y-%m-%d")
-        filtered_desc = f"프로젝트 연구 구간 ({start_str} ~ {end_str})"
-    elif time_col and lookback_period in ("1y", "2y", "3y"):
-        # 연구 기간 끝에서 거꾸로 N년 — 학습 구간보다 긴 역사에서 재현되는 지표를 찾는 1차 스크리닝용.
-        years = int(lookback_period[0])
-        max_dt = df[time_col].max()
-        start_dt = max_dt - pd.DateOffset(years=years)
-        df = df[df[time_col] >= start_dt].copy()
-        start_str = max(start_dt, df[time_col].min()).strftime("%Y-%m-%d")
-        end_str = max_dt.strftime("%Y-%m-%d")
-        filtered_desc = f"연구 기간 끝에서 {years}년 ({start_str} ~ {end_str}, 홀드아웃 제외)"
+    if not time_col:
+        raise ValueError("스냅샷에 시간 컬럼이 없습니다.")
+    df, start_str, end_str, filtered_desc, _boundary = slice_screening_window(df, config, lookback_period, time_col)
 
     n_samples = len(df)
     
@@ -442,6 +445,8 @@ def run_full_period_feature_screening(
         "period_desc": filtered_desc,
         "start_date": start_str,
         "end_date": end_str,
+        "holdout_start": _boundary["holdout_start"],
+        "holdout_end": _boundary["holdout_end"],
         "total_samples": n_samples,
         "features_count": len(results),
         "passed_count": sum(1 for r in results if r["passed"]),

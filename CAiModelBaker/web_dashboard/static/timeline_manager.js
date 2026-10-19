@@ -58,12 +58,17 @@
         return params;
     }
 
+    // 여러 곳(입력 변경·스마트 분할·탭 전환)이 동시에 부르므로 늦게 도착한 옛 응답이 새 결과를 덮지 않게 한다
+    let _reqSeq = 0;
+
     async function refreshAsrlTimeline() {
         const params = getTimelineParams();
+        const mySeq = ++_reqSeq;
 
         try {
             const res = await fetch(`/api/asrl/timeline?${params.toString()}`);
             const data = await res.json();
+            if (mySeq !== _reqSeq) return;
 
             // 1. 역산된 날짜 결과 뷰 및 hidden input 동기화
             if (data.wfa_start && data.wfa_end) {
@@ -116,9 +121,12 @@
         if (!container) return;
 
         if (!data || !data.windows || data.windows.length === 0) {
+            if (typeof Plotly !== 'undefined' && container.data) Plotly.purge(container);
             container.innerHTML = '<div class="alert alert-info" style="font-size:13px; text-align:center; padding:15px;">WFA 윈도우 구성 불가 — 데이터 기간 또는 WFA 설정을 확인하세요.</div>';
             return;
         }
+        // 직전에 쓴 안내문(innerHTML)을 지우지 않으면 Plotly 가 그 아래에 그려 '구성 불가'와 차트가 겹친다 (2026-10-20)
+        if (!container.data) container.innerHTML = '';
 
         const plotData = [];
         const seenLegends = new Set();
