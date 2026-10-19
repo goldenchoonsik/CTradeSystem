@@ -47,14 +47,28 @@ def test_feature_screener_lookback_slicing(tmp_path):
     res_1y = run_full_period_feature_screening(config, lookback_period="1y")
     assert res_1y["status"] == "success"
     assert res_1y["period_mode"] == "1y"
-    assert "최근 1년" in res_1y["period_desc"]
+    assert "끝에서 1년" in res_1y["period_desc"]
+    assert res_1y["end_date"] == "2026-06-01"   # 홀드아웃 제외
     assert res_1y["total_samples"] < res_project["total_samples"]
 
     # 3. 'all' 모드 테스트 (전체 데이터)
     res_all = run_full_period_feature_screening(config, lookback_period="all")
     assert res_all["status"] == "success"
     assert res_all["period_mode"] == "all"
-    assert res_all["total_samples"] == len(df)
+    # 전체 = 연구 기간 끝(06-01 장 마감)까지 — 홀드아웃(06-02~09-01)은 어느 모드에서도 안 본다
+    assert res_all["total_samples"] == int((df["timestamp"] < "2026-06-02").sum())
+
+
+def test_screener_refuses_without_research_period(tmp_path):
+    """연구 기간 미설정이면 전체 아카이브로 넘어가지 않고 멈춘다 (홀드아웃까지 보고 지표를 고르던 경로)."""
+    ts = pd.date_range("2025-01-01", periods=500, freq="1h")
+    df = pd.DataFrame({"timestamp": ts, "target_close": 100.0 + np.arange(500) * 0.01})
+    f = tmp_path / "data_snapshot_1h.csv"
+    df.to_csv(f, index=False)
+    cfg = {"SYMBOL_UPBIT": "KRW-BTC", "INTERVAL": "1h", "SNAPSHOT_PATH": str(f)}
+    for mode in ("project", "1y", "all"):
+        with pytest.raises(ValueError, match="연구 기간"):
+            run_full_period_feature_screening(cfg, lookback_period=mode)
 
 
 def test_locked_horizon_is_the_only_lag_evaluated(tmp_path):
@@ -70,7 +84,7 @@ def test_locked_horizon_is_the_only_lag_evaluated(tmp_path):
                        "target_low": close - 0.3, "target_volume": 1000.0})
     f = tmp_path / "data_snapshot_1h.csv"
     df.to_csv(f, index=False)
-    cfg = {"SYMBOL_UPBIT": "KRW-BTC", "INTERVAL": "1h", "SNAPSHOT_PATH": str(f),
+    cfg = {"SYMBOL_UPBIT": "KRW-BTC", "INTERVAL": "1h", "SNAPSHOT_PATH": str(f), "TRAIN_END": "2099-12-31",
            "TARGET_HORIZON_CONFIG": {"mode": "locked", "locked_predict_ahead": 24, "locked_max_hold": 24}}
     res = run_full_period_feature_screening(cfg, lookback_period="all")
     assert res["ranked_features"]

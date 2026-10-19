@@ -328,6 +328,7 @@ async function selectFeatures() {
             renderFeatureConfig();
             
             showToast('✅ 자동 지표 선별이 완료되었습니다. 활성화된 지표 목록을 확인하고 저장해 주세요!', 'success');
+            if (typeof refreshStatus === 'function') refreshStatus();   // 선정 구간(selection_period) 반영
             appendLog('🏆 자동 지표 선별 완료! 변경된 지표 구성을 최종 저장하려면 저장 버튼을 눌러주세요.', '');
         } else {
             showToast(`❌ 지표 선정 실패: ${res.error}`, 'danger');

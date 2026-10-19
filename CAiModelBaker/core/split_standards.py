@@ -47,7 +47,7 @@ SPLIT_MODE_UNAVAILABLE = "unavailable"    # 최소 조합도 불가 — WFA 불�
 SPLIT_MODE_FULL = "full"                  # 전체 수동 분할
 
 # ── 홀드아웃 검증 모드 (프로 퀀트 표준) ──
-HOLDOUT_MODE_FULL = "full"                # 단일 순수 홀드아웃 (100% OOS 검증 — 기본 권장)
+HOLDOUT_MODE_FULL = "full"                # 단일 홀드아웃 (트라이얼 선택·최종 판정 겸용 — 독립 OOS 아님)
 HOLDOUT_MODE_SPLIT = "split"              # 고정 거래일 2단계 분할 (Validation + Final Test)
 DEFAULT_FINAL_TEST_TD = 5                 # 분할 모드 시 기본 최종 Test 거래일수 (HOLDOUT_MIN_TRADING_DAYS=5 동기화)
 

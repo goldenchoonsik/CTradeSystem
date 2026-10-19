@@ -1331,11 +1331,11 @@ def run_auto_research(
             if len(df_holdout) > 0:
                 h_mode = str(holdout_mode).lower().strip() if holdout_mode else ("split" if final_test_ratio < 100 else "full")
                 if h_mode == "full":
-                    # 단일 순수 홀드아웃 (100% OOS 검증 — 프로 퀀트 표준)
+                    # 단일 홀드아웃 — 학습 밖이지만 트라이얼 선택(Validation)에도 쓰여 독립 OOS 는 아니다 (아래 OOS 경고)
                     final_test_start = holdout_start
                     final_test_end = holdout_end
                     val_end_str = holdout_end
-                    _sync_log(log_fn, f"🔒 [단일 순수 홀드아웃] 최종 Test 구간: {final_test_start} ~ {final_test_end} (100% OOS 검증)")
+                    _sync_log(log_fn, f"🔒 [단일 홀드아웃] 최종 Test 구간: {final_test_start} ~ {final_test_end} (학습 밖 · 트라이얼 선택 겸용)")
                 else:
                     # 고정 거래일 2단계 분할 모드
                     holdout_dates = sorted(pd.to_datetime(df_holdout['timestamp']).dt.date.unique())

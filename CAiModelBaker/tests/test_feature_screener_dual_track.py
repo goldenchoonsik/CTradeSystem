@@ -52,7 +52,8 @@ def test_feature_screener_dual_track_monotonicity(tmp_path):
     config = {
         "SYMBOL_UPBIT": "069500",
         "INTERVAL": "1m",
-        "SNAPSHOT_PATH": str(snapshot_file)
+        "SNAPSHOT_PATH": str(snapshot_file),
+        "TRAIN_END": "2099-12-31",
     }
 
     res = run_full_period_feature_screening(config, lookback_period="all", max_lag_candles=5)

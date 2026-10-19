@@ -414,17 +414,16 @@ def run_pre_tuning_features(config, log_fn=None):
     return result
 
 
-def generate_block_shadow_features(df, features, block_size):
+def generate_block_shadow_features(df, features, block_size, seed=None):
     """
     Generate shadow features by block bootstrapping to preserve short-term autocorrelation.
+    seed 를 주면 같은 입력 → 같은 그림자 (2026-10-20: 시드가 없어 같은 데이터로 돌려도 합격선이 423.97/444.98 로 달랐다).
     """
+    rng = np.random.default_rng(seed)
     n = len(df)
-    shadow_df = pd.DataFrame(index=df.index)
     if n <= block_size or block_size <= 1:
-        for f in features:
-            shadow_df[f"shadow_{f}"] = np.random.permutation(df[f].values)
-        return shadow_df
-    
+        return pd.DataFrame({f"shadow_{f}": rng.permutation(df[f].values) for f in features}, index=df.index)
+
     num_blocks = int(np.ceil(n / block_size))
     block_indices = []
     for i in range(num_blocks):
@@ -432,13 +431,74 @@ def generate_block_shadow_features(df, features, block_size):
         end = min((i + 1) * block_size, n)
         block_indices.append(np.arange(start, end))
     
-    shuffled_block_idx = np.random.permutation(len(block_indices))
+    shuffled_block_idx = rng.permutation(len(block_indices))
     shuffled_global_idx = np.concatenate([block_indices[idx] for idx in shuffled_block_idx])
-    
-    for f in features:
-        shadow_df[f"shadow_{f}"] = df[f].values[shuffled_global_idx]
-        
-    return shadow_df
+
+    # 열을 하나씩 끼우면 수백 번 insert → PerformanceWarning·느림. 한 번에 만든다.
+    return pd.DataFrame({f"shadow_{f}": df[f].values[shuffled_global_idx] for f in features}, index=df.index)
+
+
+# 자동 선정 검증 조각의 최소 거래일 — 조각 4개(학습 확장 3회) × 2거래일.
+MIN_SELECTION_TRADING_DAYS = 8
+
+
+def split_dates_into_expanding_folds(timestamps: pd.Series, n_splits: int = 3):
+    """학습 구간을 '실제 거래일' 기준 n_splits+1 조각으로 나눠, k번째 검증용 확장 창의 끝 행 번호를 돌려준다.
+
+    (2026-10-20) 예전엔 조각 최소 크기를 '30일×24시간'을 봉 수로 바꿔 박아 두었다. 10초봉이면 259,200봉이라
+    약 6.5만 봉 학습 구간보다 커서 세 조각이 모두 학습 구간 전체 = 같은 데이터로 세 번 학습했다(검증 0).
+    24시간 가정은 장 시간이 6.5시간인 KRX 에서도 틀렸다. 이제 데이터에 실제로 있는 날짜로 자른다.
+    """
+    days = pd.to_datetime(timestamps).dt.normalize()
+    uniq = days.drop_duplicates().sort_values().reset_index(drop=True)
+    n_days = len(uniq)
+    if n_days < MIN_SELECTION_TRADING_DAYS:
+        raise ValueError(
+            f"학습 구간에 거래일이 {n_days}일뿐이라 시점을 나눈 검증을 할 수 없습니다 "
+            f"(최소 {MIN_SELECTION_TRADING_DAYS}거래일). 연구 기간을 늘려 주세요.")
+    chunk_days = np.array_split(uniq.values, n_splits + 1)
+    ends = []
+    for k in range(1, n_splits + 1):
+        last_day = chunk_days[k][-1]
+        ends.append(int((days.values <= last_day).sum()))
+    return ends, n_days
+
+
+def find_dead_feature_columns(df: pd.DataFrame, cols, min_valid_ratio: float = 0.5):
+    """학습 구간에서 값이 없거나(유효 < 50%) 한 값뿐인 열 — 이 종목·인터벌엔 데이터가 없는 지표.
+
+    이런 열의 그림자도 gain 0 이라, 그대로 두면 '그림자 80번째 백분위' 합격선이 끌려 내려가
+    소음 수준 지표까지 통과한다(122630 10s: 후보 115개 중 60여 개가 이 경우였다).
+    """
+    dead = {}
+    n = len(df)
+    for c in cols:
+        s = df[c]
+        valid = s.notna()
+        if s.dtype.kind in 'fc':
+            valid &= np.isfinite(s.to_numpy(dtype=float, na_value=np.nan))
+        ratio = float(valid.sum()) / n if n else 0.0
+        if ratio < min_valid_ratio:
+            dead[c] = f"유효값 {ratio:.0%}"
+        elif s[valid].nunique() <= 1:
+            dead[c] = "값이 하나뿐"
+    return dead
+
+
+def find_duplicate_feature_columns(df: pd.DataFrame, cols):
+    """값이 앞선 열과 완전히 같은 열 → {복제 열: 원본 열}.
+
+    KRX 종목 Gold 에선 upbit_* 원천 열이 target_* 와 같은 값이라 upbit_ma_ratio 등이 target_ma_ratio 의
+    복제다. 트리는 동점이면 앞 열만 써서 복제는 gain 0 — 그 그림자도 0 근처라 합격선을 끌어내린다.
+    """
+    seen, dup = {}, {}
+    for c in cols:
+        key = pd.util.hash_pandas_object(df[c], index=False).sum()
+        if key in seen and df[c].equals(df[seen[key]]):
+            dup[c] = seen[key]
+        else:
+            seen.setdefault(key, c)
+    return dup
 
 
 def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
@@ -494,10 +554,18 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
     train_start = _parse_valid_ts(config.get('TRAIN_START', ''))
     train_end   = _parse_valid_ts(config.get('TRAIN_END', ''))
     if train_start is None or train_end is None:
-        train_start = df['timestamp'].iloc[0]
-        train_end   = df['timestamp'].iloc[int(len(df) * 0.6)]
+        # 예전엔 '데이터 앞 60%'로 대신했다 — 나중에 정한 홀드아웃과 겹칠 수 있다. 기간은 지표 선정보다 먼저 정한다.
+        raise ValueError("연구 기간(WFA 시작·종료일)이 설정되지 않았습니다. 연구 기간을 먼저 정한 뒤 지표를 선정하세요.")
+    # 끝날 포함 (스크리너와 같은 규약 — 날짜만 적힌 TRAIN_END 는 그날 장 마감까지)
+    if train_end == train_end.normalize():
+        train_end = train_end + pd.Timedelta(days=1)
 
     df = run_feature_engineering(df, interval, {'enabled_features': [], 'feature_params': {}})
+
+    # 참조 종목 지표는 지연 등록이라, 여기서 직접 등록하지 않으면 '이 프로세스에서 스크리닝을 먼저 돌렸나'에 따라
+    # ref_* 가 후보에 들기도 빠지기도 했다 (T-7 탐색 풀 드리프트가 자동 선정에 남아 있던 것, 2026-10-20).
+    from shared.features.feature_registry import register_configured_reference_features
+    register_configured_reference_features(config, DEFAULT_FEATURE_REGISTRY)
 
     all_feature_ids = list(DEFAULT_FEATURE_REGISTRY.keys())
     eval_feature_cols = []
@@ -575,8 +643,21 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
     train_df = df[(df['timestamp'] >= train_start) & (df['timestamp'] < train_end)].copy().reset_index(drop=True)
 
     if len(train_df) < 500:
-        log_fn("⚠️ [Auto Feature Selection] Train data insufficient (< 500). Keeping current.")
-        return None
+        raise ValueError(f"연구 기간 데이터가 {len(train_df)}행뿐입니다 (최소 500). 연구 기간 또는 데이터셋을 확인하세요.")
+
+    # 이 종목·인터벌에 데이터가 없는 지표는 후보에서도, 그림자 합격선 계산에서도 뺀다.
+    dead_cols = find_dead_feature_columns(train_df, eval_feature_cols)
+    dup_cols = find_duplicate_feature_columns(train_df, [c for c in eval_feature_cols if c not in dead_cols])
+    if dup_cols:
+        log_fn(f"   → 다른 지표와 값이 같아 제외 ({len(dup_cols)}개 열): "
+               + ", ".join(f"{d}={o}" for d, o in list(dup_cols.items())[:8]) + (" …" if len(dup_cols) > 8 else ""))
+        dead_cols = {**dead_cols, **dup_cols}
+    if dead_cols:
+        eval_feature_cols = [c for c in eval_feature_cols if c not in dead_cols]
+        feature_to_cols = {fid: [c for c in cols if c not in dead_cols] for fid, cols in feature_to_cols.items()}
+        dead_fids = sorted(fid for fid, cols in feature_to_cols.items() if not cols)
+        feature_to_cols = {fid: cols for fid, cols in feature_to_cols.items() if cols}
+        log_fn(f"   → 데이터 없음·복제로 후보 제외 ({len(dead_fids)}개 지표): {', '.join(dead_fids)}")
 
     if len(eval_feature_cols) < 2:
         log_fn("⚠️ [Auto Feature Selection] Insufficient feature columns. Keeping current.")
@@ -601,21 +682,19 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
     )
     log_fn(f"   → 레이블 기준: TP={take_profit:.2f} ATR, SL={stop_loss:.2f} ATR")
 
-    # Fix 8: fold_size — 최소 30일치 캔들 보장 (봉길이 연동)
-    ctx_sel = get_interval_context(interval)
+    # 검증 조각 — 실제 거래일 기준 확장 창 (split_dates_into_expanding_folds 주석 참조)
     n_splits = 3
-    min_fold_candles = ctx_sel['mins_to_candles'](30 * 24 * 60)  # 30일치
-    raw_fold_size = len(train_df) // (n_splits + 1)
-    fold_size = max(raw_fold_size, min_fold_candles)
-    log_fn(f"   → Candidate sub-features: {len(eval_feature_cols)} | Train samples: {len(train_df):,}")
-    log_fn(f"   → Fold 크기: {fold_size:,}캔들 ({fold_size / ctx_sel['candles_per_day']:.1f}일치)")
+    fold_end_rows, n_train_days = split_dates_into_expanding_folds(train_df['timestamp'], n_splits)
+    # 하루 봉 수도 24시간 가정이 아니라 데이터에서 잰다 (KRX 10초봉: 8,640 이 아니라 약 2,340)
+    candles_per_day = max(1, int(round(len(train_df) / n_train_days)))
+    log_fn(f"   → Candidate sub-features: {len(eval_feature_cols)} | Train samples: {len(train_df):,} ({n_train_days}거래일)")
+    log_fn(f"   → 확장 창 끝: " + ", ".join(f"{e:,}봉" for e in fold_end_rows))
     from shared.core.market_utils import detect_market_type
     _tb_market_type = 'KRX' if (detect_market_type(config) == 'KRX' and config.get('INTRADAY_SQUARE_OFF', True)) else 'CRYPTO'
     log_fn("   → Running 3-Fold time-series cross-validation & block shadow analysis...")
 
     total_evals = 0
-    for fold in range(1, n_splits + 1):
-        train_end_idx = fold_size * (fold + 1)
+    for train_end_idx in fold_end_rows:
         fold_train_df = train_df.iloc[:train_end_idx].copy().reset_index(drop=True)
         
         if len(fold_train_df) < 300:
@@ -630,8 +709,8 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
                 continue
 
             # Fix 5: block_size — 최소 1일치 캔들 보장 (봉길이 연동)
-            block_size = max(pa * 3, ctx_sel['candles_per_day'])
-            shadow_df = generate_block_shadow_features(fold_train_df_clean, eval_feature_cols, block_size)
+            block_size = max(pa * 3, candles_per_day)
+            shadow_df = generate_block_shadow_features(fold_train_df_clean, eval_feature_cols, block_size, seed=42 + total_evals)
             shadow_features = [f"shadow_{f}" for f in eval_feature_cols]
 
             lgb_train_df = pd.concat([fold_train_df_clean[eval_feature_cols], shadow_df], axis=1)
@@ -670,8 +749,7 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
             total_evals += 1
 
     if total_evals == 0:
-        log_fn("⚠️ [Auto Feature Selection] Valid evaluations = 0. Keeping current.")
-        return None
+        raise ValueError("유효한 평가가 0회입니다 (라벨 가능한 표본 부족). 연구 기간 또는 사정거리를 확인하세요.")
 
     mean_fi = {f: accumulated_fi[f] / total_evals for f in eval_feature_cols}
     mean_shadow_fi = {sf: accumulated_shadow_fi[sf] / total_evals for sf in accumulated_shadow_fi}
@@ -713,6 +791,7 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
             adjusted_val = best_col_info['adjusted_val']
             is_passed = best_col_info['is_passed']
             
+            penalty = feature_penalties.get(fid, 0.0)
             flag = "✅" if is_passed else "❌"
             bar_len = int(fval / max_fi_val * 20) if max_fi_val > 0 else 0
             bar  = "█" * bar_len + "░" * (20 - bar_len)
@@ -737,7 +816,7 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
                 c_col = best_col_map[confirmed_feat]
 
                 # Fix 6: 상관관계 누수 방지 — 첫 번째 fold 구간(가장 엄격한 과거)만 사용
-                corr_base_df = train_df.iloc[:fold_size * 2]
+                corr_base_df = train_df.iloc[:fold_end_rows[0]]
                 corr_val = abs(corr_base_df[t_col].corr(corr_base_df[c_col], method='spearman'))
                 if corr_val >= 0.80:
                     has_high_corr = True
@@ -751,13 +830,17 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
             log_fn(f"   ❌ [Drop Duplicated] {dropped:<28} ➡️ similar to {parent:<28} (Corr: {cval:.2f})")
 
     # Excluded features logging
-    excluded_list = [fid for fid in all_feature_ids if fid not in init_selected]
+    excluded_list = [fid for fid in feature_to_cols if fid not in init_selected]
     if excluded_list:
         log_fn(f"\n   ❌ [Gain Threshold Excluded ({len(excluded_list)})]: {', '.join(excluded_list)}")
 
     if len(selected) < 2:
-        log_fn("⚠️ [Auto Feature Selection] Under 2 selected after drop. Reverting to initial selection.")
-        selected = init_selected if len(init_selected) >= 2 else all_feature_ids
+        if len(init_selected) >= 2:
+            log_fn("⚠️ [Auto Feature Selection] Under 2 selected after drop. Reverting to initial selection.")
+            selected = init_selected
+        else:
+            # 예전엔 '등록된 지표 전부'로 되돌려 저장했다 — 데이터 없는 지표까지 켜졌다. 이제 저장하지 않는다.
+            raise ValueError(f"소음 기준을 넘은 지표가 {len(init_selected)}개뿐입니다 (최소 2). 지표 목록을 바꾸지 않았습니다.")
 
     log_fn(f"\n   🏆 Selected Features ({len(selected)}): {', '.join(selected)}")
 
@@ -766,6 +849,9 @@ def run_auto_feature_selection(config, log_fn=None, check_abort_fn=None):
         full_config = load_project_config("CAiModelBaker")
         fc = full_config.get('FEATURE_CONFIG', {})
         fc['enabled_features'] = selected
+        # 어느 연구 기간으로 뽑았나 — 기간이 바뀌면 화면(AutoLab)이 '재선정 필요'를 띄운다
+        fc['selection_period'] = {'start': str(config.get('TRAIN_START', ''))[:10], 'end': str(config.get('TRAIN_END', ''))[:10],
+                                  'method': 'auto_select', 'at': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
         full_config['FEATURE_CONFIG'] = fc
         save_project_config("CAiModelBaker", full_config)
         log_fn("💾 enabled_features auto-saved successfully.")

@@ -18,3 +18,10 @@
 - **테스트 가시성 보장**: 테스트 실행 시 백그라운드로 넘겨 대기시키지 않고, 즉시 동기 실행하여 각 테스트 항목의 진행 과정과 결과를 상세히 출력한다 (`pytest -v` 사용).
 - **신속한 피드백**: 오래 걸리는 테스트는 타임아웃을 짧게 유지하고, 사용자가 답답하지 않도록 테스트 진행 상태를 명확하게 보고한다.
 
+## 4. 파일 위치 규칙 (아무 데나 만들지 않는다)
+- **연구·백테스트·일회성 분석 스크립트**는 반드시 `docs/research/<YYYYMMDD>_<주제>/` 폴더에 만든다. 결과물(csv·html·md)도 같은 폴더에 둔다. 폴더에는 목적·실행법·결과를 적은 `README.md` 또는 `experiment_log.md` 를 함께 남긴다.
+- **`scripts/`·`shared/`·`CAiModelBaker/`·`CTrade/` 는 운영 코드**다. 연구 스크립트를 여기에 두지 않는다 — 종목 코드 하드코딩 검사(`shared/tests/test_no_symbol_hardcoding.py`) 등 래칫 테스트가 운영 코드로 보고 실패한다.
+  - 실제 사례 (2026-10-19): 맥점 반격 백테스트를 `scripts/` 에 만들어 위 검사가 실패 → `docs/research/20261019_smart_money_counter_pivot/` 로 이동.
+- 연구용 데이터는 `DataVault/staging/<이름>/` 에 두고 `dataset.json`(title·purpose·status·result)을 함께 만든다. 운영 원장(`DataVault/raw`·`normalized`·`features`)에 쓰지 않는다.
+- 임시 파일은 저장소 밖(시스템 임시 폴더)에 만든다.
+
