@@ -122,8 +122,14 @@ def build() -> dict:
     # 연결 상태 이력(월 × 상대국)
     links_hist = {g: [[r["t"], r["links"][g]["state"], round(r["links"][g]["rho"], 3)] for r in hist if g in r["links"]] for g in R.PARTNERS}
     sec_hist = {s: [[r["t"], round(r["sectors"][s]["score"], 3), round(r["sectors"][s]["score_D"], 3)] for r in hist if s in r.get("sectors", {})] for s in R.SECTOR_HS}
+    try:                                                                       # L3 종목 후보(현재 파악) — 업종 대응·가격 자료 없으면 비움
+        from . import stocks as _st
+        stock_cands = _st.candidates(latest.get("sectors") or {})
+    except Exception as e:   # noqa: BLE001
+        store.log(f"[reading] 종목 후보 실패(무시): {e}")
+        stock_cands = {}
     out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health,
-           "forward": S["forward"], "forward_ce": S["forward_ce"],
+           "forward": S["forward"], "forward_ce": S["forward_ce"], "stocks": stock_cands,
            "evidence": evidence(D, latest, expo), "links_history": links_hist, "sector_history": sec_hist,
            "has_items": D.items is not None, "note": "판독 = 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽음. 성적 = 같은 방식으로 2008~ 매달 재현한 결과."}
     recs = []

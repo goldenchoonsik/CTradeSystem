@@ -69,6 +69,16 @@ def run(step: str, keys=None) -> bool:
             store.log(f"[kr_trade_items] 실패: {e}")
             if step == "kr_trade_items":
                 return False
+    if step in ("kr_ksic", "all"):
+        from . import kr_ksic
+        try:
+            ok_s = kr_ksic.run()
+            if step == "kr_ksic" and not ok_s:
+                return False
+        except Exception as e:   # noqa: BLE001
+            store.log(f"[kr_ksic] 실패: {e}")
+            if step == "kr_ksic":
+                return False
     if step in ("panel", "all"):
         from . import panel
         panel.build()

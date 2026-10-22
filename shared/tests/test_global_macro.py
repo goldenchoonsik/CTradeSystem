@@ -447,3 +447,33 @@ def test_reading_ext_sector_ce_and_forward_track_ce():
     f = E.forward(pd.DataFrame(rows, columns=E.SECTOR_COLS), ic, n_readings=5, track="CE")
     assert f["track"] == "CE" and f["n_months"] == 3 and f["status"] == "확인 중 3/24" and f["ic_D"] == pytest.approx(0.2)
     assert E.forward(pd.DataFrame(rows, columns=E.SECTOR_COLS), ic, n_readings=5, track="D")["n_months"] == 5
+
+
+# ---------------- 종목 단계(L3)
+def test_ksic_mapping_manufacturing_only():
+    from shared.data_library.global_macro import kr_ksic
+    assert kr_ksic.ksic2("264") == "C26" and kr_ksic.KSIC2_TO_SECTOR["C26"] == "U013"      # 삼성전자 → 전기·전자
+    assert kr_ksic.ksic2("20111") == "C20" and kr_ksic.KSIC2_TO_SECTOR["C20"] == "U008"
+    assert kr_ksic.ksic2("641") is None and kr_ksic.ksic2("") is None and kr_ksic.ksic2(None) is None   # 금융·빈값
+    uni = pd.DataFrame({"code": ["A1", "A2"], "name": ["a", "b"], "market": ["KOSPI", "KOSDAQ"]})
+    t = kr_ksic.build_table([{"stock_code": "A1", "corp_code": "c1", "induty_code": "301"}, {"stock_code": "A2", "corp_code": "c2", "induty_code": "582"}], uni)
+    d = t.set_index("stock_code").sector
+    assert d["A1"] == "U015" and pd.isna(d["A2"])
+
+
+def test_sector_beta_uses_only_data_up_to_t():
+    from shared.data_library.global_macro import stocks
+    idx = pd.date_range("2015-01-31", periods=60, freq="ME")
+    rng = np.random.default_rng(7)
+    mk = pd.Series(100 * np.exp(np.cumsum(rng.normal(0, 0.03, 60))), index=idx)
+    sec_ex = rng.normal(0, 0.05, 60)
+    sec = mk * np.exp(np.cumsum(sec_ex))
+    hi = mk * np.exp(np.cumsum(2.0 * sec_ex + rng.normal(0, 0.01, 60)))        # 업종 베타 2
+    lo = mk * np.exp(np.cumsum(0.5 * sec_ex + rng.normal(0, 0.01, 60)))        # 0.5
+    sm = pd.DataFrame({"HI": hi, "LO": lo})
+    t = idx[40]
+    b = stocks.sector_beta(sm, sec, mk, t)
+    assert abs(b["HI"] - 2.0) < 0.3 and abs(b["LO"] - 0.5) < 0.3
+    sm2 = sm.copy(); sm2.loc[sm2.index > t] = 1e9                                 # t 이후를 망가뜨려도 같다
+    assert stocks.sector_beta(sm2, sec, mk, t).equals(b)
+    assert stocks.sector_beta(sm.iloc[:10], sec, mk, idx[9]).isna().all()        # 관측 부족 → NaN

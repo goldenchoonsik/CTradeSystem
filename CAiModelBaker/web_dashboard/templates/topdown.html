@@ -108,6 +108,11 @@
       <table class="td" id="rdSectors"></table>
     </div>
     <div class="td-card">
+      <h3>종목 후보 — 업종 판독을 종목으로 (L3, 현재 파악)</h3>
+      <div class="td-sub" id="rdStocksSub">업종 대응 = DART KSIC(오늘 기준, 상장사만). 필터: 시총 ≥ 500억·20일 평균 거래대금 ≥ 5억. 업종 베타 = 최근 36개월 종목(코스피 초과) ~ 업종 지수(코스피 초과) 기울기 — 수출 노출의 대리(회사별 수출 비중 원천 없음). 검정은 사전등록 stage5(신호 상태 탭).</div>
+      <div id="rdStocks"></div>
+    </div>
+    <div class="td-card">
       <h3>연결 상태 이력 — 관계가 언제 바뀌었나</h3>
       <div class="td-sub">월 × 상대국. 진할수록 연결 강함(최근 5년 상관). 사건 번호는 관계 판독 탭 목록.</div>
       <div id="rdHeat" style="height:360px;"></div>
@@ -578,6 +583,19 @@ function renderReading() {
   (E.competition_eu || []).forEach(x => { const k = x.kr || {}, c = x.cn || {};
     ce += `<tr><td>${esc(x.name)}</td><td class="muted">${esc((x.month || '').slice(0, 7))}</td><td>${fmt(k.share, 1)}% ${chipS(k.state)}</td><td class="num">${fmt(k.delta)}%p</td><td>${fmt(c.share, 1)}% ${chipS(c.state)}</td><td class="num">${fmt(c.delta)}%p</td></tr>`; });
   document.getElementById('rdCompEU').innerHTML = (E.competition_eu || []).length ? ce : '<tr><td class="empty">EU 수입 자료(Eurostat) 수집 후 표시</td></tr>';
+  const SK = R.stocks || {};
+  const sks = Object.entries(SK).sort((a, b) => b[1].score - a[1].score);
+  if (!sks.length) { document.getElementById('rdStocks').innerHTML = '<div class="empty">종목 업종코드(DART) 수집 후 표시</div>'; return; }
+  let st = '';
+  const s5 = ((D.signals || {}).signals || []).find(x => x.id === 'S2');
+  if (s5) st += `<div class="td-sub">stage5 S2(업종 점수 × 베타 → 업종 내 종목) 판정: <span class="chip" style="${VERDICT_STYLE[s5.verdict] || ''}">${esc(s5.verdict)}</span> — ${s5.verdict === '버림' ? '베타 상위가 판독의 몫을 더 받는다는 증거 없음 → 아래는 업종 구성·민감도 파악용' : '우호 업종 × 고베타 = 판독 전이 후보'}</div>`;
+  sks.forEach(([s, v]) => {
+    st += `<div style="margin:10px 0 4px;font-weight:600;">${esc(v.name)} ${chipS(v.reading)} <span class="muted" style="font-weight:400;font-size:12px;">합성 ${fmt(v.score)} · 수요만 ${esc(v.reading_D || '–')} · 대응 종목 ${v.n_universe} · 필터 통과 ${v.n_pass} · 베타 중앙값 ${fmt(v.beta_median)} · 가격 ${esc(v.fund_date)}</span></div>`;
+    st += '<table class="td"><tr><th>종목</th><th class="num">업종 베타</th><th class="num">시총(십억)</th><th class="num">거래대금(십억/일)</th><th class="num">6개월</th><th class="num">1개월</th><th class="num">외국인 %</th></tr>';
+    v.stocks.forEach(x => { st += `<tr><td>${esc(x.name)} <span class="muted">${esc(x.code)}</span></td><td class="num">${fmt(x.beta)}</td><td class="num">${fmt(x.mcap_bn, 0)}</td><td class="num">${fmt(x.adv_bn, 1)}</td><td class="num ${(x.ret_6m || 0) < 0 ? 'down' : ''}">${x.ret_6m == null ? '–' : x.ret_6m + '%'}</td><td class="num">${x.ret_1m == null ? '–' : x.ret_1m + '%'}</td><td class="num">${x.foreign_pct == null ? '–' : x.foreign_pct}</td></tr>`; });
+    st += '</table>';
+  });
+  document.getElementById('rdStocks').innerHTML = st;
 }
 
 let crashIdx = 0;
