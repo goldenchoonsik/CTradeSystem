@@ -971,7 +971,7 @@ function renderLedger() {
   if (IS.total === undefined) document.getElementById('issueBox').innerHTML = '<span class="muted">아직 없음(화면 JSON 단계 실행 후)</span>';
   else {
     const rows = Object.entries(IS.by_source || {}).map(([src, kinds]) => `<tr><td>${esc(src)}</td><td>${Object.entries(kinds).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')}</td><td class="num">${Object.values(kinds).reduce((a, b) => a + b, 0)}</td></tr>`).join('');
-    document.getElementById('issueBox').innerHTML = `<div style="margin-bottom:6px;">열린 이슈 <b class="${IS.fixable ? 'warn' : 'up'}">${IS.total}</b>건 (코드로 고칠 수 있는 것 ${IS.fixable}건) · 갱신 ${esc((IS.updated || '').replace('T', ' '))} · 요약 <code>${esc(IS.digest || '')}</code></div>` + (rows ? `<table class="td"><tr><th>원천/단계</th><th>종류별 건수</th><th class="num">합</th></tr>${rows}</table>` : '<span class="up">열린 이슈 없음</span>');
+    document.getElementById('issueBox').innerHTML = `<div style="margin-bottom:6px;">열린 이슈 <b class="${IS.fixable ? 'warn' : 'up'}">${IS.total}</b>건 (코드로 고칠 것 ${IS.fixable} · 확인 대상 ${IS.review ?? 0} · 원천 없음 ${IS.total - IS.fixable - (IS.review ?? 0)}) · 갱신 ${esc((IS.updated || '').replace('T', ' '))} · 요약 <code>${esc(IS.digest || '')}</code></div>` + (rows ? `<table class="td"><tr><th>원천/단계</th><th>종류별 건수</th><th class="num">합</th></tr>${rows}</table>` : '<span class="up">열린 이슈 없음</span>');
   }
   const ES = D.edges || {};
   document.getElementById('edgeStoreInfo').textContent = ES.error ? '오류 ' + ES.error : `${fmt(ES.rows, 0)}행 · 월 ${ES.months}개 · 최신 ${ES.latest || '–'} · 이번 실행 +${fmt(ES.added, 0)} · 종류 ` + Object.entries(ES.types || {}).map(([k, v]) => `${k} ${fmt(v, 0)}`).join(', ') + ' (append-only, DataVault/staging/global_macro/edges/edges.parquet)';

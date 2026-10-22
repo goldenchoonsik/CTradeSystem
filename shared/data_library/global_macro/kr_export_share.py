@@ -411,14 +411,14 @@ def write_issues(year: int, df: pd.DataFrame, parse_details: Dict[str, dict]) ->
     for r in df.itertuples():
         rec = r._asdict()
         d = parse_details.get(r.stock_code, {})
-        if r.parse == "no_table":
+        if str(r.status).startswith("error"):                                   # DART 가 원문을 안 줌(014) — 코드로 못 고침
+            _record_issue(issues, year, rec, "doc_missing", {"message": r.status})
+        elif r.parse == "no_table":
             _record_issue(issues, year, rec, "no_table", {"sales_tables": d.get("hints", []), "note": "매출 표 자체 없음" if not d.get("hints") else "매출 표는 있으나 수출/내수(또는 국가별) 분리를 못 읽음"})
         elif str(r.parse).startswith("error"):
             _record_issue(issues, year, rec, "parse_error", {"message": r.parse, "trace": d.get("trace")})
         elif r.parse == "ok" and not r.verified:
             _record_issue(issues, year, rec, "unverified", {"share": round(float(r.export_share), 3), "export": r.export, "domestic": r.domestic, "method": r.method, "title": r.table_title})
-        elif str(r.status).startswith("error"):
-            _record_issue(issues, year, rec, "doc_missing", {"message": r.status})
     issues += _jump_issues(year, df)
     d = store.path(*ISSUE_DIR)
     os.makedirs(d, exist_ok=True)

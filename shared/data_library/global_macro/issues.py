@@ -17,6 +17,7 @@ from . import store
 
 DIR = ("issues",)
 KINDS_NOT_FIXABLE = {"doc_missing", "no_source"}          # 원천이 없어 코드로 못 고치는 종류(건수만)
+KINDS_REVIEW = {"unverified"}                             # 오류가 아니라 확인 대상(합계 검증 안 된 값) — fixable 에서 뺀다
 
 
 def _p(name: str) -> str:
@@ -115,15 +116,16 @@ def summary() -> dict:
     for it in items:
         by.setdefault(it["source"], {}).setdefault(it["kind"], 0)
         by[it["source"]][it["kind"]] += 1
-    fixable = sum(1 for it in items if it["kind"] not in KINDS_NOT_FIXABLE)
-    return {"total": len(items), "fixable": fixable, "by_source": by, "digest": _p("DIGEST.md"), "updated": _now()}
+    fixable = sum(1 for it in items if it["kind"] not in KINDS_NOT_FIXABLE and it["kind"] not in KINDS_REVIEW)
+    review = sum(1 for it in items if it["kind"] in KINDS_REVIEW)
+    return {"total": len(items), "fixable": fixable, "review": review, "by_source": by, "digest": _p("DIGEST.md"), "updated": _now()}
 
 
 def write_digest(per_source: int = 10) -> str:
     """DIGEST.md — 원천 × 종류 건수 → 원천별 예(고칠 때 필요한 detail 포함) → 상세 파일 위치. 고치는 사람(=다음 대화의 나)을 위한 문서."""
     items = load()
     L = ["# 글로벌 탑다운 이슈 원장 — 다이제스트 (바뀔 때마다 다시 씀)", "",
-         f"생성 {_now()} · 열린 이슈 {len(items)}건 (코드로 고칠 수 있는 것 {sum(1 for it in items if it['kind'] not in KINDS_NOT_FIXABLE)}건). 원본 `issues/open.jsonl`, 추이 `issues/history.jsonl`.",
+         f"생성 {_now()} · 열린 이슈 {len(items)}건 — 코드로 고칠 것 {sum(1 for it in items if it['kind'] not in KINDS_NOT_FIXABLE and it['kind'] not in KINDS_REVIEW)}건 · 확인 대상(unverified) {sum(1 for it in items if it['kind'] in KINDS_REVIEW)}건 · 원천 없음 {sum(1 for it in items if it['kind'] in KINDS_NOT_FIXABLE)}건. 원본 `issues/open.jsonl`, 추이 `issues/history.jsonl`.",
          "고치는 법: 원천별 hint 가 가리키는 코드를 고친 뒤 그 단계를 다시 실행하면 상태형 이슈는 자동으로 닫히고, 사건형은 다음 성공 때 닫힌다.", ""]
     if not items:
         L.append("열린 이슈 없음.")
@@ -135,7 +137,7 @@ def write_digest(per_source: int = 10) -> str:
             g = [it for it in items if it["source"] == s]
             L.append(f"| {s} | " + " | ".join(str(sum(1 for it in g if it['kind'] == k)) for k in kinds) + f" | {len(g)} |")
         for s in srcs:
-            g = sorted([it for it in items if it["source"] == s], key=lambda it: (it["kind"] in KINDS_NOT_FIXABLE, it["kind"], it["key"]))
+            g = sorted([it for it in items if it["source"] == s], key=lambda it: (it["kind"] in KINDS_NOT_FIXABLE, it["kind"] in KINDS_REVIEW, it["kind"], it["key"]))
             hint = next((it["hint"] for it in g if it.get("hint")), "")
             L += ["", f"## {s} ({len(g)}건)" + (f" — {hint}" if hint else ""), ""]
             for it in g[:per_source]:

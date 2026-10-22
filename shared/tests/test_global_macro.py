@@ -733,7 +733,7 @@ def test_issue_ledger_event_and_state_semantics(stage):
     I.from_fail_list("kr_ksic", ["A000020 corp_code 없음"], kind="no_source")
     txt = open(I.write_digest(), encoding="utf-8").read()
     assert "export_share:2025" in txt and "kr_ksic" in txt and "A3" in txt
-    assert I.summary()["fixable"] == 2 and I.summary()["total"] == 3
+    assert I.summary()["fixable"] == 1 and I.summary()["review"] == 1 and I.summary()["total"] == 3   # jump 는 고칠 것, unverified 는 확인 대상, no_source 는 원천 없음
 
 
 # ---------------------------------------------------------------- R5-V 부가가치 가중 수요(전진 트랙 V)
