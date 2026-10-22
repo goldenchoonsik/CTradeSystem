@@ -69,7 +69,7 @@ def _read(path: str) -> str:
 def _iter_production_python_files():
     """테스트/스크래치를 제외한 프로덕션 .py 파일 순회"""
     for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
-        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")]   # 숨김 폴더(.claude/worktrees 사본) 제외
         for fn in filenames:
             if fn.endswith(".py"):
                 yield os.path.join(dirpath, fn)

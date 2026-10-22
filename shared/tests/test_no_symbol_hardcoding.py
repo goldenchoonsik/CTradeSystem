@@ -48,7 +48,8 @@ def scan() -> Counter:
     ledger = _ledger_keys()
     counts = Counter()
     for dp, dn, fn in os.walk(REPO_ROOT):
-        dn[:] = [d for d in dn if d not in _EXCLUDE_DIRS]
+        # 숨김 폴더(.claude/worktrees 의 저장소 사본 등)는 운영 코드가 아니다 — 가지치기 안 하면 사본이 위반으로 잡힌다(2026-10-22)
+        dn[:] = [d for d in dn if d not in _EXCLUDE_DIRS and not d.startswith(".")]
         for name in fn:
             if os.path.splitext(name)[1] not in _EXTS:
                 continue

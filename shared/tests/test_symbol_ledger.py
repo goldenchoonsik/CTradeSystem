@@ -109,7 +109,7 @@ def test_ledger_files_are_only_accessed_through_their_managers():
     파일마다 어긋난다. 반드시 config_manager / SymbolRelationsManager / SourceMappingManager 를 경유해야 한다."""
     offenders = []
     for root, dirs, files in os.walk(REPO_ROOT):
-        dirs[:] = [d for d in dirs if d not in _SKIP_DIRS]
+        dirs[:] = [d for d in dirs if d not in _SKIP_DIRS and not d.startswith(".")]   # 숨김 폴더(.claude/worktrees 사본) 제외
         for fn in files:
             if not fn.endswith(".py"):
                 continue
@@ -239,7 +239,7 @@ def test_symbols_master_hardcoding_is_gone():
     assert not os.path.exists(os.path.join(REPO_ROOT, "shared", "config", "symbols_master.py"))
     offenders = []
     for root, dirs, files in os.walk(REPO_ROOT):
-        dirs[:] = [d for d in dirs if d not in _SKIP_DIRS]
+        dirs[:] = [d for d in dirs if d not in _SKIP_DIRS and not d.startswith(".")]   # 숨김 폴더(.claude/worktrees 사본) 제외
         for fn in files:
             if fn.endswith(".py") and fn != "test_symbol_ledger.py":
                 full = os.path.join(root, fn)
