@@ -15,6 +15,7 @@ from . import reading as R
 from . import reading_eval as E
 from . import reading_ext as X
 from . import reading_horizon as HZ
+from . import tiva_industry as TI
 from . import store
 
 
@@ -45,7 +46,8 @@ def evidence(D, latest: dict, expo: dict) -> dict:
         txt += f" · 수요 충격 {v['D']:+.3f}"
         txt += f" · 미국 시장 한국 점유 변화 {v['C']:+.2f}%p" if v["C"] is not None else " · 미국 점유 자료 없음"
         out["sectors"].append({"s": s, "name": v["name"], "reading": v["reading"], "score": v["score"], "D": v["D"], "C": v["C"], "text": txt,
-                               "score_D": v.get("score_D"), "reading_D": v.get("reading_D"), "score_CE": v.get("score_CE"), "reading_CE": v.get("reading_CE"), "C_EU": v.get("C_EU")})
+                               "score_D": v.get("score_D"), "reading_D": v.get("reading_D"), "score_CE": v.get("score_CE"), "reading_CE": v.get("reading_CE"), "C_EU": v.get("C_EU"),
+                               "score_V": v.get("score_V"), "reading_V": v.get("reading_V"), "D_VA": v.get("D_VA")})
     from . import us_imports
     for cmd, c in latest.get("competition", {}).items():
         out["competition"].append({"cmd": cmd, "name": us_imports.PRODUCTS.get(cmd, cmd), "kr": c.get("kr"), "cn": c.get("cn"), "month": c.get("month")})
@@ -75,7 +77,9 @@ def forward_log_append(hist: list) -> int:
         for r in hist:
             if pd.Timestamp(r["t"]) < R.FORWARD_FROM or r["t"] in have or not r.get("sectors"):
                 continue
-            keep = {s: {k: v.get(k) for k in ("name", "score", "score_D", "D", "C", "reading", "reading_D", "score_CE", "C_EU", "reading_CE")} for s, v in r["sectors"].items()}
+            keep = {s: {k: v.get(k) for k in ("name", "score", "score_D", "D", "C", "reading", "reading_D", "score_CE", "C_EU", "reading_CE", "score_V", "D_VA", "reading_V")} for s, v in r["sectors"].items()}
+            if r.get("va_year"):
+                keep["_va_year"] = r["va_year"]
             ev = {"t": r["t"], "logged_at": datetime.now().isoformat(timespec="seconds"),
                   "demand": {g: {"call": d["call"], "delta": d["delta"]} for g, d in r.get("demand", {}).items()},
                   "total": (r.get("total") or {}).get("call"), "sectors": keep}
@@ -88,9 +92,11 @@ def forward_log_append(hist: list) -> int:
 def forward_status(D) -> dict:
     """전진 기록만으로 트랙별 채점 — 로그에 적힌 점수를 그대로 쓰고, 이후 실제 업종 수익으로만 채점한다. {'D': …, 'CE': …}"""
     entries = forward_log_read()
-    res_f, ic_f = E.score_sectors(D, [{"t": e["t"], "sectors": e["sectors"]} for e in entries])
-    n_ce = sum(1 for e in entries if any(v.get("score_CE") is not None for v in e["sectors"].values()))
-    return {"D": E.forward(res_f, ic_f, n_readings=len(entries), track="D"), "CE": E.forward(res_f, ic_f, n_readings=n_ce, track="CE")}
+    res_f, ic_f = E.score_sectors(D, [{"t": e["t"], "sectors": {s: v for s, v in e["sectors"].items() if isinstance(v, dict)}} for e in entries])
+    n_ce = sum(1 for e in entries if any(isinstance(v, dict) and v.get("score_CE") is not None for v in e["sectors"].values()))
+    n_v = sum(1 for e in entries if any(isinstance(v, dict) and v.get("score_V") is not None for v in e["sectors"].values()))
+    return {"D": E.forward(res_f, ic_f, n_readings=len(entries), track="D"), "CE": E.forward(res_f, ic_f, n_readings=n_ce, track="CE"),
+            "V": E.forward(res_f, ic_f, n_readings=n_v, track="V")}
 
 
 def build() -> dict:
@@ -100,19 +106,23 @@ def build() -> dict:
     res_s, ic = E.score_sectors(D, hist)
     S = E.summarize(res_d, res_c, res_s, ic)
     eu12 = X.load12("eu_imports")
-    for r in hist:                                           # R5-CE 필드는 고정일 이후 판독에만(원안 이력은 그대로)
+    va = TI.va_exposure_by_year()
+    for r in hist:                                           # R5-CE·R5-V 필드는 고정일 이후 판독에만(원안 이력은 그대로)
         if pd.Timestamp(r["t"]) >= R.FORWARD_FROM:
             X.attach_ce(r, eu12)
+            X.attach_v(r, va)
     n_new = forward_log_append(hist)
     fw = forward_status(D)
-    S["forward"], S["forward_ce"] = fw["D"], fw["CE"]
+    S["forward"], S["forward_ce"], S["forward_v"] = fw["D"], fw["CE"], fw["V"]
     S["forward"]["new_this_run"] = n_new
     V = E.verdicts(S)
     latest = hist[-1]
     L = pd.Timestamp(latest["t"]) - pd.offsets.MonthEnd(1)
     expo = R.sector_exposure(D, L.year - 1) if D.items is not None else {}     # read_at 과 같은 해(t−1 월의 전년)
-    if "competition_eu" not in latest:                                             # 최신 판독이 고정일 이전이면 표시용으로만 EU 경쟁을 붙인다(기록 아님)
+    if "competition_eu" not in latest:                                             # 최신 판독이 고정일 이전이면 표시용으로만 EU 경쟁·VA 가중을 붙인다(기록 아님)
         X.attach_ce(latest, eu12)
+    if "va_year" not in latest:
+        X.attach_v(latest, va)
     # 상시 건강 지표: 최근 60개월(채점 가능한 것) 엔진 vs 평균 회귀 적중
     health = None
     if len(res_d):
@@ -144,7 +154,7 @@ def build() -> dict:
         store.log(f"[reading] 지평 곡선 실패(무시): {e}")
         horizon = {}
     out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health, "horizon": horizon,
-           "forward": S["forward"], "forward_ce": S["forward_ce"], "stocks": stock_cands,
+           "forward": S["forward"], "forward_ce": S["forward_ce"], "forward_v": S["forward_v"], "va_year": latest.get("va_year"), "stocks": stock_cands,
            "evidence": evidence(D, latest, expo), "links_history": links_hist, "sector_history": sec_hist,
            "demand_history": demand_hist, "exposure_by_year": expo_by_year,
            "has_items": D.items is not None, "note": "판독 = 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽음. 성적 = 같은 방식으로 2008~ 매달 재현한 결과."}

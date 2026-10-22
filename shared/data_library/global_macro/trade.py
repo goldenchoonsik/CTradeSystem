@@ -125,7 +125,8 @@ def fetch_twii() -> dict:
 def run() -> bool:
     os.makedirs(store.path("derived", "trade"), exist_ok=True)
     info = {}
-    for nm, fn in (("ecos", fetch_ecos), ("tiva", fetch_tiva), ("cli", fetch_cli), ("twii", fetch_twii)):
+    from . import tiva_industry
+    for nm, fn in (("ecos", fetch_ecos), ("tiva", fetch_tiva), ("tiva_industry", tiva_industry.fetch), ("cli", fetch_cli), ("twii", fetch_twii)):
         try:
             info[nm] = fn()
             log(f"[trade] {nm} {info[nm]}")

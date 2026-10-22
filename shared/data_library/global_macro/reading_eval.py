@@ -79,8 +79,8 @@ def score_comp(D, hist):
     return pd.DataFrame(rows)
 
 
-SECTOR_COLS = ["t", "s", "score", "score_D", "score_CE", "D", "C", "out", "hit", "hit_D", "hit_CE", "has_C"]
-TRACKS = ("D", "CE")          # 전진 확인 트랙: D = 수요 충격만(사전등록 D), CE = EU 경쟁 성분만(stage4_eu E2 조치)
+SECTOR_COLS = ["t", "s", "score", "score_D", "score_CE", "score_V", "D", "C", "out", "hit", "hit_D", "hit_CE", "hit_V", "has_C"]
+TRACKS = ("D", "CE", "V")     # 전진 확인 트랙: D = 수요 충격만(사전등록 D), CE = EU 경쟁 성분만(stage4_eu E2 조치), V = 부가가치 가중 수요 충격(사전등록 V)
 
 
 def score_sectors(D, hist):
@@ -102,16 +102,17 @@ def score_sectors(D, hist):
             if pd.isna(o):
                 continue
             sd = v["score_D"] if v.get("score_D") is not None else v["D"]
-            sce = v.get("score_CE")
-            sub.append((s, v["score"], sd, sce, o))
+            sce, sv = v.get("score_CE"), v.get("score_V")
+            sub.append((s, v["score"], sd, sce, sv, o))
             hit = lambda x: np.nan if x is None or x == 0 else (o > 0) == (x > 0)
-            rows.append({"t": t, "s": s, "score": v["score"], "score_D": sd, "score_CE": sce, "D": v["D"], "C": v["C"], "out": o,
-                         "hit": hit(v["score"]), "hit_D": hit(sd), "hit_CE": hit(sce), "has_C": v["C"] is not None})
+            rows.append({"t": t, "s": s, "score": v["score"], "score_D": sd, "score_CE": sce, "score_V": sv, "D": v["D"], "C": v["C"], "out": o,
+                         "hit": hit(v["score"]), "hit_D": hit(sd), "hit_CE": hit(sce), "hit_V": hit(sv), "has_C": v["C"] is not None})
         if len(sub) >= 5:
-            d = pd.DataFrame(sub, columns=["s", "score", "score_D", "score_CE", "out"])
-            dce = d.dropna(subset=["score_CE"])
+            d = pd.DataFrame(sub, columns=["s", "score", "score_D", "score_CE", "score_V", "out"])
+            dce, dv = d.dropna(subset=["score_CE"]), d.dropna(subset=["score_V"])
             ics[t] = {"composite": d.score.rank().corr(d.out.rank()), "D": d.score_D.rank().corr(d.out.rank()),
-                      "CE": dce.score_CE.rank().corr(dce.out.rank()) if len(dce) >= 5 else np.nan}
+                      "CE": dce.score_CE.rank().corr(dce.out.rank()) if len(dce) >= 5 else np.nan,
+                      "V": dv.score_V.rank().corr(dv.out.rank()) if len(dv) >= 5 else np.nan}
     return pd.DataFrame(rows, columns=SECTOR_COLS), pd.DataFrame.from_dict(ics, orient="index", dtype=float).reindex(columns=["composite"] + list(TRACKS))
 
 
@@ -227,6 +228,9 @@ def verdicts(S):
     f = S.get("forward_ce")
     if f:
         v["R5-CE EU 경쟁 성분만(전진 확인)"] = f["status"]
+    f = S.get("forward_v")
+    if f:
+        v["R5-V 부가가치 가중 수요(전진 확인)"] = f["status"]
     return v
 
 

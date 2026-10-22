@@ -52,6 +52,7 @@
 | 4e. 지평 곡선(국소투영) | `PREREGISTRATION_horizon.md`(434f3100…), `results_horizon.md`, `reading_horizon.py`, 화면 '시스템 판독' 탭 '지평 곡선' 카드 + 일지 기본 기간, `signals/registry_stage6_horizon.json` | 완료(10-22) |
 | 4f. 측정 엣지 저장소 | `edge_store.py`: `edges/edges.parquet` append-only(키 t·type·src·dst, 처음 기록 유지), 8종(link·demand·export_share·sector_reading·sector_exposure·equity_spillover·import_share·stock_beta), '화면 JSON' 단계마다 동기화, `/api/topdown/edges?t=`; 관계 그래프 탭은 저장소만 읽음(선언 엣지는 원장); 원장 탭에 원장에서 자동 생성한 Mermaid 구조 다이어그램. 판독 엔진은 저장소를 읽지 않음(범위 결정) | 완료(10-22) |
 | 5b. 수출 노출 원천 파일럿 | `kr_export_share.py`(DART 사업보고서 원문 수신·수출/내수 표 파서), 단계 `kr_export_share`(수동), `results_export_share_pilot.md`: 2025 사업연도 1034/1160 파싱(89%), 합계 검증 839 | 완료(10-22, 이력·S2 재사전등록 남음) |
+| 6. ICIO 승수 → 부가가치 노출(트랙 V) | OECD ICIO 원표 대신 TiVA FFD_DVA(산업×상대국, 1995~2022, 레온티에프 승수가 이미 계산된 값)를 `tiva_industry.py` 로 받아(무역 단계에 포함) 업종 노출을 부가가치 기준으로; 관계 원장 v1.1 `sector_isic`; `PREREGISTRATION_reading_engine_V.md`(c8e2677b…) 전진 트랙 V(2026-10-31~), 과거 재현 참고 `results_reading_v.md`; 화면 업종 표 'VA 가중 수요' 열 | 완료(10-22, 판정은 전진) |
 
 ## 방향 전환 (2026-10-22, 사용자)
 
@@ -112,6 +113,8 @@
 - 2026-10-22(밤): 2018 확인 — cp949 디코딩 수리 후 89%(781/879) 파싱, 7년 안정성 스피어만 0.68(기준 0.85 미달) → 2022 추가 수신으로 3년 안정성 판단(결과 `results_export_share_pilot.md` 끝). 종목 후보 카드는 2025 수출 비중 순으로 전환(6901d4c).
 - 2026-10-22(밤): 2022 추가 — 3년 순위 상관 0.835(검증 0.848, 경계), 4년 0.77 → 2년 격자(2013·15·17·19·21·23) 권고, 2021 수신 시작(1년 간격 실측용). 결과 표는 `results_export_share_pilot.md`.
 - 2026-10-22(밤): 2021 추가 — 1년 순위 상관 0.90(검증 0.92) → **2년 격자 확정**(남은 2013·15·17·19·23, 이틀). 그 뒤 stage5 S2 새 사전등록.
+- 2026-10-22(밤): 이슈 원장(`issues.py`, DIGEST.md) — 모든 단계·수집기·파서의 문제를 한 곳에 축적(사용자 요청). 첫 실행에서 내 버그 2개(datetime 임포트, history 파일 glob) 발견.
+- 2026-10-22(밤): ⑥ ICIO — OECD 사이트가 봇을 막아(403) ICIO 원표 zip 은 못 받지만, TiVA SDMX 가 산업(ISIC)×상대국 FFD_DVA 를 1995~2022 로 준다(= ICIO 승수 계산 결과). 원표 없이 '비중 → 승수' 전환 가능 → 트랙 V 고정. 엔진이 엣지 저장소를 읽게 하는 일은 필요 없어짐(V 는 TiVA 산출물을 직접 읽음). KSIC↔ISIC 번호 불일치 주의(KSIC C27 의료정밀 ≠ ISIC C27 전기장비) — 원장 sector_isic 에 이유 기록.
 
 ## 1단계 결과 (2026-10-22, 기술 통계 — 판정 없음)
 

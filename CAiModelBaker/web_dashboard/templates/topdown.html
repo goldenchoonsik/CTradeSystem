@@ -611,11 +611,14 @@ function renderReading() {
   const FC = R.forward_ce;
   if (FC) sc += `<div class="td-sub" style="color:#fbbf24;">R5-CE 전진 확인(EU 경쟁 성분만, stage4_eu E2 '작게 실험' 조치): <b>${esc(FC.status)}</b> · 기록 ${FC.n_readings}건 · 채점 가능 ${FC.n_months}개월`
     + (FC.n_months ? ` · 전진 IC ${fmt(FC.ic_D, 3)} vs 합성 ${fmt(FC.ic_composite, 3)} · 상위2−하위2 ${fmt((FC.spread_top2_D || 0) * 100, 1)}%p` : '') + ' — 과거 재현 2017~ IC 0.00(사실상 무정보), 확인용</div>';
+  const FV = R.forward_v;
+  if (FV) sc += `<div class="td-sub" style="color:#fbbf24;">R5-V 전진 확인(수요 충격을 부가가치 노출 TiVA FFD_DVA 로 가중, 사전등록 V): <b>${esc(FV.status)}</b> · 기록 ${FV.n_readings}건 · 채점 가능 ${FV.n_months}개월`
+    + (FV.n_months ? ` · 전진 IC ${fmt(FV.ic_D, 3)} vs 합성 ${fmt(FV.ic_composite, 3)} · 상위2−하위2 ${fmt((FV.spread_top2_D || 0) * 100, 1)}%p` : '') + (R.va_year ? ` — 노출 연도 ${R.va_year}(공표 시차 3년)` : '') + '</div>';
   document.getElementById('rdScore').innerHTML = sc;
-  let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th>EU 경쟁만</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th class="num">EU 점유 변화</th><th>근거</th></tr>';
-  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td>${chipS(x.reading_CE)}</td><td class="num">${x.score_CE == null ? '–' : fmt(x.score_CE)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="num">${x.C_EU == null ? '–' : fmt(x.C_EU) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
+  let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th>EU 경쟁만</th><th class="num">점수</th><th>VA 가중 수요</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th class="num">EU 점유 변화</th><th>근거</th></tr>';
+  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td>${chipS(x.reading_CE)}</td><td class="num">${x.score_CE == null ? '–' : fmt(x.score_CE)}</td><td>${chipS(x.reading_V)}</td><td class="num">${x.score_V == null ? '–' : fmt(x.score_V)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="num">${x.C_EU == null ? '–' : fmt(x.C_EU) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdSectors').innerHTML = (E.sectors || []).length ? sh : '<tr><td class="empty">품목 자료(관세청) 수집 후 표시</td></tr>';
-  document.getElementById('rdForward').textContent = F ? `전진 확인 상태: 수요 충격만 ${F.status} · EU 경쟁만 ${FC ? FC.status : '–'} — ${F.n_readings}건 기록(reading/forward_log.jsonl, 고쳐 쓰지 않음), 채점 ${F.n_months}개월` : '';
+  document.getElementById('rdForward').textContent = F ? `전진 확인 상태: 수요 충격만 ${F.status} · EU 경쟁만 ${FC ? FC.status : '–'} · VA 가중 수요 ${FV ? FV.status : '–'} — ${F.n_readings}건 기록(reading/forward_log.jsonl, 고쳐 쓰지 않음), 채점 ${F.n_months}개월` : '';
   const LH = R.links_history || {};
   const names = Object.keys(LH).filter(g => LH[g].length);
   const dates = [...new Set(names.flatMap(g => LH[g].map(r => r[0])))].sort();

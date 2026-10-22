@@ -1,11 +1,12 @@
 {
  "title": "글로벌 탑다운 관계 원장 — 노드와 선언 엣지(대응표)",
- "version": 1,
+ "version": 1.1,
  "fixed_at": "2026-10-22",
  "rules": [
   "코드는 이 파일만 읽는다(대응표 하드코딩 → 테스트 실패). 바꾸면 valid_to 로 닫고 새 엣지를 valid_from 으로 열며 reason 을 적는다(지우지 않는다).",
   "사전등록 결과의 해시 대상: 2026-10-22 이전은 코드 파일(kr_industry·trade·eu_imports·reading·stocks·kr_ksic), 이후는 이 파일. 값은 그날 코드와 동일(테스트 fixture 로 고정).",
-  "선언 엣지(여기)는 '무엇이 무엇에 대응하는가'이고, 측정 엣지(연결 강도·비중·점유·베타)는 derived/ 산출물이다 — 섞지 않는다."
+  "선언 엣지(여기)는 '무엇이 무엇에 대응하는가'이고, 측정 엣지(연결 강도·비중·점유·베타)는 derived/ 산출물이다 — 섞지 않는다.",
+  "2026-10-22 v1.1: sector_isic 추가(TiVA 산업×상대국 부가가치 노출용, 전진 트랙 V). 기존 사전등록의 원장 해시 줄은 v1.0 기준으로 그대로 둔다 — 그 검정들은 sector_isic 을 쓰지 않았다."
  ],
  "edge_types": {
   "country_tiva": {
@@ -71,6 +72,11 @@
     "name": "표시 이름"
    },
    "desc": "수입 시장별 상대국 코드('-' = 전체/역외 전체)"
+  },
+  "sector_isic": {
+   "from": "kr_sector",
+   "to": "isic_activity",
+   "desc": "코스피 업종 → OECD TiVA(ISIC rev4) 산업 코드 — 부가가치 기준 노출(FFD_DVA). KSIC 와 ISIC 는 2자리 번호가 다르다(KSIC C27 의료정밀 ≠ ISIC C27 전기장비)"
   }
  },
  "nodes": {
@@ -496,6 +502,13 @@
   {"type": "market_partner", "from": "eu", "to": "TW", "name": "대만", "valid_from": "2026-10-22", "valid_to": null},
   {"type": "market_partner", "from": "eu", "to": "VN", "name": "베트남", "valid_from": "2026-10-22", "valid_to": null},
   {"type": "market_partner", "from": "eu", "to": "MX", "name": "멕시코", "valid_from": "2026-10-22", "valid_to": null},
-  {"type": "market_partner", "from": "eu", "to": "-", "name": "역외 전체", "valid_from": "2026-10-22", "valid_to": null}
+  {"type": "market_partner", "from": "eu", "to": "-", "name": "역외 전체", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U008", "to": "C20", "reason": "KSIC C20 화학 = ISIC C20", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U009", "to": "C21", "reason": "KSIC C21 의약품 = ISIC C21", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U011", "to": "C24", "reason": "KSIC C24 1차금속 = ISIC C24", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U012", "to": "C28", "reason": "KSIC C29 기계 = ISIC C28(기계·장비)", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U013", "to": "C26", "reason": "KSIC C26 전자부품·컴퓨터·통신 = ISIC C26", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U014", "to": "C26", "reason": "KSIC C27 의료·정밀·광학 — ISIC 는 계측·광학이 C26, 의료기기는 C325(TiVA 에서 분리 안 됨) → C26 으로 근사(부정확 명시)", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_isic", "from": "U015", "to": "C29_30", "reason": "KSIC C30 자동차 + C31 기타운송(조선) = ISIC C29_30", "valid_from": "2026-10-22", "valid_to": null}
  ]
 }

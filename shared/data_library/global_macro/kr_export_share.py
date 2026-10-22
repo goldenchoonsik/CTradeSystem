@@ -438,7 +438,7 @@ def write_issues(year: int, df: pd.DataFrame, parse_details: Dict[str, dict]) ->
 def read_issues() -> List[dict]:
     import glob
     out = []
-    for fp in sorted(glob.glob(store.path(*ISSUE_DIR, "issues_*.jsonl"))):
+    for fp in sorted(f for f in glob.glob(store.path(*ISSUE_DIR, "issues_*.jsonl")) if re.search(r"issues_\d{4}\.jsonl$", f)):   # 연도 파일만(history 제외)
         with open(fp, encoding="utf-8") as f:
             out += [json.loads(l) for l in f if l.strip()]
     return out

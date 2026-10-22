@@ -1,6 +1,7 @@
 """판독 엔진 확장 — 사전등록 원안(reading.py, 해시 고정)을 건드리지 않고 덧붙이는 전진 확인 트랙.
 
   R5-CE  EU 시장 경쟁 성분만(z(C^EU)) — PREREGISTRATION_stage4_eu.md E2 '작게 실험' → 조치 규칙대로 2026-10-31~ 전진 기록
+  R5-V   수요 충격을 부가가치 노출(TiVA FFD_DVA, ICIO 승수 기반)로 가중한 변형 z(D^VA) — PREREGISTRATION_reading_engine_V.md, 2026-10-31~ 전진 기록
 시장 공통 점유 계산(competition_from)은 reading.competition 과 같은 식이고 시장·국가 코드만 매개변수다.
 """
 from typing import Dict, Optional
@@ -81,4 +82,36 @@ def attach_ce(r: dict, eu12: Optional[pd.DataFrame]) -> dict:
     for s, v in sector_ce(r["sectors"], comp).items():
         r["sectors"][s].update(v)
     r["competition_eu"] = comp
+    return r
+
+
+def sector_v(sectors: dict, dem: Dict[str, dict], expo_va: Dict[str, Dict[str, float]]) -> Dict[str, dict]:
+    """업종별 부가가치 가중 수요 충격 D^VA = Σ_g expo_va[s][g] × Δ_g (수요 판독이 있는 그룹만) → 업종 간 z = score_V. 3개 미만이면 None."""
+    d = {}
+    for s in sectors:
+        ex = expo_va.get(s)
+        if not ex:
+            d[s] = None
+            continue
+        d[s] = float(sum(ex.get(g, 0.0) * v["delta"] for g, v in dem.items()))
+    ser = pd.Series({k: v for k, v in d.items() if v is not None}, dtype=float)
+    z = (ser - ser.mean()) / ser.std() if len(ser) >= 3 and ser.std() > 0 else None
+    out = {}
+    for s in sectors:
+        zs = float(z[s]) if z is not None and s in z.index else None
+        out[s] = {"D_VA": d[s], "score_V": zs, "reading_V": None if zs is None else "우호" if zs > 0 else "비우호" if zs < 0 else "중립"}
+    return out
+
+
+def attach_v(r: dict, expo_by_year: Dict[int, dict]) -> dict:
+    """read_at 결과 r 에 R5-V 필드를 덧붙인다 — 시점 t 에 공표돼 있던 TiVA 연도(t.year − 3 이하 최근)만 쓴다."""
+    from . import tiva_industry as TI
+    if not expo_by_year or not r.get("sectors") or not r.get("demand"):
+        return r
+    yr = TI.year_available(r["t"], expo_by_year.keys())
+    if yr is None:
+        return r
+    for s, v in sector_v(r["sectors"], r["demand"], expo_by_year[yr]).items():
+        r["sectors"][s].update(v)
+    r["va_year"] = yr
     return r

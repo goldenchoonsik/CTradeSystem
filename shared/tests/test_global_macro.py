@@ -514,9 +514,9 @@ def test_ledger_file_validates_and_has_history_fields():
     assert ledger.validate(L) == []
     assert all(e["valid_from"] and "valid_to" in e for e in L["edges"])
     s = ledger.summary()
-    assert s["node_counts"]["kr_sector"] == 20 and s["edge_counts"]["country_tiva"] == 27 and len(s["sha256"]) == 64
+    assert s["node_counts"]["kr_sector"] == 20 and s["edge_counts"]["country_tiva"] == 27 and s["edge_counts"]["sector_isic"] == 7 and len(s["sha256"]) == 64
     g = ledger.graph_view()
-    assert g["nodes"]["kr_sector"]["U013"] == "전기·전자" and g["edge_types"]["group_member"]["from"] == "group" and len(g["edges"]) == 181
+    assert g["nodes"]["kr_sector"]["U013"] == "전기·전자" and g["edge_types"]["group_member"]["from"] == "group" and len(g["edges"]) == 188
 
 
 def test_ledger_validator_catches_broken_references_and_history():
@@ -734,3 +734,20 @@ def test_issue_ledger_event_and_state_semantics(stage):
     txt = open(I.write_digest(), encoding="utf-8").read()
     assert "export_share:2025" in txt and "kr_ksic" in txt and "A3" in txt
     assert I.summary()["fixable"] == 2 and I.summary()["total"] == 3
+
+
+# ---------------------------------------------------------------- R5-V 부가가치 가중 수요(전진 트랙 V)
+def test_track_v_weights_demand_by_value_added_exposure_and_respects_publication_lag():
+    from shared.data_library.global_macro import reading_ext as X
+    from shared.data_library.global_macro import tiva_industry as TI
+    secs = {s: {"name": s, "score": 0.0} for s in ("U008", "U009", "U011", "U012", "U013")}
+    dem = {"미국": {"delta": 0.10}, "중국+홍콩": {"delta": -0.20}}
+    expo = {2022: {"U013": {"미국": 0.2, "중국+홍콩": 0.35}, "U009": {"미국": 0.25, "중국+홍콩": 0.05}, "U008": {"미국": 0.18, "중국+홍콩": 0.25},
+                   "U011": {"미국": 0.22, "중국+홍콩": 0.16}, "U012": {"미국": 0.2, "중국+홍콩": 0.19}}}
+    r = X.attach_v({"t": "2026-09-30", "sectors": secs, "demand": dem}, expo)
+    assert r["va_year"] == 2022 and r["sectors"]["U009"]["reading_V"] == "우호" and r["sectors"]["U013"]["reading_V"] == "비우호"
+    assert r["sectors"]["U009"]["D_VA"] == pytest.approx(0.25 * 0.10 - 0.05 * 0.20)
+    import copy
+    r2 = X.attach_v({"t": "2024-06-30", "sectors": copy.deepcopy({s: {"name": s, "score": 0.0} for s in secs}), "demand": dem}, expo)      # 2022 는 2025-11 공표 → 2024 시점엔 못 씀
+    assert "va_year" not in r2 and "score_V" not in r2["sectors"]["U009"]
+    assert TI.year_available("2026-01-31", [2019, 2020, 2021, 2022]) == 2022 and TI.year_available("2010-01-31", [2019]) is None
