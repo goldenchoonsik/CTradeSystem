@@ -50,6 +50,7 @@
 | 4c. 판독 일지 | 화면 '📓 판독 일지' 탭 + `/api/topdown/journal`, 저장 `journal/entries.jsonl`(append-only), 다음 거래일 종가 시작·만기 자동 채점·기본 확률·브라이어·확신도 구간 적중 — `shared/data_library/global_macro/journal.py` | 완료(10-22) |
 | 4d. 관계 그래프 | 화면 '🧩 관계 그래프' 탭(Cytoscape): 상대국 그룹 → 한국 수출·코스피 → 코스피 업종 7 → 경쟁 품목(선언, 점선)·종목 후보. 실선 = 측정 엣지(총수출 비중·업종 노출·주가 연결도·업종 베타), 색 = 상태(연결·수요·업종 판독), 월 슬라이더(2008-01~, `?m=YYYY-MM`), 노드 클릭 = 근거 사슬(원장 구성·연결·수요·비중·민감도·사건·HS·품목·종목). 데이터 추가 없음 — reading.json 에 demand_history·exposure_by_year, stage1.json 에 ledger(요약+선언 엣지) | 완료(10-22) |
 | 4e. 지평 곡선(국소투영) | `PREREGISTRATION_horizon.md`(434f3100…), `results_horizon.md`, `reading_horizon.py`, 화면 '시스템 판독' 탭 '지평 곡선' 카드 + 일지 기본 기간, `signals/registry_stage6_horizon.json` | 완료(10-22) |
+| 4f. 측정 엣지 저장소 | `edge_store.py`: `edges/edges.parquet` append-only(키 t·type·src·dst, 처음 기록 유지), 8종(link·demand·export_share·sector_reading·sector_exposure·equity_spillover·import_share·stock_beta), '화면 JSON' 단계마다 동기화, `/api/topdown/edges?t=`; 관계 그래프 탭은 저장소만 읽음(선언 엣지는 원장); 원장 탭에 원장에서 자동 생성한 Mermaid 구조 다이어그램. 판독 엔진은 저장소를 읽지 않음(범위 결정) | 완료(10-22) |
 
 ## 방향 전환 (2026-10-22, 사용자)
 
@@ -105,6 +106,7 @@
 - 2026-10-22(밤): **관계 원장 분리** — 대응표 13개(trade.PARTNERS·EXTRA_TIVA/CLI, reading.PARTNERS·SECTOR_HS·SECTOR_US, kr_industry.SECTORS, kr_ksic.KSIC2_TO_SECTOR, us/eu_imports.PARTNERS·PRODUCTS, relations.LINK_PAIRS·SHARE_GROUPS)를 코드 리터럴에서 `reference/relations_ledger.json`(노드 6층·선언 엣지 181개·종류 카탈로그 11, valid_from/valid_to/reason)으로 옮김. 값은 그대로(옮기기 전 스냅샷 `shared/tests/fixtures/global_macro_tables_20261022.json` 과 값·순서 동일 테스트). 이유: 코드↔자료 분리·유지보수·관계 시각화(그래프 탭)의 단일 원천. **사전등록 해시**: 그동안 코드 파일(kr_industry·trade·eu_imports·reading·stocks·kr_ksic) 해시가 대응표 고정 역할을 했는데 이 이동으로 파일 해시가 바뀜 → 각 .sha256 에 원장 해시 a4e93d6d… 를 **추가**(옛 줄은 그대로 = 옮기기 전 코드, 커밋 046c844 에서 확인 가능). 이후 대응표 변경은 원장 해시·fixture·이 기록으로 추적.
 - 2026-10-22(밤): 관계 그래프 탭(4d) — 가벼운 판. 품목·종목·주가 연결도는 현재 값만(과거 달에선 흐리게). 판독 이력은 그 달 기록이 없으면 '판독 없음'(이전 달을 끌어오지 않음 — 처음 구현에서 끊긴 상대국이 옛 판독으로 표시된 결함 수리). 다음 = 엣지 저장소(측정 엣지 append-only)로 그래프를 저장소 기반으로.
 - 2026-10-22(밤): 지평 곡선(4e) 사전등록·계산 — 결과는 아래 절. 조치: (a) 메모 일지 기본 기간 = 선택지(3·6·12) 중 업종 판독 h*=11 에 가장 가까운 12개월, 화면 수요 판독 카드에 '단기 정보' 경고. 운영 채점 지평 6개월·전진 트랙 D·CE 불변.
+- 2026-10-22(밤): 측정 엣지 저장소(4f) — 사용자가 권고 범위(엔진은 안 읽음) 승인. 첫 동기화 50,572행(2008-01~2026-09 판독 225개월 + 수입 점유 2011~·수출 비중 1995~). 다음에 판독 엔진이 저장소를 읽게 하려면 ICIO 승수(⑥)와 함께 새 전진 트랙으로. 그래프 품목 색이 이제 그 달의 한국 미국 점유 3년 변화(저장소)로 시간에 따라 바뀜.
 
 ## 1단계 결과 (2026-10-22, 기술 통계 — 판정 없음)
 

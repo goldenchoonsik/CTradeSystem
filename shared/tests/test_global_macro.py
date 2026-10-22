@@ -514,7 +514,9 @@ def test_ledger_file_validates_and_has_history_fields():
     assert ledger.validate(L) == []
     assert all(e["valid_from"] and "valid_to" in e for e in L["edges"])
     s = ledger.summary()
-    assert s["nodes"]["kr_sector"] == 20 and s["edges"]["country_tiva"] == 27 and len(s["sha256"]) == 64
+    assert s["node_counts"]["kr_sector"] == 20 and s["edge_counts"]["country_tiva"] == 27 and len(s["sha256"]) == 64
+    g = ledger.graph_view()
+    assert g["nodes"]["kr_sector"]["U013"] == "전기·전자" and g["edge_types"]["group_member"]["from"] == "group" and len(g["edges"]) == 181
 
 
 def test_ledger_validator_catches_broken_references_and_history():
@@ -618,3 +620,44 @@ def test_horizon_demand_curve_scores_against_mean_reversion_baseline():
     assert a.loc[6, "hit"] == 1.0 and a.loc[6, "diff"] >= 0
     assert a.loc[12, "hit"] < a.loc[6, "hit"]                                # 지평이 멀어지면 정보가 준다
     assert len(H.demand_curve(D, hist, [3], total=True)) == 3 and H.demand_curve(D, hist, [3], total=True).n_months.sum() == 0   # total 없음 → 빈 곡선
+
+
+# ---------------------------------------------------------------- 측정 엣지 저장소(append-only)
+def _edge_inputs():
+    hist = pd.DataFrame([
+        {"t": "2026-08-31", "kind": "link", "key": "미국", "state": "약함", "rho": 0.4, "k": 4.0, "call": "감속", "delta": -0.3},
+        {"t": "2026-08-31", "kind": "link", "key": "호주", "state": "끊김", "rho": 0.1, "k": 9.0, "call": np.nan, "delta": np.nan},
+        {"t": "2026-08-31", "kind": "sector", "key": "U013", "state": "우호", "rho": 0.9, "k": np.nan, "call": "우호", "delta": -0.07},
+        {"t": "2026-09-30", "kind": "link", "key": "미국", "state": "약함", "rho": 0.41, "k": 4.0, "call": "감속", "delta": -0.4},
+    ])
+    reading = {"t": "2026-09-30", "exposure_by_year": {"2025": {"U013": {"미국": 0.13, "중국+홍콩": 0.36}}},
+               "stocks": {"U013": {"stocks": [{"code": "A000660", "name": "SK하이닉스", "beta": 1.69, "mcap_bn": 1.0, "ret_6m": 49.3}]}}}
+    relations = {"export_shares": {"미국": [["2026-07-31", 17.5], ["2026-08-31", 17.8]]},
+                 "us_competition": {"8542": {"series": [["한국", [[f"{y}-{m:02d}-28", 5.0 + y - 2020] for y in (2021, 2022, 2023, 2024, 2025) for m in range(1, 13)]]]}}}
+    influence = {"rolling": [{"date": "2026-09-05", "to_kr": {"US": 8.0, "KR": 55.0}}, {"date": "2026-09-26", "to_kr": {"US": 8.8, "KR": 54.0}}]}
+    return hist, reading, relations, influence
+
+
+def test_edge_store_is_append_only_and_keeps_first_record(stage):
+    from shared.data_library.global_macro import edge_store as ES
+    hist, reading, relations, influence = _edge_inputs()
+    info = ES.sync(hist, reading, relations, influence)
+    assert info["rows"] == info["added"] > 0 and info["latest"] == "2026-09-30"
+    first = ES.read()
+    assert set(first["type"]) == {"link", "demand", "sector_reading", "export_share", "sector_exposure", "equity_spillover", "import_share", "stock_beta"}
+    assert (first[first.type == "demand"].src == "g:미국").all()                    # 끊긴 호주는 수요 엣지 없음
+    hist2 = hist.copy(); hist2.loc[0, "rho"] = 0.99                                # 재계산으로 과거 값이 바뀌어도
+    info2 = ES.sync(hist2, reading, relations, influence)
+    assert info2["added"] == 0
+    df = ES.read(); df["t"] = pd.to_datetime(df["t"])
+    row = df[(df.type == "link") & (df.t == pd.Timestamp("2026-08-31")) & (df.src == "g:미국")].iloc[0]
+    assert row.weight == 0.4                                                         # 처음 기록이 남는다
+    # 그 달에 보이는 엣지: 월별은 같은 달, 노출은 (t−1 월의 전년) 12-31, 베타는 최신 달만, 주가 연결도는 달의 마지막 창
+    a = ES.at("2026-09-30")
+    assert set(a[a.type == "sector_exposure"].t.astype(str).str[:4]) == {"2025"}
+    assert (a[a.type == "equity_spillover"].weight == 8.8).all()
+    assert len(a[a.type == "stock_beta"]) == 1 and len(ES.at("2026-08-31", ["stock_beta"])) == 0
+    p = ES.payload()
+    assert p["t"] == "2026-09-30" and "link" in p["units"] and any(e["type"] == "demand" and e["state"] == "감속" for e in p["edges"])
+    imp = [e for e in ES.payload("2025-12-28")["edges"] if e["type"] == "import_share"]
+    assert imp and imp[0]["evidence"]["chg3y"] == pytest.approx(3.0)              # 2025 − 2022

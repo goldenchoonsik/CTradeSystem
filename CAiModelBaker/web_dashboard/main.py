@@ -5337,6 +5337,16 @@ async def api_topdown_journal_action(entry_id: str, action: str, payload: dict):
     return {"status": "ok", "event": ev}
 
 
+@app.get("/api/topdown/edges")
+async def api_topdown_edges(t: str = ""):
+    """측정 엣지 저장소(append-only)에서 월 t(YYYY-MM-DD 또는 YYYY-MM, 없으면 최신)의 엣지 + 월 목록 + 단위. 관계 그래프 탭이 읽는다."""
+    from shared.data_library.global_macro import edge_store as _es
+    try:
+        return _es.payload(t or None)
+    except Exception as e:   # noqa: BLE001
+        return JSONResponse(status_code=400, content={"status": "error", "message": str(e)[:200]})
+
+
 @app.get("/api/topdown/{stage}")
 async def api_topdown(stage: str):
     """단계별 화면용 JSON(stage1 …). 없으면 status=error — '전체 갱신'을 먼저 돌려야 함."""

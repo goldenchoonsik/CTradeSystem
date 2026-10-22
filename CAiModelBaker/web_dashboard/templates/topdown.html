@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.4/cytoscape.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
 <style>
   body { overflow-y: auto; background: var(--bg-primary); }
   .td-wrap { max-width: 1280px; margin: 0 auto; padding: 18px 18px 60px; }
@@ -293,6 +294,10 @@
       <h3>관계 원장 — 대응표(선언 엣지)</h3>
       <div class="td-sub">코드가 아니라 <code>global_macro/reference/relations_ledger.json</code> 하나가 상대국·그룹·업종·품목·수입 시장의 대응을 정한다(코드에 적으면 테스트 실패). 바꿀 땐 옛 엣지를 valid_to 로 닫고 이유를 적는다.</div>
       <div id="relLedger" class="muted" style="font-size:12px;"></div>
+      <div style="margin-top:10px;font-size:12px;" id="mmTypes"></div>
+      <div id="mmBox" style="overflow:auto;max-height:720px;margin-top:8px;"></div>
+      <details style="margin-top:6px;"><summary class="muted" style="cursor:pointer;font-size:12px;">Mermaid 원문(원장에서 자동 생성 — 손으로 그린 그림 없음)</summary><pre class="log" id="mmSrc"></pre></details>
+      <div class="td-sub" style="margin-top:8px;">측정 엣지 저장소: <span id="edgeStoreInfo"></span></div>
     </div>
     <div class="td-card">
       <h3>원장 — 변수·원천·발표 시차·신선도</h3>
@@ -694,72 +699,68 @@ const atOrBefore = (rows, t, maxDays = 93) => { let out = null; for (const r of 
 const grLedger = () => D.ledger || {nodes: {}, edges: []};
 const grEdges = (type, extra) => grLedger().edges.filter(e => e.type === type && (!extra || Object.entries(extra).every(([k, v]) => e[k] === v)));
 
-function grBuild(t) {
-  const R = D.reading || {}, REL = D.relations || {}, TR = D.trade || {}, LG = grLedger();
-  const latest = R.t, isLatest = t === latest, dim = isLatest ? 1 : 0.3;
+function grBuild(t, P) {
+  // P = /api/topdown/edges?t= 응답(측정 엣지 저장소). 선언 엣지(업종↔품목)만 원장(D.ledger)에서.
+  const R = D.reading || {}, TR = D.trade || {}, LG = grLedger();
+  const latest = R.t, isLatest = t === latest;
   const showReal = document.getElementById('grReal').checked, showEq = document.getElementById('grEq').checked,
         showDecl = document.getElementById('grDecl').checked, showStocks = document.getElementById('grStocks').checked;
-  const groups = Object.keys(R.links_history || {});
+  const E0 = P.edges || [], by = type => E0.filter(e => e.type === type);
   const va = (TR.influence_index || {}).va_share || {};
-  groups.sort((a, b) => (va[b] || 0) - (va[a] || 0));
-  const secOrder = (R.evidence && R.evidence.sectors || []).map(s => s.s);
-  const yr = String(new Date(t).getFullYear() - 1 - (new Date(t).getMonth() === 0 ? 1 : 0));   // 판독 t 는 t−1 월의 전년 비중
-  const expo = (R.exposure_by_year || {})[yr] || (R.exposure_by_year || {})[String(Number(yr) - 1)] || {};
+  const groups = [...new Set(by('link').map(e => e.src))].sort((a, b) => (va[b.slice(2)] || 0) - (va[a.slice(2)] || 0));
+  const secOrder = (R.evidence && R.evidence.sectors || []).map(s => `s:${s.s}`);
   const nodes = [], edges = [];
   const H = 600, Y = (i, n) => 30 + (n <= 1 ? H / 2 : i * H / (n - 1));
   const node = (id, label, x, y, color, layer, extra) => nodes.push({data: Object.assign({id, label, color, layer, op: 1}, extra || {}), position: {x, y}});
-  // 상대국 그룹
-  groups.forEach((g, i) => {
-    const lk = atT(R.links_history[g], t), dm = atT((R.demand_history || {})[g], t);
-    const call = dm ? dm[1] : null;
-    node(`g:${g}`, g + (call ? ` ${call}` : ''), 60, Y(i, groups.length), call ? GR_COL[call] : GR_COL.none, 'group', {state: lk ? lk[1] : null, rho: lk ? lk[2] : null, call, delta: dm ? dm[2] : null});
+  const one = (type, src, dst) => E0.find(e => e.type === type && e.src === src && (!dst || e.dst === dst));
+  groups.forEach((id, i) => {
+    const lk = one('link', id), dm = one('demand', id), g = id.slice(2);
+    node(id, g + (dm ? ` ${dm.state}` : ''), 60, Y(i, groups.length), dm ? GR_COL[dm.state] : GR_COL.none, 'group', {state: lk && lk.state, rho: lk && lk.weight, call: dm && dm.state, delta: dm && dm.weight});
   });
   node('kr:exp', '한국 수출', 300, 160, '#f1fa8c', 'kr');
   node('kr:kospi', '코스피', 300, 440, '#f1fa8c', 'kr');
-  // 업종
-  secOrder.forEach((s, i) => {
-    const sh = atT((R.sector_history || {})[s], t);
-    const name = (LG.nodes.kr_sector || {})[s] || s, score = sh ? sh[1] : null, rd = score === null ? '중립' : score > 0 ? '우호' : score < 0 ? '비우호' : '중립';
-    node(`s:${s}`, `${name} ${rd}`, 560, Y(i, secOrder.length), GR_COL[rd], 'sector', {score, scoreD: sh ? sh[2] : null, reading: rd});
+  secOrder.forEach((id, i) => {
+    const sr = one('sector_reading', id), name = (LG.nodes.kr_sector || {})[id.slice(2)] || id;
+    const rd = sr ? sr.state : '중립';
+    node(id, `${name} ${rd}`, 560, Y(i, secOrder.length), GR_COL[rd] || GR_COL.중립, 'sector', {score: sr && sr.weight, scoreD: sr && sr.evidence && sr.evidence.D, reading: rd});
   });
-  // 품목(선언) · 종목 후보(측정, 현재만)
-  const prods = showDecl ? [...new Set(grEdges('sector_product').map(e => e.to))] : [];
-  const comp = REL.us_competition || {};
-  prods.forEach((p, i) => {
-    const snap = ((comp[p] || {}).snapshot || {})['한국'] || {};
-    const c = snap.chg3y === undefined ? GR_COL.none : snap.chg3y > 0.3 ? GR_COL.가속 : snap.chg3y < -0.3 ? GR_COL.감속 : GR_COL.중립;
-    node(`p:${p}`, (LG.nodes.product || {})[p] || p, 820, Y(i, prods.length), c, 'product', {op: dim, kr: snap});
+  const prods = showDecl ? [...new Set(grEdges('sector_product').map(e => `p:${e.to}`))] : [];
+  prods.forEach((id, i) => {
+    const kr = one('import_share', 'mk:us:한국', id), chg = kr && kr.evidence ? kr.evidence.chg3y : null;
+    const c = chg === null || chg === undefined ? GR_COL.none : chg > 0.3 ? GR_COL.가속 : chg < -0.3 ? GR_COL.감속 : GR_COL.중립;
+    node(id, (LG.nodes.product || {})[id.slice(2)] || id, 820, Y(i, prods.length), c, 'product', {kr_share: kr && kr.weight, kr_chg3y: chg});
   });
-  const stocks = [];
-  if (showStocks) Object.entries(R.stocks || {}).forEach(([s, v]) => (v.stocks || []).slice(0, 3).forEach(st => stocks.push(Object.assign({sector: s}, st))));
-  stocks.forEach((st, i) => node(`k:${st.code}`, st.name, 1080, Y(i, stocks.length), '#bd93f9', 'stock', Object.assign({op: dim}, st)));
-  // 측정 엣지 — 종류 안에서 정규화
-  const E = [];
-  const edge = (type, src, tgt, w, color, style, title, extra) => E.push({type, src, tgt, w, color, style, title, extra: extra || {}});
+  const perSec = {};                                                                   // 저장소엔 후보 전부 — 그래프는 업종당 상위 3(후보 순서 = 베타 순)
+  const stockEdges = showStocks ? by('stock_beta').filter(e => (perSec[e.src] = (perSec[e.src] || 0) + 1) <= 3) : [];
+  stockEdges.forEach((e, i) => node(e.dst, (e.evidence || {}).name || e.dst, 1080, Y(i, stockEdges.length), '#bd93f9', 'stock', Object.assign({beta: e.weight}, e.evidence || {})));
+  const Ebuf = [];
+  const edge = (type, src, dst, w, color, style, title, extra) => Ebuf.push({type, src, dst, w, color, style, title, extra: extra || {}});
+  const U = P.units || {};
   if (showReal) {
-    groups.forEach(g => {
-      const lk = atT(R.links_history[g], t), sh = atOrBefore((REL.export_shares || {})[g], t);
-      const w = sh ? sh[1] : (va[g] || 0), unit = sh ? `총수출 비중 ${fmt(w, 1)}% (${sh[0].slice(0, 7)})` : `부가가치 비중 ${fmt(w, 1)}% (TiVA ${(TR.influence_index || {}).year || ''})`;
-      edge('export', `g:${g}`, 'kr:exp', w, GR_COL[lk ? lk[1] : 'none'], 'solid', `${g} → 한국 수출 · ${unit} · 연결 ${lk ? lk[1] + ' 상관 ' + fmt(lk[2]) : '–'}`);
-      secOrder.forEach(s => {
-        const x = (expo[s] || {})[g] || 0, dm = atT((R.demand_history || {})[g], t);
-        if (x >= 0.02) edge('expo', `g:${g}`, `s:${s}`, x * 100, GR_COL[dm ? dm[1] : 'none'], 'solid', `${(LG.nodes.kr_sector || {})[s]} 수출 중 ${g} ${fmt(x * 100, 0)}% (${yr}년) · ${g} 수요 ${dm ? dm[1] : '판독 없음'}`);
-      });
+    groups.forEach(id => {
+      const lk = one('link', id), sh = one('export_share', id), g = id.slice(2);
+      const w = sh ? sh.weight : (va[g] || 0), unit = sh ? `총수출 비중 ${fmt(w, 1)}%` : `부가가치 비중 ${fmt(w, 1)}% (TiVA ${(TR.influence_index || {}).year || ''}, 월별 비중 없음)`;
+      edge('export', id, 'kr:exp', w, GR_COL[lk ? lk.state : 'none'], 'solid', `${g} → 한국 수출 · ${unit} · 연결 ${lk ? lk.state + ' 상관 ' + fmt(lk.weight) + ' (' + U.link + ')' : '–'}`);
+    });
+    by('sector_exposure').forEach(e => {
+      if (!groups.includes(e.src) || !secOrder.includes(e.dst) || e.weight < 0.02) return;
+      const dm = one('demand', e.src);
+      edge('expo', e.src, e.dst, e.weight * 100, GR_COL[dm ? dm.state : 'none'], 'solid', `${(LG.nodes.kr_sector || {})[e.dst.slice(2)]} 수출 중 ${e.src.slice(2)} ${fmt(e.weight * 100, 0)}% (${U.sector_exposure}) · 수요 ${dm ? dm.state : '판독 없음'}`);
     });
     edge('total', 'kr:exp', 'kr:kospi', 1, '#6b7280', 'dashed', '총수출 판독 → 코스피 (경로 표시만; 검정은 R3)');
   }
-  if (showEq) Object.entries(GR_MK).forEach(([g, mk]) => {
-    const w = (TR.equity_to_kr || {})[mk];
-    if (w !== undefined && groups.includes(g)) edge('equity', `g:${g}`, 'kr:kospi', w, '#8be9fd', 'solid', `${g} 주가 → 코스피 주간 변동 ${fmt(w, 1)}% (Diebold–Yilmaz, 현재 전체 기간)`, {op: dim});
+  if (showEq) by('equity_spillover').forEach(e => {
+    const g = Object.entries(GR_MK).find(([, mk]) => `c:${mk}` === e.src);
+    if (g && groups.includes(`g:${g[0]}`)) edge('equity', `g:${g[0]}`, 'kr:kospi', e.weight, '#8be9fd', 'solid', `${g[0]} 주가 → 코스피 ${fmt(e.weight, 1)}% (${U.equity_spillover})`);
   });
   if (showDecl) grEdges('sector_product').forEach(e => {
-    if (secOrder.includes(e.from)) edge('declared', `s:${e.from}`, `p:${e.to}`, 1, '#5b5b66', 'dotted', `선언(원장): ${(LG.nodes.kr_sector || {})[e.from]} ↔ ${(LG.nodes.product || {})[e.to]} — 미국·EU 시장 경쟁 품목`, {op: dim});
+    if (secOrder.includes(`s:${e.from}`)) edge('declared', `s:${e.from}`, `p:${e.to}`, 1, '#5b5b66', 'dotted', `선언(원장): ${(LG.nodes.kr_sector || {})[e.from]} ↔ ${(LG.nodes.product || {})[e.to]} — 미국·EU 시장 경쟁 품목`);
   });
-  if (showStocks) stocks.forEach(st => edge('beta', `s:${st.sector}`, `k:${st.code}`, Math.max(st.beta || 0, 0.05), '#bd93f9', 'solid', `${st.name} 업종 베타 ${fmt(st.beta)} (36개월, 현재)`, {op: dim}));
+  stockEdges.forEach(e => edge('beta', e.src, e.dst, Math.max(e.weight || 0, 0.05), '#bd93f9', 'solid', `${(e.evidence || {}).name} 업종 베타 ${fmt(e.weight)} (${U.stock_beta})`));
   const maxW = {};
-  E.forEach(e => { maxW[e.type] = Math.max(maxW[e.type] || 0, e.w); });
-  E.forEach((e, i) => edges.push({data: Object.assign({id: `e${i}`, source: e.src, target: e.tgt, w: 1 + 6 * e.w / (maxW[e.type] || 1), color: e.color, style: e.style, title: e.title, op: 1, arrow: e.type === 'declared' ? 'none' : 'triangle'}, e.extra)}));
-  return {nodes, edges, isLatest};
+  Ebuf.forEach(e => { maxW[e.type] = Math.max(maxW[e.type] || 0, e.w); });
+  Ebuf.forEach((e, i) => edges.push({data: Object.assign({id: `e${i}`, source: e.src, target: e.dst, w: 1 + 6 * e.w / (maxW[e.type] || 1), color: e.color, style: e.style, title: e.title, op: 1, arrow: e.type === 'declared' ? 'none' : 'triangle'}, e.extra)}));
+  return {nodes, edges, isLatest, hasStocks: stockEdges.length > 0};
 }
 
 function grInfo(n) {
@@ -767,7 +768,9 @@ function grInfo(n) {
   const row = (k, v) => `<tr><td class="muted" style="white-space:nowrap;padding:2px 8px 2px 0;">${esc(k)}</td><td>${v}</td></tr>`;
   let h = `<div style="font-weight:600;font-size:14px;margin-bottom:6px;">${esc(d.label)}</div><table style="font-size:12px;">`;
   if (d.layer === 'group') {
-    const g = d.id.slice(2), lk = atT(R.links_history[g], t), dm = atT((R.demand_history || {})[g], t), sh = atOrBefore((REL.export_shares || {})[g], t);
+    const g = d.id.slice(2), E0 = GR.P.edges || [], one = (type, src) => E0.find(e => e.type === type && e.src === src);
+    const lk0 = one('link', d.id), dm0 = one('demand', d.id), sh0 = one('export_share', d.id);
+    const lk = lk0 && [t, lk0.state, lk0.weight], dm = dm0 && [t, dm0.state, dm0.weight], sh = sh0 && [t, sh0.weight];
     h += row('구성(원장)', grEdges('group_member', {from: g, scope: 'reading'}).map(e => `${esc(e.to)} ${esc((LG.nodes.country || {})[e.to] || '')}`).join(', '));
     h += row('선행지수', grEdges('group_cli', {from: g}).map(e => e.to).join(', '));
     h += row(`연결 ${t.slice(0, 7)}`, lk ? `${esc(lk[1])} · 5년 상관 ${fmt(lk[2])}` : '–');
@@ -783,7 +786,7 @@ function grInfo(n) {
     if (evs.length) h += row('사건', evs.map(e => `${e.date.slice(0, 7)} ${esc(e.title)}`).join('<br>'));
   } else if (d.layer === 'sector') {
     const s = d.id.slice(2), yr = String(new Date(t).getFullYear() - 1 - (new Date(t).getMonth() === 0 ? 1 : 0));
-    const ex = ((R.exposure_by_year || {})[yr] || {})[s] || {};
+    const ex = Object.fromEntries((GR.P.edges || []).filter(e => e.type === 'sector_exposure' && e.dst === d.id).map(e => [e.src.slice(2), e.weight]));
     h += row(`판독 ${t.slice(0, 7)}`, `${esc(d.reading)} · 합성 ${fmt(d.score, 2)} · 수요만 ${fmt(d.scoreD, 2)}`);
     h += row('HS(원장)', `포함 ${grEdges('sector_hs', {from: s, mode: 'include'}).map(e => e.to).join(', ')}${grEdges('sector_hs', {from: s, mode: 'exclude'}).length ? ' / 제외 ' + grEdges('sector_hs', {from: s, mode: 'exclude'}).map(e => e.to).join(', ') : ''}`);
     h += row('경쟁 품목(원장)', grEdges('sector_product', {from: s}).map(e => esc((LG.nodes.product || {})[e.to] || e.to)).join(', ') || '없음');
@@ -794,6 +797,8 @@ function grInfo(n) {
     if (st) h += row('종목 후보(현재)', `${st.n_pass}/${st.n_universe} 통과 · 베타 중앙값 ${fmt(st.beta_median)}<br>` + (st.stocks || []).slice(0, 5).map(x => `${esc(x.name)} β${fmt(x.beta)} 6개월 ${fmt(x.ret_6m, 0)}%`).join('<br>'));
   } else if (d.layer === 'product') {
     const p = d.id.slice(2);
+    const sh = (GR.P.edges || []).filter(e => e.type === 'import_share' && e.dst === d.id);
+    if (sh.length) h += row(`점유 ${t.slice(0, 7)}(저장소)`, sh.map(e => `${esc(e.src.split(':')[1].toUpperCase())} ${esc(e.src.split(':')[2])} ${fmt(e.weight, 1)}%${e.evidence && e.evidence.chg3y !== null && e.evidence.chg3y !== undefined ? ' (3년 ' + fmt(e.evidence.chg3y, 1) + 'p)' : ''}`).join('<br>'));
     [['미국', REL.us_competition], ['EU', REL.eu_competition]].forEach(([mk, C]) => {
       const c = (C || {})[p]; if (!c) return;
       const kr = (c.snapshot || {})['한국'] || {}, cn = (c.snapshot || {})['중국'] || {};
@@ -813,10 +818,12 @@ function grInfo(n) {
   document.getElementById('grInfo').innerHTML = h + '</table>';
 }
 
-function renderGraph() {
-  const R = D.reading || {};
-  if (!R.links_history || !window.cytoscape) { document.getElementById('grCy').innerHTML = '<div class="empty">판독 이력 없음(시스템 판독 단계 실행) 또는 Cytoscape 로드 실패</div>'; return; }
-  GR.dates = [...new Set(Object.values(R.links_history).flatMap(rows => rows.map(r => r[0])))].sort();
+async function renderGraph() {
+  if (!window.cytoscape) { document.getElementById('grCy').innerHTML = '<div class="empty">Cytoscape 로드 실패</div>'; return; }
+  let P0;
+  try { P0 = await (await fetch('/api/topdown/edges')).json(); } catch (e) { P0 = {months: []}; }
+  if (!P0.months || !P0.months.length) { document.getElementById('grCy').innerHTML = '<div class="empty">엣지 저장소 비어 있음 — 화면 JSON(전체 갱신) 단계를 실행하면 쌓인다</div>'; return; }
+  GR.dates = P0.months; GR.P = P0;
   const sl = document.getElementById('grMonth');
   sl.min = 0; sl.max = GR.dates.length - 1;
   if (!GR.cy) {
@@ -824,9 +831,11 @@ function renderGraph() {
     const i = want ? GR.dates.findIndex(d => d.startsWith(want)) : -1;
     GR.idx = i >= 0 ? i : GR.dates.length - 1; sl.value = GR.idx;
   }
-  const draw = () => {
-    const t = GR.dates[GR.idx], g = grBuild(t);
-    document.getElementById('grMonthLabel').textContent = t.slice(0, 7) + (g.isLatest ? ' (최신 판독)' : ' — 품목·종목·주가 경로는 현재 값(흐리게)');
+  const draw = async () => {
+    const t = GR.dates[GR.idx];
+    if (!GR.P || GR.P.t !== t) { try { GR.P = await (await fetch('/api/topdown/edges?t=' + t)).json(); } catch (e) { return; } }
+    const g = grBuild(t, GR.P);
+    document.getElementById('grMonthLabel').textContent = t.slice(0, 7) + (g.isLatest ? ' (최신 판독)' : '') + (g.hasStocks ? '' : ' · 종목 베타는 최신 판독 달에만') + ` · 저장소 엣지 ${(GR.P.edges || []).length}개`;
     if (GR.cy) GR.cy.destroy();
     GR.cy = cytoscape({container: document.getElementById('grCy'), elements: [...g.nodes, ...g.edges], layout: {name: 'preset', fit: true, padding: 20},
       userZoomingEnabled: true, boxSelectionEnabled: false,
@@ -858,6 +867,40 @@ function renderGraph() {
   sl.oninput = () => { GR.idx = Number(sl.value); draw(); };
   ['grReal', 'grEq', 'grDecl', 'grStocks'].forEach(id => document.getElementById(id).onchange = draw);
   draw();
+}
+
+// ---------------------------------------------------------------- 원장 탭: 구조 다이어그램(관계 원장에서 자동 생성, Mermaid)
+const MM_TYPES = {group_member: '그룹 → 구성 상대국', sector_product: '업종 → 경쟁 품목', sector_hs: '업종 → 수출 HS', market_partner: '수입 시장 → 상대국', sector_kf49: '업종 → KF49', sector_ksic: '업종 → KSIC', country_cli: '상대국 → 선행지수'};
+function mermaidFromLedger(types) {
+  const LG = grLedger(), ids = new Map(), lines = ['flowchart LR'];
+  const nid = (layer, key) => { const k = `${layer}|${key}`; if (!ids.has(k)) ids.set(k, {id: `n${ids.size}`, layer, key}); return ids.get(k).id; };
+  const label = (layer, key) => ((LG.nodes[layer] || {})[key] || key);
+  const E = LG.edges.filter(e => types.includes(e.type) && !(e.type === 'group_member' && e.scope !== 'reading'));
+  const edgeLines = E.map(e => {
+    const T = (D.ledger.edge_types || {})[e.type] || {}, fromL = T.from || 'x', toL = (LG.nodes[T.to] ? T.to : (e.type === 'market_partner' ? 'market_code' : T.to)) || 'y';
+    const a = nid(fromL, e.from), b = nid(toL, e.type === 'market_partner' ? `${e.from}:${e.to}` : e.to);
+    const lab = e.mode === 'exclude' ? '|제외|' : e.scope ? `|${e.scope}|` : '';
+    return `  ${a} ${e.mode === 'exclude' ? '-.->' : '-->'}${lab} ${b}`;
+  });
+  const layers = {};
+  ids.forEach(v => { (layers[v.layer] = layers[v.layer] || []).push(v); });
+  Object.entries(layers).forEach(([layer, vs]) => {
+    lines.push(`  subgraph ${layer}`);
+    vs.forEach(v => lines.push(`    ${v.id}["${(v.layer === 'market_code' ? (E.find(e => e.type === 'market_partner' && `${e.from}:${e.to}` === v.key) || {}).name || v.key : label(v.layer, v.key)).replace(/"/g, "'")}"]`));
+    lines.push('  end');
+  });
+  return lines.concat(edgeLines).join('\n');
+}
+async function renderMermaid() {
+  const box = document.getElementById('mmBox'); if (!box || !window.mermaid || !D.ledger) return;
+  const types = [...document.querySelectorAll('input[name=mmType]:checked')].map(x => x.value);
+  const src = mermaidFromLedger(types);
+  document.getElementById('mmSrc').textContent = src;
+  try {
+    mermaid.initialize({startOnLoad: false, theme: 'dark', flowchart: {useMaxWidth: true}});
+    const {svg} = await mermaid.render('mmSvg' + Date.now(), src);
+    box.innerHTML = svg;
+  } catch (e) { box.innerHTML = `<div class="empty">다이어그램 렌더 실패: ${esc(e.message || e)}</div>`; }
 }
 
 // 메모 일지 기본 기간 = 선택지(3·6·12) 중 업종 판독 지평 곡선 h* 에 가장 가까운 것(사전등록 H 조치 (a)). 일지 UI 와 판독 자료 중 늦게 온 쪽이 부른다.
@@ -910,10 +953,14 @@ function renderLedger() {
   document.getElementById('ledgerTable').innerHTML = h;
   const L = D.ledger;
   if (L) {
-    const nodes = Object.entries(L.nodes || {}).map(([k, v]) => `${esc(k)} ${v}`).join(' · ');
-    const edges = Object.entries(L.edges || {}).map(([k, v]) => `${esc(k)} ${v}`).join(' · ');
+    const nodes = Object.entries(L.node_counts || {}).map(([k, v]) => `${esc(k)} ${v}`).join(' · ');
+    const edges = Object.entries(L.edge_counts || {}).map(([k, v]) => `${esc(k)} ${v}`).join(' · ');
     document.getElementById('relLedger').innerHTML = `고정 ${esc(L.fixed_at)} · sha256 <span class="muted">${esc((L.sha256 || '').slice(0, 12))}…</span> · 닫힌 엣지 ${L.closed}<br>노드: ${nodes}<br>엣지: ${edges}`;
+    document.getElementById('mmTypes').innerHTML = '다이어그램에 넣을 엣지 종류: ' + Object.entries(MM_TYPES).map(([k, v]) => `<label style="margin-right:10px;"><input type="checkbox" name="mmType" value="${k}" ${['group_member', 'sector_product'].includes(k) ? 'checked' : ''} onchange="renderMermaid()"> ${esc(v)}</label>`).join('');
+    renderMermaid();
   }
+  const ES = D.edges || {};
+  document.getElementById('edgeStoreInfo').textContent = ES.error ? '오류 ' + ES.error : `${fmt(ES.rows, 0)}행 · 월 ${ES.months}개 · 최신 ${ES.latest || '–'} · 이번 실행 +${fmt(ES.added, 0)} · 종류 ` + Object.entries(ES.types || {}).map(([k, v]) => `${k} ${fmt(v, 0)}`).join(', ') + ' (append-only, DataVault/staging/global_macro/edges/edges.parquet)';
 }
 
 async function load() {

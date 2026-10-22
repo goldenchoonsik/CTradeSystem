@@ -209,6 +209,18 @@ def _relations() -> dict:
         return {"error": str(e)[:200]}
 
 
+def _edges_sync(reading: dict, relations: dict, influence: dict) -> dict:
+    """측정 엣지 저장소(append-only)에 이번 산출물을 덧붙이고 요약을 돌려준다 — 실패해도 화면 나머지는 그린다."""
+    from . import edge_store
+    try:
+        fp = store.path("reading", "history.parquet")
+        hist = pd.read_parquet(fp) if os.path.exists(fp) else None
+        return edge_store.sync(hist, reading, relations, influence)
+    except Exception as e:   # noqa: BLE001
+        store.log(f"[dashboard] 엣지 저장소 실패: {e}")
+        return {"error": str(e)[:200]}
+
+
 def _clean(o):
     """JSON 에 NaN·inf 를 넣지 않는다(브라우저 JSON.parse 실패) → null."""
     if isinstance(o, dict):
@@ -254,11 +266,12 @@ def build() -> dict:
         "crashes": crashes(data),
         "influence": (inf := influence(daily)),
         "trade": trade_map(inf.get("full")),
-        "relations": _relations(),
-        "reading": store.read_json(store.path("derived", "dashboard", "reading.json")) or {},
+        "relations": (rel := _relations()),
+        "reading": (rd := store.read_json(store.path("derived", "dashboard", "reading.json")) or {}),
         "kr_exports": kr_exports(data),
         "signals": merged_signals(),
         "ledger": ledger.summary() | ledger.graph_view(),
+        "edges": _edges_sync(rd, rel, inf),
     }
     os.makedirs(store.path("derived", "dashboard"), exist_ok=True)
     fp = store.path("derived", "dashboard", "stage1.json")

@@ -195,8 +195,8 @@ def summary() -> dict:
     """화면·기록용 요약 — 노드 수·엣지 수·해시."""
     L = load()
     act = [e for e in L["edges"] if e.get("valid_to") is None]
-    return {"fixed_at": L["fixed_at"], "sha256": sha256(), "nodes": {k: len(v) for k, v in L["nodes"].items()},
-            "edges": {t: sum(1 for e in act if e["type"] == t) for t in L["edge_types"]},
+    return {"fixed_at": L["fixed_at"], "sha256": sha256(), "node_counts": {k: len(v) for k, v in L["nodes"].items()},
+            "edge_counts": {t: sum(1 for e in act if e["type"] == t) for t in L["edge_types"]},
             "closed": sum(1 for e in L["edges"] if e.get("valid_to")), "rules": L.get("rules", [])}
 
 
@@ -212,4 +212,4 @@ def graph_view(as_of: Optional[str] = None) -> dict:
                 if e.get(k):
                     rec[k] = e[k]
             out_edges.append(rec)
-    return {"nodes": out_nodes, "edges": out_edges}
+    return {"nodes": out_nodes, "edges": out_edges, "edge_types": {t: {k: v for k, v in d.items() if k in ("from", "to", "desc")} for t, d in L["edge_types"].items()}}
