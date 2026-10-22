@@ -21,6 +21,14 @@ from . import reading as R
 from . import store
 from .store import log
 
+FIRST_YEAR = 2013                    # 이력 시작(종목 월말 종가 2013-01~)
+
+
+def grid_years(latest: int) -> List[int]:
+    """2년 격자(2026-10-22 결정: 1년 순위 상관 0.90·3년 0.81~0.84 → 2년): 최근 사업연도부터 2년씩 거슬러 FIRST_YEAR 까지."""
+    return [y for y in range(latest, FIRST_YEAR - 1, -2)]
+
+
 LIST_URL = "https://opendart.fss.or.kr/api/list.json"
 DOC_URL = "https://opendart.fss.or.kl/api/document.xml".replace(".kl", ".kr")
 
@@ -78,7 +86,7 @@ def fetch(year: int = 2025, limit: Optional[int] = None, sleep: float = 0.25, re
     idx = read_index(year)
     done = set(idx[~idx.status.str.startswith("error")].stock_code) if retry_errors else set(idx.stock_code)
     os.makedirs(os.path.dirname(index_path(year)), exist_ok=True)
-    new, fail = 0, []
+    new, fail, quota_stop = 0, [], False
     with open(index_path(year), "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         if not len(idx):
@@ -106,6 +114,7 @@ def fetch(year: int = 2025, limit: Optional[int] = None, sleep: float = 0.25, re
             except Exception as e:   # noqa: BLE001
                 if "020" in str(e) or "한도" in str(e) or "초과" in str(e):           # 일 한도 — 기록 없이 중단
                     log(f"[export_share] DART 한도 초과로 중단({new}건 받음): {str(e)[:80]}")
+                    quota_stop = True
                     break
                 fail.append(f"{r.stock_code} {str(e)[:80]}")
                 w.writerow([r.stock_code, r.corp_code, "", "", "", 0, f"error: {str(e)[:60]}"]); f.flush()
@@ -113,7 +122,8 @@ def fetch(year: int = 2025, limit: Optional[int] = None, sleep: float = 0.25, re
                 if len(fail) >= 30 and len(fail) > new:            # 키·한도 문제면 멈춘다
                     log(f"[export_share] 실패 누적 {len(fail)} — 중단: {fail[-1]}")
                     break
-    info = {"year": year, "targets": len(t), "fetched_now": new, "failed": len(fail), "index_rows": len(read_index(year))}
+    info = {"year": year, "targets": len(t), "fetched_now": new, "failed": len(fail), "index_rows": len(read_index(year)), "quota_stop": quota_stop,
+            "complete": (not quota_stop) and len(read_index(year)) >= len(t)}
     log(f"[export_share] {year} 수신 끝 — 신규 {new}, 실패 {len(fail)} {fail[:3]}, index {info['index_rows']}행")
     return info
 
@@ -324,3 +334,23 @@ def build(year: int = 2025) -> pd.DataFrame:
     log(f"[export_share] {year} 파싱 {len(ok)}/{len(df)} (검증 {int(ok.verified.sum()) if len(ok) else 0}), 업종별 " +
         ", ".join(f"{s} {int((ok.sector == s).sum())}/{int((df.sector == s).sum())}" for s in sorted(df.sector.dropna().unique())))
     return df
+
+
+def run_grid(latest: Optional[int] = None) -> dict:
+    """UI 단계: 격자 연도를 최근 것부터 이어받는다 — 받은 종목은 건너뛰고, 한도에 걸리면 멈춘다(다음 날 다시 누르면 이어서).
+    새로 받은 게 있거나 결과 파일이 없을 때만 그 해를 다시 파싱한다."""
+    from datetime import date as _d
+    latest = latest or (_d.today().year - 1)
+    out = {"years": {}, "stopped": None}
+    for y in grid_years(latest):
+        info = fetch(y)
+        have = os.path.exists(store.path("derived", "kr_industry", f"export_share_{y}.parquet"))
+        if info["fetched_now"] or not have:
+            build(y)
+        out["years"][y] = {"fetched_now": info["fetched_now"], "complete": info["complete"], "index_rows": info["index_rows"], "targets": info["targets"]}
+        if info["quota_stop"]:
+            out["stopped"] = f"{y}: DART 일 한도 — 내일 같은 단계를 다시 실행하면 이어서 받음"
+            break
+    done = [y for y, v in out["years"].items() if v["complete"]]
+    log(f"[export_share] 격자 {grid_years(latest)} 중 완료 {done}" + (f" · 중단 {out['stopped']}" if out["stopped"] else " · 전부 완료"))
+    return out

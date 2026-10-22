@@ -82,10 +82,7 @@ def run(step: str, keys=None) -> bool:
     if step == "kr_export_share":                                   # 수동 단계(전체 갱신 제외) — 사업연도는 지난해
         from . import kr_export_share
         try:
-            from datetime import date as _d
-            yr = _d.today().year - 1
-            kr_export_share.fetch(yr)
-            kr_export_share.build(yr)
+            kr_export_share.run_grid()                              # 최근 사업연도 → 2년 격자, 한도에 걸리면 멈추고 다음 실행에 이어서
         except Exception as e:   # noqa: BLE001
             store.log(f"[export_share] 실패: {e}")
             return False
