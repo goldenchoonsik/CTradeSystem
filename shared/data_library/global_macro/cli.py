@@ -79,6 +79,16 @@ def run(step: str, keys=None) -> bool:
             store.log(f"[kr_ksic] 실패: {e}")
             if step == "kr_ksic":
                 return False
+    if step == "kr_export_share":                                   # 수동 단계(전체 갱신 제외) — 사업연도는 지난해
+        from . import kr_export_share
+        try:
+            from datetime import date as _d
+            yr = _d.today().year - 1
+            kr_export_share.fetch(yr)
+            kr_export_share.build(yr)
+        except Exception as e:   # noqa: BLE001
+            store.log(f"[export_share] 실패: {e}")
+            return False
     if step in ("panel", "all"):
         from . import panel
         panel.build()

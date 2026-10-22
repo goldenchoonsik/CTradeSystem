@@ -24,6 +24,7 @@ STEPS: List[dict] = [
     {"key": "eu_imports", "title": "EU 수입 경쟁(Eurostat)", "runner": "linux", "desc": "EU27 의 한국·중국·일본·미국·대만·베트남·멕시코산 품목별 월 수입(2010~, 역외 합계 분모), 품목 16개 — 약 4분, 키 불필요"},
     {"key": "kr_trade_items", "title": "한국 품목×국가 수출(관세청)", "runner": "linux", "desc": "13개 HS 장 × 26개국 × 2000~ 월별(지난 해는 받아 둔 것 재사용, 올해만 다시) — 처음엔 1~2시간, 이후 몇 분"},
     {"key": "kr_ksic", "title": "종목 업종코드(DART)", "runner": "linux", "desc": "상장 보통주 약 2,550종목의 KSIC 업종코드(DART 기업개황, 증분) → 코스피 업종 대응 — 처음 약 10분, OPEN_DART_KEY 필요"},
+    {"key": "kr_export_share", "title": "회사별 수출 비중(DART 사업보고서)", "runner": "linux", "desc": "판독 업종 7개 상장 제조업 약 1,160종목의 최근 사업보고서 원문(document.xml)을 받아 매출실적·지역별 매출 표에서 수출/내수 비중 파싱 — 처음 약 15분·DART 2,300요청, 이후 증분. 전체 갱신엔 안 들어감(수동)"},
     {"key": "reading", "title": "시스템 판독", "runner": "linux", "desc": "판독 엔진을 2008~ 매달 그 시점 자료로 재현 → 최신 판독(근거 사슬)·과거 성적 → derived/dashboard/reading.json"},
     {"key": "panel", "title": "패널 빌드", "runner": "linux", "desc": "일·주 시계열, 월말 시점에 알 수 있던 값(발표 시차 반영), 신선도 점검"},
     {"key": "dashboard", "title": "화면 JSON", "runner": "linux", "desc": "세계 지도·영향력·약세장 기록·현재 상태 → derived/dashboard/stage1.json"},

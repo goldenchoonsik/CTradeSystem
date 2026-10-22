@@ -661,3 +661,37 @@ def test_edge_store_is_append_only_and_keeps_first_record(stage):
     assert p["t"] == "2026-09-30" and "link" in p["units"] and any(e["type"] == "demand" and e["state"] == "감속" for e in p["edges"])
     imp = [e for e in ES.payload("2025-12-28")["edges"] if e["type"] == "import_share"]
     assert imp and imp[0]["evidence"]["chg3y"] == pytest.approx(3.0)              # 2025 − 2022
+
+
+# ---------------------------------------------------------------- 회사별 수출 비중 파서(DART 사업보고서 표)
+def _xml_table(title, rows):
+    body = "".join("<TR>" + "".join(f"<TD>{c}</TD>" for c in r) + "</TR>" for r in rows)
+    return f"<P>{title}</P><TABLE>{body}</TABLE>"
+
+
+def test_export_share_parser_handles_row_col_region_and_rowspan_layouts():
+    from shared.data_library.global_macro import kr_export_share as X
+    # (1) 제품별 수출/내수 행 + 끝에 합계 블록(합계 행은 나머지 합과 같아 한 번만 센다)
+    t1 = _xml_table("가. 매출실적 (단위 : 백만원)", [["사업부문", "품목", "구분", "제50기", "제49기"], ["A", "a", "내수", "100", "90"], ["수출", "300", "280"], ["합계", "400", "370"],
+                                                     ["B", "b", "내수", "50", "40"], ["수출", "150", "120"], ["합계", "200", "160"], ["합 계", "내수", "150", "130"], ["수출", "450", "400"], ["합계", "600", "530"]])
+    p = X.parse_xml(t1)
+    assert p["method"] == "rows" and p["export"] == 450 and p["domestic"] == 150 and p["share"] == pytest.approx(0.75) and p["verified"]
+    # (2) 열 방향: 머리글 수출/내수, 합계 행
+    t2 = _xml_table("가. 매출실적 (단위 : 백만원)", [["품목", "수출", "내수", "합계"], ["a", "30", "70", "100"], ["b", "10", "90", "100"], ["합계", "40", "160", "200"]])
+    p = X.parse_xml(t2)
+    assert p["method"] == "cols" and p["share"] == pytest.approx(0.2) and p["verified"]
+    # (3) 국가별 표: 한국 행 = 내수, 나머지 나라 = 수출(소계·합계·연결조정은 제외)
+    t3 = _xml_table("(3) 지역별 매출 (단위: 천원)", [["지역", "당기", "전기"], ["국내", "600", "500"], ["국외"], ["일본", "100", "80"], ["북미", "300", "250"], ["소 계", "400", "330"], ["합 계", "1,000", "830"]])
+    p = X.parse_xml(t3)
+    assert p["method"] == "region" and p["share"] == pytest.approx(0.4) and p["verified"]
+    # (4) ROWSPAN: 국내/해외 라벨 아래 라벨 없는 품목 행이 이어진다
+    t4 = _xml_table("가. 매출실적 (단위 : 억원)", [["사업부문", "품목", "2025년", "2024년"], ["철강", "국내", "열연", "100", "90"], ["냉연", "100", "95"], ["해외", "열연", "300", "280"], ["냉연", "500", "450"], ["단순합계", "1,000", "915"]])
+    p = X.parse_xml(t4)
+    assert p["method"] == "rows" and p["export"] == 800 and p["domestic"] == 200 and p["verified"]
+    # (5) 가격표·채권표·비중(%)표는 매출이 아니다
+    bad = _xml_table("나. 가격변동 추이 (단위 : 원/kg)", [["품목", "구분", "2025년"], ["a", "수출", "1,200"], ["내수", "1,100"]]) + \
+          _xml_table("지역별 신용위험 노출 (단위 : 천원)", [["구분", "당기"], ["국내", "1,000"], ["해외", "500"]]) + \
+          _xml_table("[부문별 주요제품]", [["사업부문", "국가", "매출비중(%)"], ["a", "한국", "3.2"], ["b", "미국", "28.0"]])
+    assert X.parse_xml(bad) is None
+    # (6) 가격표와 매출표가 같이 있으면 매출표를 고른다
+    assert X.parse_xml(bad + t2)["method"] == "cols"
