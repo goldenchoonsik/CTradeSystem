@@ -123,18 +123,29 @@ TOTAL = "-"                 # Census '전 국가 합계' 코드
 
 def us_competition() -> Dict[str, dict]:
     from . import us_imports
-    fp = store.path("derived", "trade", "us_imports.parquet")
+    return market_competition("us_imports", us_imports.PARTNERS)
+
+
+def eu_competition() -> Dict[str, dict]:
+    """EU 역외 수입 중 점유(Eurostat Comext) — 미국과 같은 계산, 금액은 유로."""
+    from . import eu_imports
+    return market_competition("eu_imports", eu_imports.PARTNERS)
+
+
+def market_competition(name: str, partners: Dict[str, str]) -> Dict[str, dict]:
+    from . import us_imports
+    fp = store.path("derived", "trade", f"{name}.parquet")
     if not os.path.exists(fp):
         return {}
     df = pd.read_parquet(fp)
     out = {}
-    for cmd, name in us_imports.PRODUCTS.items():
+    for cmd, name_ in us_imports.PRODUCTS.items():
         d = df[df.cmd == cmd].pivot_table(index="month", columns="partner", values="value", aggfunc="sum").sort_index()
         if TOTAL not in d:
             continue
         d12 = d.rolling(12, min_periods=12).sum()
         sh = d12.div(d12[TOTAL], axis=0) * 100
-        series = {us_imports.PARTNERS[p]: _ser(sh[p].dropna()) for p in sh.columns if p != TOTAL}
+        series = {partners.get(p, p): _ser(sh[p].dropna()) for p in sh.columns if p != TOTAL}
         last = sh.dropna(how="all").iloc[-1] if len(sh.dropna(how="all")) else None
         snap = {}
         if last is not None:
@@ -144,10 +155,10 @@ def us_competition() -> Dict[str, dict]:
                     continue
                 ago3 = sh[p].loc[:t - pd.DateOffset(years=3)].dropna()
                 y2017 = sh[p].loc["2017-12-31":"2017-12-31"].dropna()
-                snap[us_imports.PARTNERS[p]] = {"now": round(float(last[p]), 2) if pd.notna(last[p]) else None,
+                snap[partners.get(p, p)] = {"now": round(float(last[p]), 2) if pd.notna(last[p]) else None,
                                                 "chg3y": round(float(last[p] - ago3.iloc[-1]), 2) if len(ago3) and pd.notna(last[p]) else None,
                                                 "vs2017": round(float(last[p] - y2017.iloc[-1]), 2) if len(y2017) and pd.notna(last[p]) else None}
-        out[cmd] = {"name": name, "series": series, "snapshot": snap,
+        out[cmd] = {"name": name_, "series": series, "snapshot": snap,
                     "us_total_12m_bn": round(float(d12[TOTAL].dropna().iloc[-1]) / 1e9, 1) if d12[TOTAL].notna().any() else None,
                     "last_month": str(d.index.max().date())}
     return out
@@ -171,7 +182,7 @@ def events() -> list:
 
 
 def build() -> dict:
-    comp = us_competition()
+    comp, comp_eu = us_competition(), eu_competition()
     # HS 코드 키는 숫자처럼 보여 브라우저가 숫자 순으로 재정렬 → 표시 순서를 따로 넘김
     return {"window_months": WINDOW, "export_links": export_links(), "export_shares": export_shares(), "health": health(),
-            "us_competition": comp, "us_competition_order": list(comp), "events": events()}
+            "us_competition": comp, "us_competition_order": list(comp), "eu_competition": comp_eu, "eu_competition_order": list(comp_eu), "events": events()}

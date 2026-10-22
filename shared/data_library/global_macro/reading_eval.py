@@ -79,7 +79,8 @@ def score_comp(D, hist):
     return pd.DataFrame(rows)
 
 
-SECTOR_COLS = ["t", "s", "score", "score_D", "D", "C", "out", "hit", "hit_D", "has_C"]
+SECTOR_COLS = ["t", "s", "score", "score_D", "score_CE", "D", "C", "out", "hit", "hit_D", "hit_CE", "has_C"]
+TRACKS = ("D", "CE")          # 전진 확인 트랙: D = 수요 충격만(사전등록 D), CE = EU 경쟁 성분만(stage4_eu E2 조치)
 
 
 def score_sectors(D, hist):
@@ -101,14 +102,17 @@ def score_sectors(D, hist):
             if pd.isna(o):
                 continue
             sd = v["score_D"] if v.get("score_D") is not None else v["D"]
-            sub.append((s, v["score"], sd, o))
-            rows.append({"t": t, "s": s, "score": v["score"], "score_D": sd, "D": v["D"], "C": v["C"], "out": o,
-                         "hit": (o > 0) == (v["score"] > 0) if v["score"] != 0 else np.nan,
-                         "hit_D": (o > 0) == (sd > 0) if sd != 0 else np.nan, "has_C": v["C"] is not None})
+            sce = v.get("score_CE")
+            sub.append((s, v["score"], sd, sce, o))
+            hit = lambda x: np.nan if x is None or x == 0 else (o > 0) == (x > 0)
+            rows.append({"t": t, "s": s, "score": v["score"], "score_D": sd, "score_CE": sce, "D": v["D"], "C": v["C"], "out": o,
+                         "hit": hit(v["score"]), "hit_D": hit(sd), "hit_CE": hit(sce), "has_C": v["C"] is not None})
         if len(sub) >= 5:
-            d = pd.DataFrame(sub, columns=["s", "score", "score_D", "out"])
-            ics[t] = {"composite": d.score.rank().corr(d.out.rank()), "D": d.score_D.rank().corr(d.out.rank())}
-    return pd.DataFrame(rows, columns=SECTOR_COLS), pd.DataFrame.from_dict(ics, orient="index", dtype=float).reindex(columns=["composite", "D"])
+            d = pd.DataFrame(sub, columns=["s", "score", "score_D", "score_CE", "out"])
+            dce = d.dropna(subset=["score_CE"])
+            ics[t] = {"composite": d.score.rank().corr(d.out.rank()), "D": d.score_D.rank().corr(d.out.rank()),
+                      "CE": dce.score_CE.rank().corr(dce.out.rank()) if len(dce) >= 5 else np.nan}
+    return pd.DataFrame(rows, columns=SECTOR_COLS), pd.DataFrame.from_dict(ics, orient="index", dtype=float).reindex(columns=["composite"] + list(TRACKS))
 
 
 def summarize(res_d, res_c, res_s, ic):
@@ -159,16 +163,18 @@ def _spread(ss: pd.DataFrame, col: str) -> pd.Series:
     return pd.Series({t_: d.nlargest(2, col).out.mean() - d.nsmallest(2, col).out.mean() for t_, d in ss.groupby("t") if len(d) >= 5}, dtype=float)
 
 
-def forward(res_s: pd.DataFrame, ic: pd.DataFrame, n_readings: int = 0) -> dict:
-    """R5-D 전진 확인(PREREGISTRATION_reading_engine_D.md). 입력은 전진 기록(forward_log)으로 만든 채점 행·IC 만.
+def forward(res_s: pd.DataFrame, ic: pd.DataFrame, n_readings: int = 0, track: str = "D") -> dict:
+    """전진 확인(PREREGISTRATION_reading_engine_D.md 규칙, 트랙 공통). 입력은 전진 기록(forward_log)으로 만든 채점 행·IC 만.
+    track D = 수요 충격만, CE = EU 경쟁 성분만. 결과 키는 트랙과 무관하게 ic_D/t_D/… 로 통일(화면 호환).
     상태: 대기(채점 가능한 달 0) → 확인 중 n/24 → 24개월에 1차 판정(확정·기각·보류) → 보류면 36개월에 최종(확정·기각)."""
-    out = {"from": str(R.FORWARD_FROM.date()), "min_months": R.FORWARD_MIN_MONTHS, "max_months": R.FORWARD_MAX_MONTHS,
+    out = {"track": track, "from": str(R.FORWARD_FROM.date()), "min_months": R.FORWARD_MIN_MONTHS, "max_months": R.FORWARD_MAX_MONTHS,
            "n_readings": int(n_readings), "n_months": 0, "status": "대기", "ic_D": None, "t_D": None, "ic_composite": None, "t_composite": None,
            "spread_top2_D": None, "hit_D": None, "first_scorable": str(me(R.FORWARD_FROM, R.H + 1).date())}
     if res_s is None or not len(res_s):
         return out
-    ss = res_s[res_s.t >= R.FORWARD_FROM]
-    icf = ic[ic.index >= R.FORWARD_FROM] if ic is not None and len(ic) else pd.DataFrame(columns=["composite", "D"])
+    col, hcol = f"score_{track}", f"hit_{track}"
+    ss = res_s[(res_s.t >= R.FORWARD_FROM) & res_s[col].notna()]
+    icf = ic[(ic.index >= R.FORWARD_FROM) & ic[track].notna()] if ic is not None and len(ic) else pd.DataFrame(columns=["composite", track])
     n = int(len(icf))
     out["n_months"] = n
     if n == 0:
@@ -176,11 +182,11 @@ def forward(res_s: pd.DataFrame, ic: pd.DataFrame, n_readings: int = 0) -> dict:
     def _m(v):
         v = v.dropna()
         return (float(v.mean()) if len(v) else None, float(mean_nw(v, R.H)[1]) if len(v) >= 24 else None)
-    out["ic_D"], out["t_D"] = _m(icf["D"])
+    out["ic_D"], out["t_D"] = _m(icf[track])
     out["ic_composite"], out["t_composite"] = _m(icf["composite"])
-    spD = _spread(ss, "score_D")
+    spD = _spread(ss, col)
     out["spread_top2_D"] = float(spD.mean()) if len(spD) else None
-    out["hit_D"] = float(ss.hit_D.dropna().mean()) if ss.hit_D.notna().any() else None
+    out["hit_D"] = float(ss[hcol].dropna().mean()) if ss[hcol].notna().any() else None
     if n < R.FORWARD_MIN_MONTHS:
         out["status"] = f"확인 중 {n}/{R.FORWARD_MIN_MONTHS}"
         return out
@@ -218,6 +224,9 @@ def verdicts(S):
     f = S.get("forward")
     if f:
         v["R5-D 수요 충격만(전진 확인)"] = f["status"]
+    f = S.get("forward_ce")
+    if f:
+        v["R5-CE EU 경쟁 성분만(전진 확인)"] = f["status"]
     return v
 
 

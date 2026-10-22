@@ -222,6 +222,20 @@ def test_us_imports_parse_census_rows():
         us_imports.parse(b"[]", "8542")
 
 
+def test_eu_imports_parse_comext_csv_maps_ext_total_to_dash():
+    from shared.data_library.global_macro import eu_imports
+    raw = ("DATAFLOW,LAST UPDATE,freq,reporter,partner,product,flow,indicators,TIME_PERIOD,OBS_VALUE\n"
+           "ESTAT:DS-045409(1.0),16/10/26 11:00:00,M,EU27_2020,KR,8542,1,VALUE_IN_EUROS,2024-01,295399974\n"
+           "ESTAT:DS-045409(1.0),16/10/26 11:00:00,M,EU27_2020,EXT_EU27_2020,8542,1,VALUE_IN_EUROS,2024-01,3521642446\n"
+           "ESTAT:DS-045409(1.0),16/10/26 11:00:00,M,EU27_2020,CN,8471,1,VALUE_IN_EUROS,2024-01,1\n").encode()
+    rows = eu_imports.parse(raw, "8542")
+    assert rows[0] == {"month": pd.Timestamp("2024-01-31"), "partner": "KR", "cmd": "8542", "value": 295399974.0}
+    assert rows[1]["partner"] == "-" and len(rows) == 2                      # 역외 합계 → '-', 다른 품목 행은 버림
+    assert "EXT_EU27_2020" in eu_imports._query("72") and ".72.1." in eu_imports._query("72")
+    with pytest.raises(RuntimeError):
+        eu_imports.parse(b"oops", "8542")
+
+
 def test_export_links_find_lead_in_rolling_window(stage):
     from shared.data_library.global_macro import relations
     (stage / "derived" / "trade").mkdir(parents=True)
@@ -412,3 +426,24 @@ def test_forward_status_waits_then_judges(stage):
     assert _case(24, 0.1, 0.2, 1)["status"] == "보류 24/36"                    # 합성보다 못하면 보류
     assert _case(36, 0.1, 0.2, 1)["status"] == "확정"                          # 최종: IC>0 & 차이>0
     assert _case(36, 0.1, 0.2, -1)["status"] == "기각"
+
+
+def test_reading_ext_sector_ce_and_forward_track_ce():
+    from shared.data_library.global_macro import reading as R, reading_ext as X, reading_eval as E
+    secs = list(R.SECTOR_HS)
+    sectors = {s: {"name": s, "score": 0.0, "score_D": 0.0, "D": 0.0, "C": None} for s in secs}
+    comp_eu = {cmd: {"kr": {"delta": 1.0 if s == "U013" else -1.0, "state": "확대"}, "us_imports_12m": 10.0} for s in secs for cmd in R.SECTOR_US.get(s, [])}
+    ce = X.sector_ce(sectors, comp_eu)
+    assert ce["U013"]["reading_CE"] == "우호" and ce["U015"]["reading_CE"] == "비우호"
+    assert ce["U014"]["score_CE"] is None and ce["U014"]["reading_CE"] is None       # EU 품목 대응 없는 업종
+    # 전진 트랙 CE: score_CE 가 있는 달만 센다
+    months = pd.date_range(R.FORWARD_FROM, periods=5, freq="ME")
+    rows = []
+    for j, t in enumerate(months):
+        for i, s in enumerate(secs[:5]):
+            rows.append({"t": t, "s": s, "score": float(i), "score_D": float(i), "score_CE": float(i) if j < 3 else None, "D": i, "C": None,
+                         "out": 0.01 * i, "hit": True, "hit_D": True, "hit_CE": True if j < 3 else np.nan, "has_C": False})
+    ic = pd.DataFrame({"composite": 0.1, "D": 0.1, "CE": [0.2, 0.2, 0.2, np.nan, np.nan]}, index=months)
+    f = E.forward(pd.DataFrame(rows, columns=E.SECTOR_COLS), ic, n_readings=5, track="CE")
+    assert f["track"] == "CE" and f["n_months"] == 3 and f["status"] == "확인 중 3/24" and f["ic_D"] == pytest.approx(0.2)
+    assert E.forward(pd.DataFrame(rows, columns=E.SECTOR_COLS), ic, n_readings=5, track="D")["n_months"] == 5

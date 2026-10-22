@@ -114,7 +114,13 @@
     </div>
     <div class="td-card">
       <h3>경쟁 판독 — 미국 시장 점유(최근 12개월 변화)</h3>
+      <div class="td-sub">지속 판독(R4)은 무효(55%) — 표시만. 중국산 잠식만 68% 지속(탈중국은 구조적).</div>
       <table class="td" id="rdComp"></table>
+    </div>
+    <div class="td-card">
+      <h3>경쟁 판독 — EU 역외 수입 점유(최근 12개월 변화)</h3>
+      <div class="td-sub">같은 규칙을 EU 에 적용(사전등록 stage4_eu). 한국산 지속 58% = 무효 — 표시만. EU 에선 중국산 '확대'가 66% 지속(미국과 반대 방향의 구조 변화).</div>
+      <table class="td" id="rdCompEU"></table>
     </div>
   </div>
 
@@ -139,7 +145,7 @@
       </div>
     </div>
     <div class="td-card">
-      <h3>미국 시장 점유 경쟁 — 고객인가 경쟁자인가</h3>
+      <h3>미국·EU 시장 점유 경쟁 — 고객인가 경쟁자인가 <span id="rlCompMarket" style="margin-left:10px;"></span></h3>
       <div class="td-sub">미국 수입 중 각국산 비중(12개월 이동, 미국 Census 일반수입·원산지 기준). 품목을 누르면 추이. 한국과 중국이 같은 품목에서 엇갈리면 경쟁 관계.</div>
       <div id="rlCompPick" style="margin-bottom:8px;"></div>
       <div id="rlComp" style="height:300px;"></div>
@@ -418,18 +424,21 @@ function renderRelations() {
   document.getElementById('rlEvents').innerHTML = '<tr><th>#</th><th>날짜</th><th>사건</th><th>종류</th><th>관련국</th><th>관련 업종</th><th>메모</th></tr>' +
     E.map((e, i) => `<tr><td class="muted">${i + 1}</td><td>${esc(e.date)}</td><td>${esc(e.title)}</td><td class="muted">${esc(e.kind)}</td><td>${esc((e.partners || []).join(', '))}</td><td>${esc((e.sectors || []).join(', '))}</td><td class="muted">${esc(e.note || '')}</td></tr>`).join('');
 }
-let compCmd = '8542';
+let compCmd = '8542', compMarket = 'us';
 function renderComp() {
-  const C = (D.relations || {}).us_competition || {};
-  const keys = ((D.relations || {}).us_competition_order || Object.keys(C)).filter(k => C[k]);
-  if (!keys.length) { document.getElementById('rlComp').innerHTML = '<div class="empty">미국 수입 데이터를 받는 중이거나 아직 없음 — 데이터 갱신 후 표시</div>'; return; }
+  const RL = D.relations || {};
+  document.getElementById('rlCompMarket').innerHTML = [['us', '미국 수입'], ['eu', 'EU 역외 수입']].map(([k, n]) => `<button class="chip ${k === compMarket ? 'active' : ''}" onclick="compMarket='${k}';renderComp()">${n}</button>`).join(' ');
+  const C = RL[compMarket + '_competition'] || {};
+  const keys = (RL[compMarket + '_competition_order'] || Object.keys(C)).filter(k => C[k]);
+  const unit = compMarket === 'us' ? '십억$' : '십억€', mk = compMarket === 'us' ? '미국' : 'EU 역외';
+  if (!keys.length) { document.getElementById('rlComp').innerHTML = `<div class="empty">${mk} 수입 데이터를 받는 중이거나 아직 없음 — 데이터 갱신 후 표시</div>`; document.getElementById('rlCompTable').innerHTML = ''; return; }
   if (!C[compCmd]) compCmd = keys[0];
   document.getElementById('rlCompPick').innerHTML = keys.map(k => `<button class="chip ${k === compCmd ? 'active' : ''}" onclick="compCmd='${k}';renderComp()">${esc(C[k].name)}</button>`).join('');
   const c = C[compCmd];
   Plotly.newPlot('rlComp', Object.entries(c.series).map(([nm, v]) => ({x: v.map(r => r[0]), y: v.map(r => r[1]), name: nm, type: 'scatter', mode: 'lines',
       line: {color: RL_COLORS[nm] || '#a0a0b0', width: nm === '한국' || nm === '중국' ? 2.4 : 1.2}})),
-    lay({legend: {orientation: 'h', y: 1.15}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: '미국 수입 중 %'}, ...eventMarks('2010-01-01')}), CFG);
-  let h = '<tr><th>품목</th><th class="num">미국 수입(12개월, 십억$)</th><th class="num">한국 점유</th><th class="num">3년 변화</th><th class="num">2017 대비</th><th class="num">중국 점유</th><th class="num">3년 변화</th><th class="num">2017 대비</th></tr>';
+    lay({legend: {orientation: 'h', y: 1.15}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: `${mk} 수입 중 %`}, ...eventMarks('2010-01-01')}), CFG);
+  let h = `<tr><th>품목</th><th class="num">${mk} 수입(12개월, ${unit})</th><th class="num">한국 점유</th><th class="num">3년 변화</th><th class="num">2017 대비</th><th class="num">중국 점유</th><th class="num">3년 변화</th><th class="num">2017 대비</th></tr>`;
   const sg = v => v === null || v === undefined ? '–' : (v > 0 ? '+' : '') + v.toFixed(1);
   for (const k of keys) {
     const sn = C[k].snapshot || {}, kr = sn['한국'] || {}, cn = sn['중국'] || {};
@@ -546,11 +555,14 @@ function renderReading() {
   const F = R.forward;
   if (F) sc += `<div class="td-sub" style="color:#fbbf24;">R5-D 전진 확인(${F.from.slice(0, 7)}~ 판독, 기록 그대로 채점): <b>${esc(F.status)}</b> · 기록 ${F.n_readings}건 · 채점 가능 ${F.n_months}개월(1차 판정 ${F.min_months}, 최종 ${F.max_months})`
     + (F.n_months ? ` · 전진 IC 수요만 ${fmt(F.ic_D, 3)} vs 합성 ${fmt(F.ic_composite, 3)} · 상위2−하위2 ${fmt((F.spread_top2_D || 0) * 100, 1)}%p · 적중 ${pc(F.hit_D)}` : ` · 첫 채점 ${F.first_scorable}`) + '</div>';
+  const FC = R.forward_ce;
+  if (FC) sc += `<div class="td-sub" style="color:#fbbf24;">R5-CE 전진 확인(EU 경쟁 성분만, stage4_eu E2 '작게 실험' 조치): <b>${esc(FC.status)}</b> · 기록 ${FC.n_readings}건 · 채점 가능 ${FC.n_months}개월`
+    + (FC.n_months ? ` · 전진 IC ${fmt(FC.ic_D, 3)} vs 합성 ${fmt(FC.ic_composite, 3)} · 상위2−하위2 ${fmt((FC.spread_top2_D || 0) * 100, 1)}%p` : '') + ' — 과거 재현 2017~ IC 0.00(사실상 무정보), 확인용</div>';
   document.getElementById('rdScore').innerHTML = sc;
-  let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th>근거</th></tr>';
-  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
+  let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th>EU 경쟁만</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th class="num">EU 점유 변화</th><th>근거</th></tr>';
+  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td>${chipS(x.reading_CE)}</td><td class="num">${x.score_CE == null ? '–' : fmt(x.score_CE)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="num">${x.C_EU == null ? '–' : fmt(x.C_EU) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdSectors').innerHTML = (E.sectors || []).length ? sh : '<tr><td class="empty">품목 자료(관세청) 수집 후 표시</td></tr>';
-  document.getElementById('rdForward').textContent = F ? `전진 확인 상태: ${F.status} — ${F.n_readings}건 기록(reading/forward_log.jsonl, 고쳐 쓰지 않음), 채점 ${F.n_months}개월` : '';
+  document.getElementById('rdForward').textContent = F ? `전진 확인 상태: 수요 충격만 ${F.status} · EU 경쟁만 ${FC ? FC.status : '–'} — ${F.n_readings}건 기록(reading/forward_log.jsonl, 고쳐 쓰지 않음), 채점 ${F.n_months}개월` : '';
   const LH = R.links_history || {};
   const names = Object.keys(LH).filter(g => LH[g].length);
   const dates = [...new Set(names.flatMap(g => LH[g].map(r => r[0])))].sort();
@@ -562,6 +574,10 @@ function renderReading() {
   (E.competition || []).forEach(x => { const k = x.kr || {}, c = x.cn || {};
     ch += `<tr><td>${esc(x.name)}</td><td class="muted">${esc((x.month || '').slice(0, 7))}</td><td>${fmt(k.share, 1)}% ${chipS(k.state)}</td><td class="num">${fmt(k.delta)}%p</td><td>${fmt(c.share, 1)}% ${chipS(c.state)}</td><td class="num">${fmt(c.delta)}%p</td></tr>`; });
   document.getElementById('rdComp').innerHTML = ch;
+  let ce = '<tr><th>품목</th><th>기준월</th><th>한국 점유</th><th class="num">12개월 변화</th><th>중국 점유</th><th class="num">12개월 변화</th></tr>';
+  (E.competition_eu || []).forEach(x => { const k = x.kr || {}, c = x.cn || {};
+    ce += `<tr><td>${esc(x.name)}</td><td class="muted">${esc((x.month || '').slice(0, 7))}</td><td>${fmt(k.share, 1)}% ${chipS(k.state)}</td><td class="num">${fmt(k.delta)}%p</td><td>${fmt(c.share, 1)}% ${chipS(c.state)}</td><td class="num">${fmt(c.delta)}%p</td></tr>`; });
+  document.getElementById('rdCompEU').innerHTML = (E.competition_eu || []).length ? ce : '<tr><td class="empty">EU 수입 자료(Eurostat) 수집 후 표시</td></tr>';
 }
 
 let crashIdx = 0;

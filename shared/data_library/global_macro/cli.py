@@ -49,6 +49,16 @@ def run(step: str, keys=None) -> bool:
             store.log(f"[us_imports] 실패: {e}")
             if step == "us_imports":
                 return False
+    if step in ("eu_imports", "all"):
+        from . import eu_imports
+        try:
+            ok_e = eu_imports.run()
+            if step == "eu_imports" and not ok_e:
+                return False
+        except Exception as e:   # noqa: BLE001
+            store.log(f"[eu_imports] 실패: {e}")
+            if step == "eu_imports":
+                return False
     if step in ("kr_trade_items", "all"):
         from . import kr_trade_items
         try:

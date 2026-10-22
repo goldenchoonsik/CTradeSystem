@@ -15,12 +15,13 @@ from . import store
 
 LOCK = ("collect", ".running.json")
 STEPS: List[dict] = [
-    {"key": "all", "title": "전체 갱신", "runner": "linux", "desc": "받기 → 미국 업종 → 한국 업종 → 무역 → 미국 수입 경쟁 → 한국 품목 수출 → 패널 → 시스템 판독 → 화면 JSON (보통 이것만 누르면 됨)"},
+    {"key": "all", "title": "전체 갱신", "runner": "linux", "desc": "받기 → 미국 업종 → 한국 업종 → 무역 → 미국 수입 경쟁 → EU 수입 경쟁 → 한국 품목 수출 → 패널 → 시스템 판독 → 화면 JSON (보통 이것만 누르면 됨)"},
     {"key": "fetch", "title": "원천 받기", "runner": "linux", "desc": "FRED·Yahoo·ECOS 전 시계열 + Creon 지수(kr_equity 원천) — 월·주 거시는 받은 날짜별 판 보관"},
     {"key": "industry", "title": "미국 업종 원천", "runner": "linux", "desc": "Ken French 49업종 수익·BE/ME(1926~) + FRED 업종 산업생산·생산능력(1972~)"},
     {"key": "kr_industry", "title": "한국 업종 원천", "runner": "linux", "desc": "코스피 업종 지수 20개 월말(Creon, kr_equity 원천) + 통계청 업종별 생산지수(KOSIS)"},
     {"key": "trade", "title": "무역 연결 원천", "runner": "linux", "desc": "한국 상대국별 수출입(ECOS)·OECD 부가가치 무역(TiVA)·상대국 선행지수·대만 지수"},
     {"key": "us_imports", "title": "미국 수입 경쟁(Census)", "runner": "linux", "desc": "미국의 한국·중국·일본·멕시코·베트남·대만산 품목별 월 수입(2010~), 품목 16개 — 약 2분, CENSUS_KEY 필요"},
+    {"key": "eu_imports", "title": "EU 수입 경쟁(Eurostat)", "runner": "linux", "desc": "EU27 의 한국·중국·일본·미국·대만·베트남·멕시코산 품목별 월 수입(2010~, 역외 합계 분모), 품목 16개 — 약 4분, 키 불필요"},
     {"key": "kr_trade_items", "title": "한국 품목×국가 수출(관세청)", "runner": "linux", "desc": "13개 HS 장 × 26개국 × 2000~ 월별(지난 해는 받아 둔 것 재사용, 올해만 다시) — 처음엔 1~2시간, 이후 몇 분"},
     {"key": "reading", "title": "시스템 판독", "runner": "linux", "desc": "판독 엔진을 2008~ 매달 그 시점 자료로 재현 → 최신 판독(근거 사슬)·과거 성적 → derived/dashboard/reading.json"},
     {"key": "panel", "title": "패널 빌드", "runner": "linux", "desc": "일·주 시계열, 월말 시점에 알 수 있던 값(발표 시차 반영), 신선도 점검"},
