@@ -93,6 +93,7 @@
       <div class="td-card">
         <h3 id="rdTitle">이번 달 판독</h3>
         <div class="td-sub">상대국별: 연결 상태 → 수요 판독(6개월 뒤 그 나라로의 한국 수출 전년비가 지금보다 가속/감속). 행에 근거 사슬.</div>
+        <div class="td-sub warn" id="hzDemandNote"></div>
         <table class="td" id="rdLinks"></table>
         <div id="rdTotal" style="margin-top:8px;font-size:13px;"></div>
       </div>
@@ -108,6 +109,15 @@
         <b>합성</b> = 사전등록 점수(수요 + 미국 점유). <b>수요 충격만</b>(R5-D) = 과거 재현에서 더 좋았지만 결과를 보고 고른 것이라 2026-10 이후 전진 기록으로만 판정.</div>
       <div id="rdForward" class="td-sub" style="color:#fbbf24;"></div>
       <table class="td" id="rdSectors"></table>
+    </div>
+    <div class="td-card">
+      <h3>지평 곡선 — 판독의 정보가 몇 개월 지평에 남나 (국소투영, 사전등록 H)</h3>
+      <div class="td-sub">같은 판독을 지평 1~12개월의 누적 결과로 채점. 왼쪽: 수요 판독 적중 − 평균 회귀 기준선(월별 상대국 평균). 오른쪽: 업종 판독 IC(누적, 실선)와 한 달 구간 IC(점선 — 정보가 어느 달에 반영되는지). 통과 = 값>0 & NW t≥2, 유효 구간 = 2개 이상 연속. 운영 채점 지평(6개월)·전진 트랙은 이 결과로 바꾸지 않는다.</div>
+      <div class="td-grid2">
+        <div id="hzDemand" style="height:280px;"></div>
+        <div id="hzSector" style="height:280px;"></div>
+      </div>
+      <table class="td" id="hzJudge"></table>
     </div>
     <div class="td-card">
       <h3>종목 후보 — 업종 판독을 종목으로 (L3, 현재 파악)</h3>
@@ -495,7 +505,8 @@ async function jLoad() {
     bench.innerHTML += J.subjects.map(x => `<option value="${esc(x.key)}">${esc(x.name)}</option>`).join('');
     sel.onchange = () => { document.getElementById('jStock').style.display = sel.value === '__stock' ? 'block' : 'none'; };
     document.getElementById('jViews').innerHTML = Object.entries(J.views).map(([k, v], i) => `<label style="margin-right:10px;"><input type="radio" name="jView" value="${k}" ${i === 0 ? 'checked' : ''}> ${esc(v)}</label>`).join('');
-    document.getElementById('jHorizons').innerHTML = J.horizons.map(hh => `<label style="margin-right:10px;"><input type="radio" name="jHor" value="${hh}" ${hh === 6 ? 'checked' : ''}> ${hh}개월</label>`).join('');
+    document.getElementById('jHorizons').innerHTML = J.horizons.map(hh => `<label style="margin-right:10px;"><input type="radio" name="jHor" value="${hh}" ${hh === 6 ? 'checked' : ''}> ${hh}개월</label>`).join('') + '<span class="muted" id="jHorNote" style="font-size:11px;"></span>';
+    applyJournalDefaultHorizon();                                                       // 판독 자료가 먼저 와 있으면 지금, 아니면 renderHorizon 이 다시 부른다
   }
   const S = J.summary || {};
   const pc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
@@ -653,7 +664,8 @@ function renderSignals() {
   }
   const pct = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
   const eff = (x, fam) => !x || x.effect === null || x.effect === undefined ? '–' :
-    (fam.includes('업종') ? `IC ${x.effect.toFixed(3)} (t ${x.t.toFixed(1)}) · 차 ${(x.spread * 100).toFixed(1)}%p · 적중 ${pct(x.hit)}`
+    (fam.includes('지평') ? `${x.effect.toFixed(3)} (t ${(x.t ?? 0).toFixed(1)}, ${x.n ?? '?'}개월)` :
+     fam.includes('업종') ? `IC ${x.effect.toFixed(3)} (t ${x.t.toFixed(1)}) · 차 ${(x.spread * 100).toFixed(1)}%p · 적중 ${pct(x.hit)}`
                           : `${(x.effect * 100).toFixed(1)}%p (t ${x.t.toFixed(1)}) · 상승확률 유리 ${pct(x.p_up_fav)}(${x.n_fav ?? '?'}개월) / 불리 ${pct(x.p_up_unfav)}(${x.n_unfav ?? '?'}개월)`);
   const src = (R.sources || []).map(x => `${x.stage}단계 ${esc(x.source)} · 사전등록 ${esc(x.prereg)}… · 구간 ${esc(x.periods[0])} / ${esc(x.periods[1])}`).join('<br>');
   let h = `<div class="td-sub">${src}<br>지평 6개월. 뒤 구간이 확인 시험(한국 이식 규칙은 한국 전 기간이 확인).</div>
@@ -848,6 +860,46 @@ function renderGraph() {
   draw();
 }
 
+// 메모 일지 기본 기간 = 선택지(3·6·12) 중 업종 판독 지평 곡선 h* 에 가장 가까운 것(사전등록 H 조치 (a)). 일지 UI 와 판독 자료 중 늦게 온 쪽이 부른다.
+function applyJournalDefaultHorizon() {
+  const hzJ = ((D || {}).reading || {}).horizon, j5 = hzJ && hzJ.judgment && hzJ.judgment['R5 합성(주)'], hStar = j5 && j5.h_star;   // D 는 스크립트 let (window 속성 아님)
+  const radios = [...document.querySelectorAll('input[name=jHor]')];
+  if (!hStar || !radios.length) return;
+  const best = radios.reduce((a, b) => Math.abs(+b.value - hStar) < Math.abs(+a.value - hStar) ? b : a);
+  best.checked = true;
+  const n = document.getElementById('jHorNote'); if (n) n.textContent = `(기본 ${best.value}개월 — 업종 판독 유효 지평의 최고점 h*=${hStar} 에 가장 가까운 선택지, 사전등록 H)`;
+}
+
+function renderHorizon() {
+  const Z = (D.reading || {}).horizon;
+  if (!Z || !Z.horizons) { document.getElementById('hzJudge').innerHTML = '<tr><td class="empty">지평 곡선 없음 — 시스템 판독 단계를 다시 실행</td></tr>'; return; }
+  const H = Z.horizons, pick = (rows, per, score) => H.map(h => (rows || []).find(r => r.h === h && r.per === per && (!score || r.score === score)) || {});
+  const dm = pick(Z.demand, 'all'), tt = pick(Z.total, 'all');
+  Plotly.newPlot('hzDemand', [
+    {x: H, y: dm.map(r => (r.diff ?? null) === null ? null : r.diff * 100), type: 'bar', name: 'R2 상대국', marker: {color: dm.map(r => (r.t ?? 0) >= 2 ? '#50fa7b' : '#4b6c8a')}, text: dm.map(r => r.t === null || r.t === undefined ? '' : `t ${r.t.toFixed(1)}`), textposition: 'outside', textfont: {size: 9}},
+    {x: H, y: tt.map(r => (r.diff ?? null) === null ? null : r.diff * 100), type: 'scatter', mode: 'lines+markers', name: 'R3 총수출', line: {color: '#f1fa8c', width: 1.5}},
+  ], lay({xaxis: {title: {text: '지평(개월)'}, gridcolor: '#29292e', dtick: 1}, yaxis: {title: {text: '적중 − 평균 회귀 (%p)'}, gridcolor: '#29292e', zeroline: true, zerolinecolor: '#5b5b66'}, legend: {orientation: 'h', y: 1.12}, margin: {l: 50, r: 10, t: 24, b: 40}}), CFG);
+  const sc = pick(Z.sectors, 'all', 'composite'), sd = pick(Z.sectors, 'all', 'D');
+  Plotly.newPlot('hzSector', [
+    {x: H, y: sc.map(r => r.ic ?? null), type: 'scatter', mode: 'lines+markers', name: '합성 IC(주)', line: {color: '#00d2ff', width: 2}, marker: {size: sc.map(r => (r.t ?? 0) >= 2 ? 9 : 5)}, text: sc.map(r => r.t === null || r.t === undefined ? '' : `t ${r.t.toFixed(1)}`), hovertemplate: 'h %{x}: IC %{y:.3f} %{text}<extra>합성</extra>'},
+    {x: H, y: sd.map(r => r.ic ?? null), type: 'scatter', mode: 'lines+markers', name: '수요만 IC(보충)', line: {color: '#bd93f9', width: 2}, marker: {size: sd.map(r => (r.t ?? 0) >= 2 ? 9 : 5)}, text: sd.map(r => r.t === null || r.t === undefined ? '' : `t ${r.t.toFixed(1)}`), hovertemplate: 'h %{x}: IC %{y:.3f} %{text}<extra>수요만</extra>'},
+    {x: H, y: sc.map(r => r.ic_marginal ?? null), type: 'scatter', mode: 'lines', name: '합성 한 달 구간 IC', line: {color: '#00d2ff', width: 1, dash: 'dot'}},
+    {x: H, y: sd.map(r => r.ic_marginal ?? null), type: 'scatter', mode: 'lines', name: '수요만 한 달 구간 IC', line: {color: '#bd93f9', width: 1, dash: 'dot'}},
+  ], lay({xaxis: {title: {text: '지평(개월)'}, gridcolor: '#29292e', dtick: 1}, yaxis: {title: {text: '업종 간 순위상관 IC'}, gridcolor: '#29292e', zeroline: true, zerolinecolor: '#5b5b66'}, legend: {orientation: 'h', y: 1.12, font: {size: 10}}, margin: {l: 50, r: 10, t: 24, b: 40}}), CFG);
+  let h = '<tr><th>판독</th><th>통과 지평</th><th>유효 구간</th><th>판정</th><th class="num">최고 지평 h*</th></tr>';
+  Object.entries(Z.judgment || {}).forEach(([k, j]) => {
+    const vs = j.verdict.startsWith('목표') ? 'up' : j.verdict.startsWith('단기') ? 'warn' : 'muted';
+    h += `<tr><td>${esc(k)}</td><td class="muted">${(j.passed || []).join(', ') || '없음'}</td><td>${j.run && j.run.length ? j.run[0] + '~' + j.run[j.run.length - 1] + '개월' : '–'}</td><td class="${vs}">${esc(j.verdict)}</td><td class="num">${j.h_star ?? '–'}</td></tr>`;
+  });
+  document.getElementById('hzJudge').innerHTML = h + `<tr><td colspan="5" class="muted" style="font-size:11px;">${esc(Z.rule || '')}</td></tr>`;
+  const j2 = (Z.judgment || {})['R2 수요'], j5 = (Z.judgment || {})['R5 합성(주)'];
+  const note = [];
+  if (j2) note.push(j2.verdict.startsWith('단기') ? `지평 곡선(사전등록 H): 수요 판독이 평균 회귀 기준선보다 나은 건 ${j2.run[0]}~${j2.run[j2.run.length - 1]}개월뿐 — 6개월 지평에선 기준선과 차이 없음(현재 파악용)` : j2.verdict.startsWith('목표') ? `지평 곡선: 수요 판독 유효 지평 ${j2.run[0]}~${j2.run[j2.run.length - 1]}개월` : '지평 곡선: 수요 판독은 평균 회귀 기준선 대비 추가 정보 없음');
+  if (j5 && j5.run && j5.run.length) note.push(`업종 판독 유효 지평 ${j5.run[0]}~${j5.run[j5.run.length - 1]}개월(최고 ${j5.h_star})`);
+  document.getElementById('hzDemandNote').textContent = note.join(' · ');
+  applyJournalDefaultHorizon();
+}
+
 function renderLedger() {
   let h = '<tr><th>블록</th><th>키</th><th>이름</th><th>원천</th><th>주기</th><th class="num">발표 시차</th><th>시작</th><th>최신</th><th>상태</th></tr>';
   (D.catalog || []).forEach(s => {
@@ -872,7 +924,7 @@ async function load() {
     D = j;
   } catch (e) { document.getElementById('tdGenerated').textContent = '불러오기 실패: ' + e; return; }
   document.getElementById('tdGenerated').textContent = '계산 시각 ' + (D.generated_at || '').replace('T', ' ');
-  renderState(); renderReading(); renderRelations(); renderGraph(); renderInfluence(); renderTrade(); renderCrash(); renderSignals(); renderLedger();
+  renderState(); renderReading(); renderHorizon(); renderRelations(); renderGraph(); renderInfluence(); renderTrade(); renderCrash(); renderSignals(); renderLedger();
 }
 
 let runTimer = null;

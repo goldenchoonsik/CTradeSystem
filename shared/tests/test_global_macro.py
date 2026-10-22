@@ -566,3 +566,55 @@ def test_no_hardcoded_mapping_tables_outside_ledger():
             if m:
                 bad.append(f"{os.path.basename(fp)}: {what} — {m.group(0).strip()[:60]}")
     assert not bad, "대응표는 reference/relations_ledger.json 에만:\n" + "\n".join(bad)
+
+
+# ---------------------------------------------------------------- 지평 곡선(국소투영, 사전등록 H)
+def test_horizon_curves_find_the_horizon_where_information_lives():
+    """업종 점수가 정확히 h=4 까지 누적 수익을 설명하도록 만든 가짜 자료 → IC 곡선은 1~4 양·t 통과, 5~ 는 0 근처; 판정은 '목표 지평 정합' h*≤4."""
+    from shared.data_library.global_macro import reading_horizon as H
+    rng = np.random.default_rng(7)
+    idx = pd.date_range("2007-12-31", "2026-06-30", freq="ME")
+    secs = ["U008", "U009", "U011", "U012", "U013", "U014", "U015"]
+    hist, close = [], pd.DataFrame(0.0, index=idx, columns=secs + ["U001"])
+    scores = {}
+    for i, t in enumerate(idx[:-13]):
+        sc = rng.standard_normal(len(secs))
+        scores[t] = sc
+        hist.append({"t": str(t.date()), "demand": {}, "sectors": {s: {"score": float(sc[k]), "score_D": float(-sc[k]), "D": float(-sc[k]), "C": None} for k, s in enumerate(secs)}})
+    # 월 수익: 점수 신호가 다음 4개월에만 들어감(t+1..t+4), 그 뒤는 잡음
+    ret = pd.DataFrame(rng.standard_normal((len(idx), len(secs))) * 0.02, index=idx, columns=secs)
+    for t, sc in scores.items():
+        p = idx.get_loc(t)
+        for j in range(1, 5):
+            if p + j < len(idx):
+                ret.iloc[p + j] += 0.01 * sc
+    close[secs] = np.exp(ret.cumsum())
+    close["U001"] = 1.0
+
+    class _D:
+        pass
+    D = _D(); D.close = close
+    sec = H.sector_curve(D, hist, list(range(1, 9)))
+    a = sec[(sec.score == "composite") & (sec.per == "all")].set_index("h")
+    assert all(a.loc[h, "ic"] > 0 and a.loc[h, "t"] >= 2 for h in (1, 2, 3, 4))
+    assert abs(a.loc[8, "ic_marginal"]) < 0.08                      # 8개월째 한 달 구간엔 정보 없음
+    j = H.judge(sec[sec.score == "composite"], "ic", list(range(1, 9)))
+    assert j["verdict"].startswith("목표 지평 정합") and 3 <= j["h_star"] <= 4 and j["run"][0] == 1
+    jd = H.judge(sec[sec.score == "D"], "ic", list(range(1, 9)))    # 부호 반대 점수 → 통과 없음
+    assert jd["verdict"] == "지평 정보 없음" and jd["h_star"] is None
+
+
+def test_horizon_demand_curve_scores_against_mean_reversion_baseline():
+    from shared.data_library.global_macro import reading_horizon as H
+    idx = pd.date_range("2000-01-31", "2026-06-30", freq="ME")
+    y = pd.Series(np.sin(np.arange(len(idx)) / 4.0), index=idx)            # 주기 ~25개월 → 평균 회귀가 잘 맞는 세계
+    class _D:
+        pass
+    D = _D(); D.y = pd.DataFrame({"미국": y}); D.y_total = y
+    hist = [{"t": str(t.date()), "demand": {"미국": {"delta": float(y.get(t + pd.offsets.MonthEnd(6)) - y.get(t - pd.offsets.MonthEnd(1)))}}, "total": None}
+            for t in idx[12:-13]]                                            # 6개월 뒤를 정확히 아는 '완벽한 판독'
+    cur = H.demand_curve(D, hist, [1, 3, 6, 9, 12])
+    a = cur[cur.per == "all"].set_index("h")
+    assert a.loc[6, "hit"] == 1.0 and a.loc[6, "diff"] >= 0
+    assert a.loc[12, "hit"] < a.loc[6, "hit"]                                # 지평이 멀어지면 정보가 준다
+    assert len(H.demand_curve(D, hist, [3], total=True)) == 3 and H.demand_curve(D, hist, [3], total=True).n_months.sum() == 0   # total 없음 → 빈 곡선

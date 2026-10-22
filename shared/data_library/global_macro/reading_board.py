@@ -14,6 +14,7 @@ import pandas as pd
 from . import reading as R
 from . import reading_eval as E
 from . import reading_ext as X
+from . import reading_horizon as HZ
 from . import store
 
 
@@ -137,7 +138,12 @@ def build() -> dict:
     except Exception as e:   # noqa: BLE001
         store.log(f"[reading] 종목 후보 실패(무시): {e}")
         stock_cands = {}
-    out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health,
+    try:                                                                       # 지평 곡선(사전등록 H) — 화면 카드, 판정은 표시만
+        horizon = HZ.curves(D, hist)
+    except Exception as e:   # noqa: BLE001
+        store.log(f"[reading] 지평 곡선 실패(무시): {e}")
+        horizon = {}
+    out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health, "horizon": horizon,
            "forward": S["forward"], "forward_ce": S["forward_ce"], "stocks": stock_cands,
            "evidence": evidence(D, latest, expo), "links_history": links_hist, "sector_history": sec_hist,
            "demand_history": demand_hist, "exposure_by_year": expo_by_year,
