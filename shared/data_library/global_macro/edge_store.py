@@ -139,7 +139,7 @@ def collect(history: Optional[pd.DataFrame], reading: dict, relations: dict, inf
         for s, v in (reading or {}).get("stocks", {}).items():
             for st in v.get("stocks", []):
                 rows.append({"t": t_latest, "type": "stock_beta", "src": f"s:{s}", "dst": f"k:{st['code']}", "weight": st.get("beta"), "state": None, "k": None,
-                             "evidence": _ev({"name": st.get("name"), "mcap_bn": st.get("mcap_bn"), "ret_6m": st.get("ret_6m")}), "source": "reading.stocks"})
+                             "evidence": _ev({"name": st.get("name"), "mcap_bn": st.get("mcap_bn"), "ret_6m": st.get("ret_6m"), "export_share": st.get("export_share")}), "source": "reading.stocks"})
     return pd.DataFrame(rows, columns=[c for c in COLS if c != "logged_at"])
 
 

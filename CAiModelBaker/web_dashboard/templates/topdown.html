@@ -122,7 +122,7 @@
     </div>
     <div class="td-card">
       <h3>종목 후보 — 업종 판독을 종목으로 (L3, 현재 파악)</h3>
-      <div class="td-sub" id="rdStocksSub">업종 대응 = DART KSIC(오늘 기준, 상장사만). 필터: 시총 ≥ 500억·20일 평균 거래대금 ≥ 5억. 업종 베타 = 최근 36개월 종목(코스피 초과) ~ 업종 지수(코스피 초과) 기울기 — 수출 노출의 대리(회사별 수출 비중 원천 없음). 검정은 사전등록 stage5(신호 상태 탭).</div>
+      <div class="td-sub" id="rdStocksSub">업종 대응 = DART KSIC(오늘 기준, 상장사만). 필터: 시총 ≥ 500억·20일 평균 거래대금 ≥ 5억. 수출 비중 = DART 사업보고서 매출실적·지역별 매출 표의 수출/(수출+내수)(가장 최근 사업연도, ○ = 표의 합계와 맞음), 비중 상위 순·없으면 베타 순. 업종 베타 = 최근 36개월 종목(코스피 초과) ~ 업종 지수(코스피 초과) 기울기. 추천 아님 — 검정(stage5 S2 재사전등록)은 이력 확보 뒤.</div>
       <div id="rdStocks"></div>
     </div>
     <div class="td-card">
@@ -633,9 +633,9 @@ function renderReading() {
   const s5 = ((D.signals || {}).signals || []).find(x => x.id === 'S2');
   if (s5) st += `<div class="td-sub">stage5 S2(업종 점수 × 베타 → 업종 내 종목) 판정: <span class="chip" style="${VERDICT_STYLE[s5.verdict] || ''}">${esc(s5.verdict)}</span> — ${s5.verdict === '버림' ? '베타 상위가 판독의 몫을 더 받는다는 증거 없음 → 아래는 업종 구성·민감도 파악용' : '우호 업종 × 고베타 = 판독 전이 후보'}</div>`;
   sks.forEach(([s, v]) => {
-    st += `<div style="margin:10px 0 4px;font-weight:600;">${esc(v.name)} ${chipS(v.reading)} <span class="muted" style="font-weight:400;font-size:12px;">합성 ${fmt(v.score)} · 수요만 ${esc(v.reading_D || '–')} · 대응 종목 ${v.n_universe} · 필터 통과 ${v.n_pass} · 베타 중앙값 ${fmt(v.beta_median)} · 가격 ${esc(v.fund_date)}</span></div>`;
-    st += '<table class="td"><tr><th>종목</th><th class="num">업종 베타</th><th class="num">시총(십억)</th><th class="num">거래대금(십억/일)</th><th class="num">6개월</th><th class="num">1개월</th><th class="num">외국인 %</th></tr>';
-    v.stocks.forEach(x => { st += `<tr><td>${esc(x.name)} <span class="muted">${esc(x.code)}</span></td><td class="num">${fmt(x.beta)}</td><td class="num">${fmt(x.mcap_bn, 0)}</td><td class="num">${fmt(x.adv_bn, 1)}</td><td class="num ${(x.ret_6m || 0) < 0 ? 'down' : ''}">${x.ret_6m == null ? '–' : x.ret_6m + '%'}</td><td class="num">${x.ret_1m == null ? '–' : x.ret_1m + '%'}</td><td class="num">${x.foreign_pct == null ? '–' : x.foreign_pct}</td></tr>`; });
+    st += `<div style="margin:10px 0 4px;font-weight:600;">${esc(v.name)} ${chipS(v.reading)} <span class="muted" style="font-weight:400;font-size:12px;">합성 ${fmt(v.score)} · 수요만 ${esc(v.reading_D || '–')} · 대응 종목 ${v.n_universe} · 필터 통과 ${v.n_pass} · 수출 비중 중앙값 ${v.export_median == null ? '–' : v.export_median + '%'} (${v.n_export || 0}종목, ${esc(v.export_year || '')}년) · 베타 중앙값 ${fmt(v.beta_median)} · 가격 ${esc(v.fund_date)}</span></div>`;
+    st += '<table class="td"><tr><th>종목</th><th class="num">수출 비중</th><th class="num">업종 베타</th><th class="num">시총(십억)</th><th class="num">거래대금(십억/일)</th><th class="num">6개월</th><th class="num">1개월</th><th class="num">외국인 %</th></tr>';
+    v.stocks.forEach(x => { st += `<tr><td>${esc(x.name)} <span class="muted">${esc(x.code)}</span></td><td class="num">${x.export_share == null ? '<span class="muted">–</span>' : x.export_share + '%' + (x.export_verified ? ' ○' : '')}</td><td class="num">${fmt(x.beta)}</td><td class="num">${fmt(x.mcap_bn, 0)}</td><td class="num">${fmt(x.adv_bn, 1)}</td><td class="num ${(x.ret_6m || 0) < 0 ? 'down' : ''}">${x.ret_6m == null ? '–' : x.ret_6m + '%'}</td><td class="num">${x.ret_1m == null ? '–' : x.ret_1m + '%'}</td><td class="num">${x.foreign_pct == null ? '–' : x.foreign_pct}</td></tr>`; });
     st += '</table>';
   });
   document.getElementById('rdStocks').innerHTML = st;
@@ -794,7 +794,7 @@ function grInfo(n) {
     const ev = (R.evidence && R.evidence.sectors || []).find(x => x.s === s);
     if (ev && t === R.t) h += row('근거(최신)', esc(ev.text));
     const st = (R.stocks || {})[s];
-    if (st) h += row('종목 후보(현재)', `${st.n_pass}/${st.n_universe} 통과 · 베타 중앙값 ${fmt(st.beta_median)}<br>` + (st.stocks || []).slice(0, 5).map(x => `${esc(x.name)} β${fmt(x.beta)} 6개월 ${fmt(x.ret_6m, 0)}%`).join('<br>'));
+    if (st) h += row('종목 후보(현재)', `${st.n_pass}/${st.n_universe} 통과 · 수출 비중 중앙값 ${st.export_median == null ? '–' : st.export_median + '%'}<br>` + (st.stocks || []).slice(0, 5).map(x => `${esc(x.name)} 수출 ${x.export_share == null ? '–' : x.export_share + '%'} β${fmt(x.beta)} 6개월 ${fmt(x.ret_6m, 0)}%`).join('<br>'));
   } else if (d.layer === 'product') {
     const p = d.id.slice(2);
     const sh = (GR.P.edges || []).filter(e => e.type === 'import_share' && e.dst === d.id);
@@ -806,7 +806,7 @@ function grInfo(n) {
     });
     h += row('업종(원장)', grEdges('sector_product', {to: p}).map(e => esc((LG.nodes.kr_sector || {})[e.from] || e.from)).join(', '));
   } else if (d.layer === 'stock') {
-    h += row('업종 베타', fmt(d.beta)) + row('시총', `${fmt(d.mcap_bn, 0)}억`) + row('6개월·1개월', `${fmt(d.ret_6m, 1)}% · ${fmt(d.ret_1m, 1)}%`) + row('외국인', `${fmt(d.foreign_pct, 1)}%`);
+    h += row('수출 비중(DART)', d.export_share == null ? '–' : `${d.export_share}%${d.export_verified ? ' (합계 검증)' : ''}`) + row('업종 베타', fmt(d.beta)) + row('시총', `${fmt(d.mcap_bn, 0)}억`) + row('6개월·1개월', `${fmt(d.ret_6m, 1)}% · ${fmt(d.ret_1m, 1)}%`) + row('외국인', `${fmt(d.foreign_pct, 1)}%`);
   } else if (d.id === 'kr:exp') {
     const tot = R.evidence && R.evidence.total;
     h += row('총수출 판독(최신)', tot ? esc(tot.text) : '–');

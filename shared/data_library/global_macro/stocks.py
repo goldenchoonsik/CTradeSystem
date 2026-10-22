@@ -58,10 +58,23 @@ def latest_fundamentals(codes) -> pd.DataFrame:
     return g.sort_values("date").groupby("code").last()
 
 
+def latest_export_share() -> Optional[pd.DataFrame]:
+    """회사별 수출 비중(kr_export_share, 가장 최근 사업연도) — stock_code 인덱스, export_share(0~1)·verified·year. 없으면 None."""
+    import glob
+    fps = sorted(glob.glob(store.path("derived", "kr_industry", "export_share_*.parquet")))
+    if not fps:
+        return None
+    d = pd.read_parquet(fps[-1])
+    d = d[d.parse == "ok"][["stock_code", "export_share", "verified"]].copy()
+    d["year"] = int(os.path.basename(fps[-1]).split("_")[-1].split(".")[0])
+    return d.set_index("stock_code")
+
+
 def candidates(sector_readings: Dict[str, dict], top: int = 8) -> dict:
-    """화면용 — 업종별(우호/비우호) 종목 후보: 업종 대응 종목 중 유동성·시총 하한 통과, 업종 베타 상위.
-    반환 {sector: {name, reading, score, stocks:[{code,name,beta,mcap_bn,adv_bn,ret_6m,ret_1m}]}} — 현재 파악용(검정은 stage5)."""
+    """화면용 — 업종별(우호/비우호) 종목 후보: 업종 대응 종목 중 유동성·시총 하한 통과, **회사 수출 비중**(DART 사업보고서) 상위,
+    비중이 없는 종목은 뒤로(베타 순). 반환 {sector: {name, reading, score, stocks:[{code,name,export_share,beta,mcap_bn,…}]}} — 현재 파악용(검정은 stage5, S2 재사전등록 전)."""
     from . import kr_industry
+    xs = latest_export_share()
     fp = store.path("derived", "kr_industry", "company_ksic.parquet")
     if not os.path.exists(fp):
         return {}
@@ -80,12 +93,19 @@ def candidates(sector_readings: Dict[str, dict], top: int = 8) -> dict:
         f = fund.loc[codes]
         ok = f[(f.adv_20 >= MIN_ADV_KRW) & (f.market_cap >= MIN_MCAP_KRW)].index
         b = beta.reindex(ok).dropna().sort_values(ascending=False)
+        es = xs.export_share.reindex(b.index) if xs is not None else pd.Series(np.nan, index=b.index)
+        order = pd.DataFrame({"es": es, "b": b}).sort_values(["es", "b"], ascending=[False, False], na_position="last").index   # 수출 비중 → 베타
         rows = []
-        for c in b.index[:top]:
+        for c in order[:top]:
             nm = ks.loc[ks.stock_code == c, "name"].iloc[0]
-            rows.append({"code": c, "name": nm, "beta": round(float(b[c]), 2), "mcap_bn": round(float(f.loc[c, "market_cap"]) / 1e9, 0),
+            e = None if xs is None or c not in xs.index else xs.loc[c]
+            rows.append({"code": c, "name": nm, "beta": round(float(b[c]), 2),
+                         "export_share": None if e is None or pd.isna(e.export_share) else round(float(e.export_share) * 100, 1),
+                         "export_verified": None if e is None else bool(e.verified), "mcap_bn": round(float(f.loc[c, "market_cap"]) / 1e9, 0),
                          "adv_bn": round(float(f.loc[c, "adv_20"]) / 1e9, 1), "ret_6m": None if pd.isna(f.loc[c, "ret_120"]) else round(float(f.loc[c, "ret_120"]) * 100, 1),
                          "ret_1m": None if pd.isna(f.loc[c, "ret_20"]) else round(float(f.loc[c, "ret_20"]) * 100, 1), "foreign_pct": None if pd.isna(f.loc[c, "foreign_hold_pct"]) else round(float(f.loc[c, "foreign_hold_pct"]), 1)})
         out[s] = {"name": v["name"], "reading": v["reading"], "score": v["score"], "reading_D": v.get("reading_D"), "n_universe": int(len(codes)), "n_pass": int(len(ok)),
-                  "beta_median": None if b.empty else round(float(b.median()), 2), "stocks": rows, "as_of": str(t.date()), "fund_date": str(f.date.max().date())}
+                  "beta_median": None if b.empty else round(float(b.median()), 2),
+                  "export_median": None if es.dropna().empty else round(float(es.dropna().median()) * 100, 1), "n_export": int(es.notna().sum()),
+                  "export_year": None if xs is None else int(xs.year.iloc[0]), "stocks": rows, "as_of": str(t.date()), "fund_date": str(f.date.max().date())}
     return out
