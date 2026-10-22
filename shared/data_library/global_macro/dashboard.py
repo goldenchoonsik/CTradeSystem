@@ -9,7 +9,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from . import analytics, catalog, ledger, store
+from . import analytics, catalog, issues, ledger, store
 
 MARKETS = ["US", "EU", "JP", "CN", "KR"]
 MARKET_KO = {"US": "미국 S&P500", "EU": "독일 DAX", "JP": "일본 닛케이", "CN": "중국 상하이", "KR": "한국 코스피"}
@@ -203,9 +203,11 @@ def trade_map(influence_full=None) -> dict:
 def _relations() -> dict:
     from . import relations
     try:
-        return relations.build()
+        out = relations.build()
+        issues.step_ok("dashboard.relations")
+        return out
     except Exception as e:   # noqa: BLE001 — 원천 일부가 없어도 화면 나머지는 그린다
-        store.log(f"[dashboard] 관계 판독 실패: {e}")
+        issues.step_failed("dashboard.relations", e, "relations.build — 무역·수입 경쟁 산출물 확인")
         return {"error": str(e)[:200]}
 
 
@@ -215,9 +217,11 @@ def _edges_sync(reading: dict, relations: dict, influence: dict) -> dict:
     try:
         fp = store.path("reading", "history.parquet")
         hist = pd.read_parquet(fp) if os.path.exists(fp) else None
-        return edge_store.sync(hist, reading, relations, influence)
+        out = edge_store.sync(hist, reading, relations, influence)
+        issues.step_ok("dashboard.edges")
+        return out
     except Exception as e:   # noqa: BLE001
-        store.log(f"[dashboard] 엣지 저장소 실패: {e}")
+        issues.step_failed("dashboard.edges", e, "edge_store.collect — 산출물 모양 변화 확인")
         return {"error": str(e)[:200]}
 
 
@@ -272,6 +276,7 @@ def build() -> dict:
         "signals": merged_signals(),
         "ledger": ledger.summary() | ledger.graph_view(),
         "edges": _edges_sync(rd, rel, inf),
+        "issues": issues.summary(),
     }
     os.makedirs(store.path("derived", "dashboard"), exist_ok=True)
     fp = store.path("derived", "dashboard", "stage1.json")

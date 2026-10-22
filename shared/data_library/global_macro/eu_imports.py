@@ -12,7 +12,7 @@ from typing import Dict
 
 import pandas as pd
 
-from . import ledger, store
+from . import issues, ledger, store
 from .store import log
 from .us_imports import PRODUCTS  # 품목표는 미국과 같은 16개(비교 가능하도록)
 
@@ -58,4 +58,5 @@ def run() -> bool:
     os.makedirs(store.path("derived", "trade"), exist_ok=True)
     df.to_parquet(store.path("derived", "trade", "eu_imports.parquet"))
     log(f"[eu_imports] Comext {len(df)}행, {df.month.min().date()}~{df.month.max().date()}, 품목 {df.cmd.nunique()}, 실패 {fail}")
+    issues.from_fail_list("eu_imports", fail, hint="eu_imports.run — Comext 품목 응답")
     return not fail

@@ -17,6 +17,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
+from . import issues as IS
 from . import reading as R
 from . import store
 from .store import log
@@ -308,7 +309,7 @@ def build(year: int = 2025) -> pd.DataFrame:
     """index 의 받은 원문을 전부 파싱해 회사별 수출 비중 표를 쓴다."""
     idx = read_index(year)
     t = targets().set_index("stock_code")
-    recs = []
+    recs, details = [], {}
     for r in idx.itertuples(index=False):
         rec = {"stock_code": r.stock_code, "corp_code": r.corp_code, "rcept_no": r.rcept_no, "status": r.status,
                "name": t.name.get(r.stock_code), "sector": t.sector.get(r.stock_code)}
@@ -316,14 +317,18 @@ def build(year: int = 2025) -> pd.DataFrame:
             fp = store.path("raw", "dart_reports", str(year), f"{r.corp_code}_{r.rcept_no}.zip")
             try:
                 with open(fp, "rb") as f:
-                    p = parse_xml(main_xml(f.read()))
+                    xml = main_xml(f.read())
+                p = parse_xml(xml)
                 if p:
                     rec.update(export_share=p["share"], export=p["export"], domestic=p["domestic"], method=p["method"], verified=p["verified"],
                                title_good=p["title_good"], table_title=p["title"][-80:], parse="ok")
                 else:
                     rec["parse"] = "no_table"
+                    details[r.stock_code] = {"hints": _sales_table_hints(xml)}
             except Exception as e:   # noqa: BLE001
+                import traceback
                 rec["parse"] = f"error: {str(e)[:60]}"
+                details[r.stock_code] = {"trace": traceback.format_exc()[-800:]}
         else:
             rec["parse"] = r.status
         recs.append(rec)
@@ -331,8 +336,10 @@ def build(year: int = 2025) -> pd.DataFrame:
     os.makedirs(store.path("derived", "kr_industry"), exist_ok=True)
     df.to_parquet(store.path("derived", "kr_industry", f"export_share_{year}.parquet"))
     ok = df[df.parse == "ok"]
+    counts = write_issues(year, df, details)
     log(f"[export_share] {year} 파싱 {len(ok)}/{len(df)} (검증 {int(ok.verified.sum()) if len(ok) else 0}), 업종별 " +
-        ", ".join(f"{s} {int((ok.sector == s).sum())}/{int((df.sector == s).sum())}" for s in sorted(df.sector.dropna().unique())))
+        ", ".join(f"{s} {int((ok.sector == s).sum())}/{int((df.sector == s).sum())}" for s in sorted(df.sector.dropna().unique())) +
+        f" · 이슈 {sum(counts.values())}건 {counts} → export_share/issues_digest.md")
     return df
 
 
@@ -354,3 +361,131 @@ def run_grid(latest: Optional[int] = None) -> dict:
     done = [y for y, v in out["years"].items() if v["complete"]]
     log(f"[export_share] 격자 {grid_years(latest)} 중 완료 {done}" + (f" · 중단 {out['stopped']}" if out["stopped"] else " · 전부 완료"))
     return out
+
+
+# ---------------------------------------------------------------- 파싱 이슈 축적 — 사람이 아니라 다음에 파서를 고칠 때 한 번에 보도록
+ISSUE_DIR = ("export_share",)                      # DataVault/staging/global_macro/export_share/issues_<연도>.jsonl, issues_digest.md, issues_history.jsonl
+JUMP_PP = 30.0                                      # 인접 격자 해 사이 비중 변화가 이보다 크면 '급변' 이슈(사업 변화 또는 표 선택 변화)
+
+
+def _sales_table_hints(xml: str, n: int = 3) -> List[dict]:
+    """표 못 찾은 문서에서 '매출' 제목 표의 머리글 — 파서가 놓친 배치를 알아보기 위한 단서."""
+    out = []
+    for tb in tables(xml):
+        if TITLE_GOOD.search(tb["title"][-90:]):
+            out.append({"pos": tb["pos"], "title": tb["title"][-60:], "head": [r[:7] for r in tb["rows"][:3]]})
+            if len(out) >= n:
+                break
+    return out
+
+
+def _record_issue(issues: list, year: int, rec: dict, kind: str, detail: dict):
+    issues.append({"year": year, "kind": kind, "stock_code": rec.get("stock_code"), "corp_code": rec.get("corp_code"), "name": rec.get("name"),
+                   "sector": rec.get("sector"), "rcept_no": rec.get("rcept_no"), "detail": detail})
+
+
+def _jump_issues(year: int, df: pd.DataFrame) -> list:
+    """같은 종목의 이전 격자 해(있는 것 중 가장 가까운)와 비교해 JUMP_PP 넘게 바뀐 것 — 두 해의 표 제목·방법을 같이 적는다."""
+    import glob
+    prev = sorted(int(os.path.basename(f).split("_")[-1].split(".")[0]) for f in glob.glob(store.path("derived", "kr_industry", "export_share_*.parquet")))
+    prev = [y for y in prev if y < year]
+    if not prev:
+        return []
+    p = pd.read_parquet(store.path("derived", "kr_industry", f"export_share_{prev[-1]}.parquet"))
+    p = p[p.parse == "ok"].set_index("stock_code")
+    out = []
+    for r in df[df.parse == "ok"].itertuples():
+        if r.stock_code in p.index:
+            q = p.loc[r.stock_code]
+            d = (r.export_share - q.export_share) * 100
+            if abs(d) >= JUMP_PP:
+                _record_issue(out, year, r._asdict(), "jump", {"vs_year": prev[-1], "delta_pp": round(float(d), 1), "now": {"share": round(float(r.export_share), 3), "method": r.method, "verified": bool(r.verified), "title": r.table_title},
+                                                            "prev": {"share": round(float(q.export_share), 3), "method": q.method, "verified": bool(q.verified), "title": q.table_title}})
+    return out
+
+
+def write_issues(year: int, df: pd.DataFrame, parse_details: Dict[str, dict]) -> dict:
+    """빌드 결과에서 이슈를 뽑아 issues_<연도>.jsonl 로 다시 쓴다(그 해의 현재 상태 — 고쳐지면 다음 빌드에서 사라짐). 반환 = 종류별 건수."""
+    issues = []
+    for r in df.itertuples():
+        rec = r._asdict()
+        d = parse_details.get(r.stock_code, {})
+        if r.parse == "no_table":
+            _record_issue(issues, year, rec, "no_table", {"sales_tables": d.get("hints", []), "note": "매출 표 자체 없음" if not d.get("hints") else "매출 표는 있으나 수출/내수(또는 국가별) 분리를 못 읽음"})
+        elif str(r.parse).startswith("error"):
+            _record_issue(issues, year, rec, "parse_error", {"message": r.parse, "trace": d.get("trace")})
+        elif r.parse == "ok" and not r.verified:
+            _record_issue(issues, year, rec, "unverified", {"share": round(float(r.export_share), 3), "export": r.export, "domestic": r.domestic, "method": r.method, "title": r.table_title})
+        elif str(r.status).startswith("error"):
+            _record_issue(issues, year, rec, "doc_missing", {"message": r.status})
+    issues += _jump_issues(year, df)
+    d = store.path(*ISSUE_DIR)
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, f"issues_{year}.jsonl"), "w", encoding="utf-8") as f:
+        for it in issues:
+            f.write(json.dumps(it, ensure_ascii=False, default=str) + "\n")
+    counts = pd.Series([i["kind"] for i in issues]).value_counts().to_dict() if issues else {}
+    IS.replace(f"export_share:{year}", [{"kind": ("doc_missing" if i["kind"] == "doc_missing" else i["kind"]), "key": f"{i['stock_code']}:{i['kind']}",
+                                          "title": f"{i['name']}({i['stock_code']}, {i['sector']}) {i['kind']}" + (f" {i['detail'].get('delta_pp'):+.0f}%p" if i["kind"] == "jump" else ""),
+                                          "detail": i["detail"], "hint": "kr_export_share.py 파서 규칙 — export_share/issues_digest.md 에 원인 자료"} for i in issues])
+    with open(os.path.join(d, "issues_history.jsonl"), "a", encoding="utf-8") as f:       # 빌드마다 건수만 append — 고쳐지는 추이
+        f.write(json.dumps({"logged_at": datetime.now().isoformat(timespec="seconds"), "year": year, "counts": counts, "n_ok": int((df.parse == "ok").sum()), "n": len(df)}, ensure_ascii=False) + "\n")
+    write_digest()
+    return counts
+
+
+def read_issues() -> List[dict]:
+    import glob
+    out = []
+    for fp in sorted(glob.glob(store.path(*ISSUE_DIR, "issues_*.jsonl"))):
+        with open(fp, encoding="utf-8") as f:
+            out += [json.loads(l) for l in f if l.strip()]
+    return out
+
+
+def write_digest(per_kind: int = 12) -> str:
+    """issues_digest.md — 한 번에 읽고 파서를 고치기 위한 요약: 연도×종류 건수, 종류별 예(원인 자료 포함), 자주 나오는 머리글 패턴."""
+    its = read_issues()
+    L = ["# 회사별 수출 비중 — 파싱 이슈 다이제스트 (빌드마다 다시 씀)", "",
+         f"생성 {datetime.now().isoformat(timespec='seconds')} · 전체 {len(its)}건. 종류: no_table(분리 표 못 찾음) · parse_error(예외) · unverified(합계 검증 안 됨) · doc_missing(DART 원문 없음, 고칠 수 없음) · jump(인접 격자 해 대비 {JUMP_PP:.0f}%p 이상 변화 — 사업 변화 또는 표 선택 변화).",
+         "고치는 법: 아래 예를 보고 `kr_export_share.py` 파서 규칙을 바꾼 뒤 그 해를 다시 `build(year)` 하면 해결된 이슈는 사라진다. 결과는 `issues_history.jsonl` 에 건수 추이로 남는다.", ""]
+    if not its:
+        L.append("이슈 없음.")
+    else:
+        df = pd.DataFrame(its)
+        L += ["## 연도 × 종류", "", "| 연도 | " + " | ".join(sorted(df.kind.unique())) + " |", "|---|" + "---|" * df.kind.nunique()]
+        for y, g in df.groupby("year"):
+            c = g.kind.value_counts()
+            L.append(f"| {y} | " + " | ".join(str(int(c.get(k, 0))) for k in sorted(df.kind.unique())) + " |")
+        # 패턴: no_table 에서 매출 표 머리글 첫 행의 빈도
+        heads = {}
+        for it in its:
+            if it["kind"] == "no_table":
+                for t in it["detail"].get("sales_tables", [])[:1]:
+                    key = " | ".join(t["head"][0][:6]) if t["head"] else "(빈 표)"
+                    heads[key] = heads.get(key, 0) + 1
+        if heads:
+            L += ["", "## no_table 에서 자주 보이는 매출 표 머리글(첫 행) — 파서가 못 읽는 배치", ""]
+            for k, v in sorted(heads.items(), key=lambda kv: -kv[1])[:15]:
+                L.append(f"- {v}건: `{k}`")
+        for kind in ["parse_error", "no_table", "jump", "unverified", "doc_missing"]:
+            g = df[df.kind == kind]
+            if not len(g):
+                continue
+            L += ["", f"## {kind} ({len(g)}건) — 예 {min(per_kind, len(g))}건", ""]
+            for it in g.head(per_kind).to_dict("records"):
+                d = it["detail"]
+                if kind == "no_table":
+                    tt = "; ".join(f"[{t['title'][-40:]}] " + " / ".join(" ".join(h[:6]) for h in t["head"][:2]) for t in d.get("sales_tables", [])) or d.get("note")
+                    L.append(f"- {it['year']} {it['name']}({it['stock_code']}, {it['sector']}) {it['rcept_no']}: {tt}")
+                elif kind == "jump":
+                    L.append(f"- {it['year']} {it['name']}({it['stock_code']}): {d['prev']['share']:.2f}({d['vs_year']}, {d['prev']['method']}{'○' if d['prev']['verified'] else ''}) → {d['now']['share']:.2f}({d['now']['method']}{'○' if d['now']['verified'] else ''}) {d['delta_pp']:+.0f}%p · 표: {str(d['prev']['title'])[-35:]} → {str(d['now']['title'])[-35:]}")
+                elif kind == "unverified":
+                    L.append(f"- {it['year']} {it['name']}({it['stock_code']}): 비중 {d['share']:.2f} 수출 {d['export']:,.0f} 내수 {d['domestic']:,.0f} {d['method']} · 표: {str(d['title'])[-50:]}")
+                else:
+                    L.append(f"- {it['year']} {it['name']}({it['stock_code']}): {d.get('message')}" + (f"\\n  {d['trace'][-300:]}" if d.get("trace") else ""))
+    fp = store.path(*ISSUE_DIR, "issues_digest.md")
+    os.makedirs(os.path.dirname(fp), exist_ok=True)
+    with open(fp, "w", encoding="utf-8") as f:
+        f.write("\n".join(L) + "\n")
+    return fp

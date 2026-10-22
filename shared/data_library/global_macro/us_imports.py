@@ -12,7 +12,7 @@ from typing import Dict
 
 import pandas as pd
 
-from . import ledger, store
+from . import issues, ledger, store
 from .store import log
 
 URL = "https://api.census.gov/data/timeseries/intltrade/imports/hs"
@@ -64,4 +64,5 @@ def run() -> bool:
     os.makedirs(store.path("derived", "trade"), exist_ok=True)
     df.to_parquet(store.path("derived", "trade", "us_imports.parquet"))
     log(f"[us_imports] Census {len(df)}행, {df.month.min().date()}~{df.month.max().date()}, 품목 {df.cmd.nunique()}, 실패 {fail}")
+    issues.from_fail_list("us_imports", fail, hint="us_imports.run — Census 품목 응답")
     return not fail

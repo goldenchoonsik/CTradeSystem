@@ -710,3 +710,27 @@ def test_export_share_reads_cp949_filings_declared_as_utf8():
     xml = X.main_xml(buf.getvalue())
     assert "매출실적" in xml and xml.index("매출실적") < xml.index("첨부")       # 본문이 첨부보다 앞
     assert X.parse_xml(xml)["share"] == pytest.approx(0.3)
+
+
+# ---------------------------------------------------------------- 이슈 원장(수집·파싱·빌드 문제를 한 곳에)
+def test_issue_ledger_event_and_state_semantics(stage):
+    from shared.data_library.global_macro import issues as I
+    # 사건형: 같은 키는 upsert(count 증가), 성공 시 닫힘·history 에 남음
+    I.step_failed("trade", RuntimeError("ECOS 500"))
+    I.step_failed("trade", RuntimeError("ECOS 500 again"))
+    s = I.summary()
+    assert s["total"] == 1 and I.load()[0]["count"] == 2 and I.load()[0]["detail"]["error"].startswith("ECOS 500 again")
+    I.step_ok("trade")
+    assert I.summary()["total"] == 0
+    # 상태형: replace 는 사라진 키를 해결, 새 키를 열고, 남은 키는 유지
+    r1 = I.replace("export_share:2025", [{"kind": "no_table", "key": "A1:no_table", "title": "A1"}, {"kind": "jump", "key": "A2:jump", "title": "A2"}])
+    r2 = I.replace("export_share:2025", [{"kind": "jump", "key": "A2:jump", "title": "A2"}, {"kind": "unverified", "key": "A3:unverified", "title": "A3"}])
+    assert (r1["opened"], r1["resolved"]) == (2, 0) and (r2["opened"], r2["resolved"]) == (1, 1)
+    assert {it["key"] for it in I.load()} == {"A2:jump", "A3:unverified"}
+    hist = [json.loads(l) for l in open(I._p("history.jsonl"), encoding="utf-8")]
+    assert [h["event"] for h in hist].count("resolved") == 2            # trade 해결 + A1 해결
+    # 다이제스트: 원천 × 종류 표와 예가 들어간다; 고칠 수 없는 종류는 fixable 에서 빠진다
+    I.from_fail_list("kr_ksic", ["A000020 corp_code 없음"], kind="no_source")
+    txt = open(I.write_digest(), encoding="utf-8").read()
+    assert "export_share:2025" in txt and "kr_ksic" in txt and "A3" in txt
+    assert I.summary()["fixable"] == 2 and I.summary()["total"] == 3

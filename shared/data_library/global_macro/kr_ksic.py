@@ -17,7 +17,7 @@ import pandas as pd
 
 from shared.data_library.paths import data_vault_path
 
-from . import ledger, store
+from . import issues, ledger, store
 from .store import log
 
 URL = "https://opendart.fss.or.kr/api/company.json"
@@ -99,4 +99,5 @@ def run(limit: Optional[int] = None) -> bool:
     os.makedirs(store.path("derived", "kr_industry"), exist_ok=True)
     df.to_parquet(store.path("derived", "kr_industry", "company_ksic.parquet"))
     log(f"[kr_ksic] {len(df)}종목(신규 요청 {n_new}), 업종 대응 {df.sector.notna().sum()}, 실패 {len(fail)} {fail[:3]}")
+    issues.from_fail_list("kr_ksic", fail, hint="kr_ksic.fetch_one — corp_code 누락·DART 응답")
     return len(fail) < 20

@@ -291,6 +291,11 @@
 
   <div class="td-pane" id="p-ledger">
     <div class="td-card">
+      <h3>이슈 원장 — 수집·파싱·빌드 문제(한 번에 고치기 위한 축적)</h3>
+      <div class="td-sub">모든 단계의 오류(단계 예외·수집 실패·파서가 못 읽은 공시·급변 값)를 <code>DataVault/staging/global_macro/issues/</code> 에 쌓고 <code>DIGEST.md</code> 로 요약한다. 상태형 이슈는 고친 뒤 그 단계를 다시 실행하면 자동으로 닫히고, 사건형은 다음 성공 때 닫힌다. '원천 없음' 종류는 코드로 못 고친다(건수만).</div>
+      <div id="issueBox" style="font-size:12px;"></div>
+    </div>
+    <div class="td-card">
       <h3>관계 원장 — 대응표(선언 엣지)</h3>
       <div class="td-sub">코드가 아니라 <code>global_macro/reference/relations_ledger.json</code> 하나가 상대국·그룹·업종·품목·수입 시장의 대응을 정한다(코드에 적으면 테스트 실패). 바꿀 땐 옛 엣지를 valid_to 로 닫고 이유를 적는다.</div>
       <div id="relLedger" class="muted" style="font-size:12px;"></div>
@@ -958,6 +963,12 @@ function renderLedger() {
     document.getElementById('relLedger').innerHTML = `고정 ${esc(L.fixed_at)} · sha256 <span class="muted">${esc((L.sha256 || '').slice(0, 12))}…</span> · 닫힌 엣지 ${L.closed}<br>노드: ${nodes}<br>엣지: ${edges}`;
     document.getElementById('mmTypes').innerHTML = '다이어그램에 넣을 엣지 종류: ' + Object.entries(MM_TYPES).map(([k, v]) => `<label style="margin-right:10px;"><input type="checkbox" name="mmType" value="${k}" ${['group_member', 'sector_product'].includes(k) ? 'checked' : ''} onchange="renderMermaid()"> ${esc(v)}</label>`).join('');
     renderMermaid();
+  }
+  const IS = D.issues || {};
+  if (IS.total === undefined) document.getElementById('issueBox').innerHTML = '<span class="muted">아직 없음(화면 JSON 단계 실행 후)</span>';
+  else {
+    const rows = Object.entries(IS.by_source || {}).map(([src, kinds]) => `<tr><td>${esc(src)}</td><td>${Object.entries(kinds).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')}</td><td class="num">${Object.values(kinds).reduce((a, b) => a + b, 0)}</td></tr>`).join('');
+    document.getElementById('issueBox').innerHTML = `<div style="margin-bottom:6px;">열린 이슈 <b class="${IS.fixable ? 'warn' : 'up'}">${IS.total}</b>건 (코드로 고칠 수 있는 것 ${IS.fixable}건) · 갱신 ${esc((IS.updated || '').replace('T', ' '))} · 요약 <code>${esc(IS.digest || '')}</code></div>` + (rows ? `<table class="td"><tr><th>원천/단계</th><th>종류별 건수</th><th class="num">합</th></tr>${rows}</table>` : '<span class="up">열린 이슈 없음</span>');
   }
   const ES = D.edges || {};
   document.getElementById('edgeStoreInfo').textContent = ES.error ? '오류 ' + ES.error : `${fmt(ES.rows, 0)}행 · 월 ${ES.months}개 · 최신 ${ES.latest || '–'} · 이번 실행 +${fmt(ES.added, 0)} · 종류 ` + Object.entries(ES.types || {}).map(([k, v]) => `${k} ${fmt(v, 0)}`).join(', ') + ' (append-only, DataVault/staging/global_macro/edges/edges.parquet)';
