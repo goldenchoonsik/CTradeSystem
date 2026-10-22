@@ -1,0 +1,18 @@
+[
+  {"date": "1997-11-21", "title": "한국 IMF 구제금융 신청", "kind": "위기", "partners": ["한국"], "sectors": [], "note": "외환위기"},
+  {"date": "2001-12-11", "title": "중국 WTO 가입", "kind": "무역 구조", "partners": ["중국"], "sectors": [], "note": "중국이 세계 공장으로 편입 — 한국 중간재 수출 급증의 출발점"},
+  {"date": "2008-09-15", "title": "리먼 브라더스 파산", "kind": "위기", "partners": ["미국"], "sectors": [], "note": "세계 금융위기"},
+  {"date": "2011-07-01", "title": "한·EU FTA 잠정 발효", "kind": "무역 협정", "partners": ["유럽"], "sectors": ["운송장비·부품"], "note": ""},
+  {"date": "2012-03-15", "title": "한·미 FTA 발효", "kind": "무역 협정", "partners": ["미국"], "sectors": ["운송장비·부품", "기계·장비"], "note": ""},
+  {"date": "2015-12-20", "title": "한·중 FTA 발효", "kind": "무역 협정", "partners": ["중국"], "sectors": [], "note": ""},
+  {"date": "2016-07-08", "title": "사드 배치 결정 발표", "kind": "지정학", "partners": ["중국"], "sectors": ["유통", "운송장비·부품"], "note": "이후 중국의 비공식 보복"},
+  {"date": "2017-03-15", "title": "중국 한국 단체관광 금지", "kind": "지정학", "partners": ["중국"], "sectors": ["유통"], "note": "사드 보복"},
+  {"date": "2018-07-06", "title": "미국 대중 301조 관세 1차 발효", "kind": "미중 대립", "partners": ["미국", "중국"], "sectors": [], "note": "미중 무역전쟁 시작"},
+  {"date": "2019-07-04", "title": "일본 반도체 소재 3종 수출 규제", "kind": "지정학", "partners": ["일본"], "sectors": ["전기·전자", "화학"], "note": "불화수소·포토레지스트·플루오린 폴리이미드"},
+  {"date": "2020-03-11", "title": "WHO 코로나19 팬데믹 선언", "kind": "위기", "partners": [], "sectors": [], "note": ""},
+  {"date": "2022-02-24", "title": "러시아 우크라이나 침공", "kind": "지정학", "partners": ["유럽"], "sectors": ["화학", "금속"], "note": "에너지·원자재 충격"},
+  {"date": "2022-08-09", "title": "미국 반도체법(CHIPS and Science Act) 서명", "kind": "미중 대립", "partners": ["미국", "중국"], "sectors": ["전기·전자"], "note": ""},
+  {"date": "2022-08-16", "title": "미국 인플레이션 감축법(IRA) 서명", "kind": "미중 대립", "partners": ["미국", "중국"], "sectors": ["화학", "운송장비·부품"], "note": "배터리·전기차 공급망 재편"},
+  {"date": "2022-10-07", "title": "미국 첨단 반도체 대중 수출 통제", "kind": "미중 대립", "partners": ["미국", "중국"], "sectors": ["전기·전자"], "note": ""},
+  {"date": "2025-04-02", "title": "미국 상호관세 발표", "kind": "무역 구조", "partners": ["미국"], "sectors": [], "note": ""}
+]

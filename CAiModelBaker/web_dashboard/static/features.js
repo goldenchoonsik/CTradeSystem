@@ -8933,10 +8933,14 @@ async function renderResearchSteps(key) {
     if (!res || res.status !== 'ok') { box.textContent = (res && res.message) || '조회 실패'; return; }
     const r = res.running;
     const run = r ? `<div style="color:#38bdf8;margin-bottom:6px;">⏳ 실행 중: <b>${_esc(r.step)}</b> (pid ${r.pid}, ${_esc((r.started_at || '').replace('T', ' '))}) — 끝나면 아래 작업 진행률에 반영</div>` : '';
-    const groups = {linux: '이 서버(Linux) — KIND·네이버·DART·패널', creon: 'Windows Creon — 로그인된 상태여야 함'};
+    const isKr = name === 'kr_equity';
+    const groups = {linux: isKr ? '이 서버(Linux) — KIND·네이버·DART·패널' : '이 서버(Linux)', creon: 'Windows Creon — 로그인된 상태여야 함'};
+    const hint = isKr ? '단계는 모두 증분(받은 건 건너뜀) — 한 번에 하나만 실행. 보통 순서: Creon 스냅샷 → 상폐 목록·유니버스 → 상폐 일봉 → Creon 일봉/보조/지수 → DART → 패널 빌드'
+                      : '한 번에 하나만 실행. 보통 첫 단계(전체 갱신)만 누르면 됩니다.';
     let h = `<div style="padding:10px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;">${run}
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">단계는 모두 증분(받은 건 건너뜀) — 한 번에 하나만 실행. 보통 순서: Creon 스냅샷 → 상폐 목록·유니버스 → 상폐 일봉 → Creon 일봉/보조/지수 → DART → 패널 빌드</div>`;
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">${hint}</div>`;
     for (const g of ['linux', 'creon']) {
+        if (!res.steps.some(x => x.runner === g)) continue;
         h += `<div style="font-size:12px;font-weight:600;margin:6px 0 2px;">${groups[g]}</div>`;
         for (const s of res.steps.filter(x => x.runner === g)) {
             const fullBtn = /creon_daily(_ext)?$/.test(s.key) ? ` <button class="btn btn-xs" ${r ? 'disabled' : ''} onclick="startResearchStep('${key}','${s.key}',true)">전체 재수집</button>` : '';

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Top-Down</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
+<style>
+  body { overflow-y: auto; background: var(--bg-primary); }
+  .td-wrap { max-width: 1280px; margin: 0 auto; padding: 18px 18px 60px; }
+  .td-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+  .td-title { font-size: 20px; font-weight: 700; }
+  .td-goal { font-size: 13px; color: var(--text-secondary); margin-top: 4px; max-width: 760px; }
+  .td-meta { font-size: 12px; color: var(--text-muted); text-align: right; }
+  .td-note { font-size: 12px; color: #fbbf24; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); border-radius: 6px; padding: 6px 10px; margin: 8px 0 14px; }
+  .td-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border-color); margin-bottom: 14px; flex-wrap: wrap; }
+  .td-tab { background: none; border: none; color: var(--text-secondary); padding: 9px 14px; cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; }
+  .td-tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); font-weight: 600; }
+  .td-pane { display: none; }
+  .td-pane.active { display: block; }
+  .td-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+  .td-card h3 { font-size: 15px; margin-bottom: 4px; }
+  .td-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+  .td-grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .td-grid2 > * { min-width: 0; }
+  @media (max-width: 900px) { .td-grid2 { grid-template-columns: 1fr; } }
+  table.td { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.td th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+  table.td td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  table.td tr.clickable:hover { background: rgba(0,210,255,0.05); cursor: pointer; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .blk { font-size: 11px; font-weight: 700; color: var(--accent-purple); padding-top: 14px !important; }
+  .pbar { position: relative; width: 120px; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .pbar > span { position: absolute; top: -2px; width: 4px; height: 12px; border-radius: 2px; background: var(--accent-cyan); }
+  .muted { color: var(--text-muted); }
+  .up { color: var(--accent-green); } .down { color: var(--accent-red); }
+  .chip { display: inline-block; white-space: nowrap; font-size: 11px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border-color); color: var(--text-secondary); margin-right: 4px; cursor: pointer; background: none; }
+  .chip.active { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+  .warn { color: #fbbf24; }
+  .btn-td { background: rgba(0,210,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,210,255,0.35); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .btn-td:disabled { opacity: 0.5; cursor: default; }
+  .empty { padding: 30px; text-align: center; color: var(--text-muted); }
+  #p-journal select, #p-journal input[type=text], #p-journal input:not([type]), #p-journal textarea {
+    background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 5px 8px; font-size: 13px; font-family: inherit; }
+  #p-journal optgroup { background: var(--bg-secondary); color: var(--text-secondary); }
+  pre.log { font-size: 11px; max-height: 200px; overflow: auto; background: rgba(0,0,0,0.25); padding: 8px; border-radius: 6px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="td-wrap">
+  <div class="td-head">
+    <div>
+      <div class="td-title">🌍 글로벌 탑다운</div>
+      <div class="td-goal">목표 — 현재 상황을 정확히 파악하고 가까운 미래(3~12개월)에 대한 예측 확률을 높여 수익을 높인다. 세계 → 국가 → 업종 → 종목 순으로 내려간다.</div>
+    </div>
+    <div class="td-meta">
+      <div id="tdGenerated">불러오는 중…</div>
+      <div style="margin-top:6px;"><button class="btn-td" id="tdRefresh" onclick="tdRefresh()">🔄 전체 갱신</button></div>
+      <div id="tdRun" style="margin-top:4px;"></div>
+    </div>
+  </div>
+  <div class="td-note" id="tdNote">검증 전 기술 통계 — 매매 신호가 아닙니다. 신호는 사전등록 검증을 통과한 것만 '신호 상태' 탭에 올라갑니다.</div>
+
+  <div class="td-tabs">
+    <button class="td-tab active" data-p="state">📍 현재 상태</button>
+    <button class="td-tab" data-p="reading">🧭 시스템 판독</button>
+    <button class="td-tab" data-p="relations">🔭 관계 판독</button>
+    <button class="td-tab" data-p="journal">📓 메모 일지</button>
+    <button class="td-tab" data-p="influence">🕸️ 영향력 지도</button>
+    <button class="td-tab" data-p="crash">📉 약세장 기록</button>
+    <button class="td-tab" data-p="signals">🧪 신호 상태</button>
+    <button class="td-tab" data-p="ledger">🗂️ 원장</button>
+  </div>
+
+  <div class="td-pane active" id="p-state">
+    <div class="td-card">
+      <h3>지금 세계는 어디에 있나</h3>
+      <div class="td-sub">백분위 = 최근 30년(자료가 짧으면 그 기간) 중 지금 값보다 낮거나 같았던 비율. 행을 누르면 12년 추이.</div>
+      <table class="td" id="stateTable"></table>
+    </div>
+    <div class="td-card" id="stateChartCard" style="display:none;">
+      <h3 id="stateChartTitle"></h3>
+      <div id="stateChart" style="height:300px;"></div>
+    </div>
+  </div>
+
+  <div class="td-pane" id="p-reading">
+    <div class="td-note" style="color:#a0a0b0;background:rgba(0,210,255,0.05);border-color:rgba(0,210,255,0.25);" id="rdNote">판독은 사람이 아니라 로직이 한다 — 매달 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽고, 같은 방식으로 2008년부터 매달 재현한 성적을 함께 보여 준다.</div>
+    <div class="td-grid2">
+      <div class="td-card">
+        <h3 id="rdTitle">이번 달 판독</h3>
+        <div class="td-sub">상대국별: 연결 상태 → 수요 판독(6개월 뒤 그 나라로의 한국 수출 전년비가 지금보다 가속/감속). 행에 근거 사슬.</div>
+        <table class="td" id="rdLinks"></table>
+        <div id="rdTotal" style="margin-top:8px;font-size:13px;"></div>
+      </div>
+      <div class="td-card">
+        <h3>판독 성적 (2008~ 매달 재현)</h3>
+        <div class="td-sub">사전등록 기준 판정 + 적중률. 기준선: 추세 지속(최근 3개월 방향), 평균 회귀(5년 평균 쪽으로).</div>
+        <div id="rdScore"></div>
+      </div>
+    </div>
+    <div class="td-card">
+      <h3>업종 판독 — 수출 노출 × 수요 + 미국 시장 점유</h3>
+      <div class="td-sub">우호/비우호는 업종 간 상대 점수(z). 근거: 업종 품목 수출의 상대국 노출, 수요 충격(노출 × 수요 판독), 미국 시장 한국 점유 변화.</div>
+      <table class="td" id="rdSectors"></table>
+    </div>
+    <div class="td-card">
+      <h3>연결 상태 이력 — 관계가 언제 바뀌었나</h3>
+      <div class="td-sub">월 × 상대국. 진할수록 연결 강함(최근 5년 상관). 사건 번호는 관계 판독 탭 목록.</div>
+      <div id="rdHeat" style="height:360px;"></div>
+    </div>
+    <div class="td-card">
+      <h3>경쟁 판독 — 미국 시장 점유(최근 12개월 변화)</h3>
+      <table class="td" id="rdComp"></table>
+    </div>
+  </div>
+
+  <div class="td-pane" id="p-relations">
+    <div class="td-note" style="color:#a0a0b0;background:rgba(0,210,255,0.05);border-color:rgba(0,210,255,0.25);">관계는 시기마다 바뀐다 — 이 탭은 예측 규칙이 아니라 <b>지금 어떤 관계가 살아 있나</b>를 읽기 위한 계측. 5년 이동창, 매달 갱신. 세로 번호 = 아래 국면 사건.</div>
+    <div class="td-card">
+      <h3>상대국 경기 → 한국 수출: 지금 살아 있는 연결</h3>
+      <div class="td-sub">5년 창 안에서 '상대국 선행지수 6개월 변화'와 '그 나라로의 한국 수출 전년비'의 최대 상관(0~9개월 선행). 1에 가까울수록 그 나라 경기가 한국 수출을 끌고 간다.</div>
+      <div id="rlLinks" style="height:330px;"></div>
+      <table class="td" id="rlLinkTable" style="margin-top:8px;"></table>
+    </div>
+    <div class="td-grid2">
+      <div class="td-card">
+        <h3>한국 수출은 어디로 — 12개월 이동 비중</h3>
+        <div class="td-sub">총수출 기준(통관). 최종수요 기준은 영향력 지도 탭 '실물 경로'.</div>
+        <div id="rlShares" style="height:320px;"></div>
+      </div>
+      <div class="td-card">
+        <h3>관계 건강도 — 주가 쪽 연결</h3>
+        <div class="td-sub" id="rlHealthSub"></div>
+        <div id="rlHealth" style="height:320px;"></div>
+      </div>
+    </div>
+    <div class="td-card">
+      <h3>미국 시장 점유 경쟁 — 고객인가 경쟁자인가</h3>
+      <div class="td-sub">미국 수입 중 각국산 비중(12개월 이동, 미국 Census 일반수입·원산지 기준). 품목을 누르면 추이. 한국과 중국이 같은 품목에서 엇갈리면 경쟁 관계.</div>
+      <div id="rlCompPick" style="margin-bottom:8px;"></div>
+      <div id="rlComp" style="height:300px;"></div>
+      <table class="td" id="rlCompTable" style="margin-top:8px;"></table>
+    </div>
+    <div class="td-card">
+      <h3>국면 사건</h3>
+      <div class="td-sub">DataVault/staging/global_macro/reference/events.json 에서 읽음 — 직접 추가·수정 가능(날짜·제목·종류·관련국·관련 업종).</div>
+      <table class="td" id="rlEvents"></table>
+    </div>
+  </div>
+
+  <div class="td-pane" id="p-journal">
+    <div class="td-note" style="color:#a0a0b0;background:rgba(80,250,123,0.05);border-color:rgba(80,250,123,0.25);">관계를 읽고 내린 판단을 남기면, 기간이 지난 뒤 실제 결과로 자동 채점합니다. <b>한 번 쓴 예측은 고칠 수 없고</b>(메모 추가만), 철회는 만기 전에만 되며 기록에 남습니다. 시작 가격은 기록한 <b>다음 거래일 종가</b>.</div>
+    <div class="td-grid2">
+      <div class="td-card">
+        <h3>새 기록</h3>
+        <div class="td-sub">판독은 시스템이 한다(🧭 시스템 판독). 여기는 사람의 메모·별도 판단을 남기는 곳 — 기록은 같은 규칙으로 채점된다.</div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px 10px;align-items:center;font-size:13px;">
+          <label>대상</label><div><select id="jSubject" style="width:100%;"></select>
+            <input id="jStock" placeholder="한국 종목 6자리 (예: 005930)" style="width:100%;margin-top:4px;display:none;"></div>
+          <label>방향</label><div id="jViews"></div>
+          <label>비교 대상</label><select id="jBench"><option value="">(없음 — 절대 수익)</option></select>
+          <label>기간</label><div id="jHorizons"></div>
+          <label>확신도</label><div><input type="range" id="jConf" min="50" max="95" step="5" value="65" oninput="document.getElementById('jConfV').textContent=this.value+'%'"> <b id="jConfV">65%</b></div>
+          <label>근거</label><textarea id="jReason" rows="4" placeholder="예: 미국 승용차 수입 중 한국산 18%(2017 대비 +9%p), 중국 비중 1% — 관세 국면에서 한국 완성차 반사이익 지속으로 읽음" style="width:100%;"></textarea>
+          <label>태그</label><input id="jTags" placeholder="쉼표로: 미국점유, 자동차, 미중대립" style="width:100%;">
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;"><button class="btn-td" onclick="jCreate()">기록 (고칠 수 없음)</button><span id="jMsg" class="muted" style="font-size:12px;"></span></div>
+      </div>
+      <div class="td-card">
+        <h3>판독 성적</h3>
+        <div class="td-sub">적중률은 '그 대상이 원래 그 방향으로 간 비율(기본 확률)'과 비교. 브라이어 점수는 낮을수록 좋음(확신도까지 반영). 30건 이상 쌓여야 의미.</div>
+        <div id="jSummary"></div>
+      </div>
+    </div>
+    <div class="td-card">
+      <h3>기록</h3>
+      <table class="td" id="jTable"></table>
+    </div>
+  </div>
+
+  <div class="td-pane" id="p-influence">
+    <div class="td-grid2">
+      <div class="td-card">
+        <h3>누가 누구를 움직이나 — 주간 수익 연결도</h3>
+        <div class="td-sub" id="infSub"></div>
+        <div id="infHeat" style="height:360px;"></div>
+      </div>
+      <div class="td-card">
+        <h3>순 전달(+) / 순 수신(−)</h3>
+        <div class="td-sub">다른 시장에 준 몫 − 받은 몫(%p). 양수 = 영향을 퍼뜨리는 쪽.</div>
+        <div id="infNet" style="height:360px;"></div>
+      </div>
+    </div>
+    <div class="td-card">
+      <h3>한국 코스피 변동은 어디서 오나 — 2년 이동창</h3>
+      <div class="td-sub">코스피 주간 수익 변동 중 각 시장에서 온 몫(%). 나머지는 한국 자체.</div>
+      <div id="infRoll" style="height:320px;"></div>
+      <table class="td" id="infHalves" style="margin-top:10px;"></table>
+    </div>
+    <div class="td-grid2">
+      <div class="td-card">
+        <h3>한국 수출 — 어디로 파나</h3>
+        <div class="td-sub" id="expSub">수출 총액 대비 비중(%), 통관 기준.</div>
+        <div id="expShare" style="height:320px;"></div>
+      </div>
+      <div class="td-card">
+        <h3>어느 나라 경기가 한국 수출을 앞서나</h3>
+        <div class="td-sub">OECD 선행지수 6개월 변화 vs 한국 수출 전년비(3개월 합). 시차 = 선행지수가 몇 개월 먼저(상관이 가장 큰 곳).</div>
+        <table class="td" id="cliLeads"></table>
+      </div>
+    </div>
+    <div class="td-card" style="border-color:rgba(80,250,123,0.35);">
+      <h3>실물 경로 — 수출입으로 본 국가별 영향력</h3>
+      <div class="td-sub">주가 연결도(위)는 '주가에 대한 영향', 이 섹션은 '수출·실적에 대한 영향'. 총수출은 중간재 경유 때문에 중국을 과대, 미국을 과소평가 → 최종수요 기준 부가가치(OECD TiVA)로 바로잡음.</div>
+      <div class="td-grid2">
+        <div><div class="td-sub" id="trExpSub"></div><div id="trExp" style="height:300px;"></div></div>
+        <div><div class="td-sub">영향력 지수 = 최종수요 부가가치 비중 × 상대국 경기 1σ당 한국 수출 탄력성 (합 100). 주가 연결도(코스피가 받은 몫)와 나란히.</div><div id="trInf" style="height:300px;"></div></div>
+      </div>
+      <div class="td-grid2" style="margin-top:10px;">
+        <div><div class="td-sub">민감도: 상대국 선행지수 6개월 변화 → 그 나라로의 한국 수출 전년비 (최대 상관 시차, 1σ당 수출 %)</div><table class="td" id="trSens"></table></div>
+        <div><div class="td-sub" id="trWcliSub"></div><div id="trWcli" style="height:280px;"></div></div>
+      </div>
+    </div>
+    <div class="td-sub" style="margin-top:-4px;">방법: VAR(2) 일반화 예측오차 분산분해(Diebold–Yilmaz, 10주). 시간대 맞춤 — 아시아는 금요일 종가, 미국·유럽은 목요일 종가. 한계: 세계 공통 충격은 상관 높은 시장(예: 일본)에 나눠 담겨 그 몫이 커 보일 수 있음.</div>
+  </div>
+
+  <div class="td-pane" id="p-crash">
+    <div class="td-card">
+      <h3>약세장 기록 — 참고용</h3>
+      <div class="td-sub">예측이 큰 하락 국면에서 어땠는지 볼 때 쓰는 기록(목표 아님). 약세장 = 고점 대비 −20% 하락으로 확정, 저점 대비 +20% 반등으로 끝(Lunde–Timmermann). '확정일'은 −20%에 처음 닿은 날.</div>
+      <div id="crashPick" style="margin-bottom:8px;"></div>
+      <div id="crashChart" style="height:330px;"></div>
+      <table class="td" id="crashTable" style="margin-top:10px;"></table>
+    </div>
+  </div>
+
+  <div class="td-pane" id="p-signals">
+    <div class="td-card">
+      <h3>검증된 신호</h3>
+      <div class="td-sub">사전등록 → 개발 구간 → 확인 구간 1회를 거친 신호의 결과. 판정은 세 칸: 실전 후보 / 작게 실험 / 버림. '지금 읽기'는 신호의 현재 값일 뿐, 판정이 '버림'이면 쓰지 않는다.</div>
+      <div id="signalsBody"></div>
+    </div>
+  </div>
+
+  <div class="td-pane" id="p-ledger">
+    <div class="td-card">
+      <h3>원장 — 변수·원천·발표 시차·신선도</h3>
+      <div class="td-sub">발표 시차 = 기간 끝부터 값이 공개돼 쓸 수 있기까지(일, 보수적). 월 패널은 이 시차가 지난 값만 씀(미래참조 차단).</div>
+      <table class="td" id="ledgerTable"></table>
+      <div id="ledgerLog"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+{% raw %}
+const BLOCK_KO = {WORLD: '세계', US: '미국', CN: '중국', EU: '유럽', JP: '일본', KR: '한국'};
+const COLORS = {US: '#00d2ff', EU: '#bd93f9', JP: '#ff79c6', CN: '#ffd700', KR: '#50fa7b'};
+const PLOT = {paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', font: {color: '#e1e1e6', size: 12},
+              margin: {l: 50, r: 20, t: 10, b: 40}, xaxis: {gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e'}};
+const CFG = {displayModeBar: false, responsive: true};
+let D = null;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const fmt = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v)) ? '–' : Number(v).toLocaleString('ko-KR', {maximumFractionDigits: d, minimumFractionDigits: 0});
+// Plotly 는 layout 객체(축 포함)를 고쳐 쓴다 → 차트마다 깊은 복사(공유하면 앞 차트의 축 형식이 다음 차트로 샘)
+const lay = extra => Object.assign(JSON.parse(JSON.stringify(PLOT)), extra || {});
+
+document.querySelectorAll('.td-tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.td-tab').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.td-pane').forEach(p => p.classList.toggle('active', p.id === 'p-' + b.dataset.p));
+  // 숨은 탭에서 그린 차트는 폭이 0 으로 계산됨 → 보일 때 다시 맞춤
+  document.querySelectorAll('#p-' + b.dataset.p + ' .js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+});
+
+function spark(series) {
+  if (!series || series.length < 2) return '';
+  const v = series.map(x => x[1]), lo = Math.min(...v), hi = Math.max(...v), w = 110, h = 26;
+  const pts = v.map((y, i) => `${(i / (v.length - 1) * w).toFixed(1)},${(h - (hi === lo ? h / 2 : (y - lo) / (hi - lo) * h)).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="#00d2ff" stroke-width="1.3"/></svg>`;
+}
+
+const BLOCK_ORDER = ['WORLD', 'US', 'CN', 'EU', 'JP', 'KR'];
+function renderState() {
+  // 블록 순서로 묶되 블록 안 순서는 유지(원본 인덱스는 차트용으로 보존)
+  const rows = (D.state || []).map((s, i) => Object.assign({_i: i}, s))
+    .sort((a, b) => (BLOCK_ORDER.indexOf(a.block) - BLOCK_ORDER.indexOf(b.block)) || (a._i - b._i));
+  let h = '<tr><th>지표</th><th class="num">값</th><th>기준일</th><th>역사 백분위</th><th class="num">3개월 변화</th><th>12년 추이</th></tr>';
+  let last = '';
+  rows.forEach(s => {
+    const i = s._i;
+    if (s.block !== last) { h += `<tr><td class="blk" colspan="6">${BLOCK_KO[s.block] || s.block}</td></tr>`; last = s.block; }
+    // 색으로 좋고 나쁨을 암시하지 않는다(스프레드·VIX 는 오르는 게 나쁨) — 부호만
+    const ch = s.chg3m === null ? '–' : `${s.chg3m > 0 ? '+' : ''}${fmt(s.chg3m)}`;
+    const yrs = s.pct_years && s.pct_years < 29 ? ` <span class="warn" title="자료 기간이 짧음">(${s.pct_years}년)</span>` : '';
+    h += `<tr class="clickable" onclick="stateChart(${i})"><td>${esc(s.label)}</td><td class="num">${fmt(s.value)}</td><td class="muted">${esc(s.date)}</td>
+          <td><span class="pbar"><span style="left:calc(${s.pct30y}% - 2px)"></span></span>${fmt(s.pct30y, 0)}${yrs}</td><td class="num">${ch}</td><td>${spark(s.series)}</td></tr>`;
+  });
+  document.getElementById('stateTable').innerHTML = h;
+}
+
+function stateChart(i) {
+  const s = D.state[i];
+  document.getElementById('stateChartCard').style.display = 'block';
+  document.getElementById('stateChartTitle').textContent = s.label;
+  Plotly.newPlot('stateChart', [{x: s.series.map(x => x[0]), y: s.series.map(x => x[1]), type: 'scatter', mode: 'lines', line: {color: '#00d2ff'}}],
+                 lay({margin: {l: 50, r: 20, t: 10, b: 30}, xaxis: {type: 'date', gridcolor: '#29292e'}}), CFG);
+  document.getElementById('stateChartCard').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function renderInfluence() {
+  const inf = D.influence || {};
+  const f = inf.full;
+  if (!f) return;
+  const lbl = inf.labels;
+  document.getElementById('infSub').innerHTML = `행 = 받는 시장, 열 = 주는 시장, 값 = 받는 시장 주간 변동 중 그 시장에서 온 %. ${esc(f.start)} ~ ${esc(f.end)}, ${f.n}주. 전체 연결도 ${fmt(f.total, 1)}%.`;
+  Plotly.newPlot('infHeat', [{z: f.table, x: lbl.map(x => '← ' + x), y: lbl, type: 'heatmap', colorscale: [[0, '#18181c'], [0.25, '#164e63'], [1, '#00d2ff']],
+                 zmin: 0, zmax: 60, text: f.table.map(r => r.map(v => fmt(v, 1))), texttemplate: '%{text}', hovertemplate: '%{y} ← %{x}: %{z:.1f}%<extra></extra>', showscale: false}],
+                 lay({margin: {l: 110, r: 10, t: 10, b: 90}, yaxis: {autorange: 'reversed'}}), CFG);
+  Plotly.newPlot('infNet', [{x: lbl, y: f.net, type: 'bar', marker: {color: f.net.map(v => v >= 0 ? '#50fa7b' : '#ff5555')},
+                 text: f.net.map(v => (v > 0 ? '+' : '') + fmt(v, 1)), textposition: 'outside'}], lay({margin: {l: 40, r: 10, t: 20, b: 90}}), CFG);
+  const R = inf.rolling || [];
+  const tr = ['US', 'EU', 'JP', 'CN'].map(m => ({x: R.map(r => r.date), y: R.map(r => r.to_kr[m]), name: lbl[inf.markets.indexOf(m)],
+                                              type: 'scatter', mode: 'lines', line: {color: COLORS[m], width: 1.6}}));
+  Plotly.newPlot('infRoll', tr, lay({legend: {orientation: 'h', y: 1.12}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: '%'}}), CFG);
+  const H = inf.halves || {};
+  const ks = Object.keys(H);
+  let h = '<tr><th>코스피가 받은 몫(%)</th>' + ks.map(k => `<th class="num">${esc(k)}</th>`).join('') + '</tr>';
+  inf.markets.forEach((m, j) => { h += `<tr><td>${esc(lbl[j])}${m === 'KR' ? ' (자체)' : ''}</td>` + ks.map(k => `<td class="num">${H[k] ? fmt(H[k].table[4][j], 1) : '–'}</td>`).join('') + '</tr>'; });
+  document.getElementById('infHalves').innerHTML = h;
+
+  const E = D.kr_exports || {};
+  if (E.years) {
+    const tr2 = Object.entries(E.shares).map(([nm, v]) => ({x: E.years, y: v, name: nm, type: 'scatter', mode: 'lines'}));
+    Plotly.newPlot('expShare', tr2, lay({legend: {orientation: 'h', y: 1.15}, xaxis: {dtick: 5, gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: '%'}}), CFG);
+    if (E.partial_year) document.getElementById('expSub').textContent += ` ${E.partial_year}년은 연중(부분) 값.`;
+    let c = '<tr><th>선행지수</th><th class="num">전체</th><th class="num">1995~2010</th><th class="num">2011~2026</th></tr>';
+    for (const [nm, v] of Object.entries(E.cli_leads || {})) {
+      const cell = x => x && x.lag !== null ? `${x.lag}개월 / ${fmt(x.corr)}` : '–';
+      c += `<tr><td>${esc(nm)}</td><td class="num">${cell(v['전체'])}</td><td class="num">${cell(v['1995~2010'])}</td><td class="num">${cell(v['2011~2026'])}</td></tr>`;
+    }
+    document.getElementById('cliLeads').innerHTML = c;
+  }
+}
+
+function renderTrade() {
+  const T = D.trade || {};
+  if (!T.exposure) return;
+  const K = T.exposure.KOR, ex = K.EXGR, va = K.FFD_DVA;
+  const yi = ex.years.length - 1, yr = ex.years[yi];
+  const groups = Object.keys(ex.groups);
+  document.getElementById('trExpSub').textContent = `한국 ${yr}년 수출 상대 비중(%) — 총수출 vs 최종수요 부가가치. 미국은 과소, 중국·아세안은 과대평가된다.`;
+  Plotly.newPlot('trExp', [
+    {x: groups, y: groups.map(g => ex.groups[g][yi]), name: '총수출', type: 'bar', marker: {color: '#6c6c7c'}},
+    {x: groups, y: groups.map(g => va.groups[g][yi]), name: '최종수요 부가가치', type: 'bar', marker: {color: '#50fa7b'}}],
+    lay({barmode: 'group', legend: {orientation: 'h', y: 1.15}, margin: {l: 40, r: 10, t: 10, b: 60}}), CFG);
+  const I = T.influence_index || {}, E = T.equity_to_kr || {};
+  const names = Object.keys(I.full || {});
+  const eqmap = {'미국': 'US', '유럽': 'EU', '일본': 'JP', '중국+홍콩': 'CN'};
+  Plotly.newPlot('trInf', [
+    {x: names, y: names.map(n => I.full[n]), name: '실물(1995~ 탄력성)', type: 'bar', marker: {color: '#50fa7b'}},
+    {x: names, y: names.map(n => (I.late || {})[n]), name: '실물(2010~ 탄력성)', type: 'bar', marker: {color: '#00d2ff'}},
+    {x: names, y: names.map(n => eqmap[n] ? E[eqmap[n]] : null), name: '주가 연결도(코스피가 받은 몫)', type: 'bar', marker: {color: '#ff79c6'}}],
+    lay({barmode: 'group', legend: {orientation: 'h', y: 1.18}, margin: {l: 40, r: 10, t: 10, b: 70}}), CFG);
+  let h = '<tr><th>상대국</th><th class="num">1995~</th><th class="num">~2009</th><th class="num">2010~</th></tr>';
+  (T.sensitivity || []).forEach(r => {
+    const c = x => x ? `${x.lag}개월 · ${x.corr.toFixed(2)} · ${x.beta_pct.toFixed(1)}%` : '–';
+    h += `<tr><td>${esc(r.name)}</td><td class="num">${c(r.full)}</td><td class="num">${c(r.early)}</td><td class="num">${c(r.late)}</td></tr>`;
+  });
+  document.getElementById('trSens').innerHTML = h;
+  const W = T.wcli_gross;
+  if (W) {
+    document.getElementById('trWcliSub').textContent = `한국 수출 가중 상대국 선행지수 6개월 변화 — 현재 ${W.total.toFixed(2)} (${W.date}). 막대 = 나라별 기여. 이 합성치 자체는 코스피 예측력 없음(4단계 검정, 신호 상태 탭).`;
+    const ks = Object.keys(W.contrib);
+    Plotly.newPlot('trWcli', [{y: ks, x: ks.map(k => W.contrib[k]), type: 'bar', orientation: 'h', marker: {color: ks.map(k => W.contrib[k] >= 0 ? '#50fa7b' : '#ff5555')}}],
+      lay({margin: {l: 50, r: 10, t: 10, b: 30}, yaxis: {type: 'category', gridcolor: '#29292e'}, xaxis: {gridcolor: '#29292e', zeroline: true, zerolinecolor: '#6c6c7c'}}), CFG);
+  }
+}
+
+const RL_COLORS = {'중국+홍콩': '#ffd700', '미국': '#00d2ff', '유럽': '#bd93f9', '일본': '#ff79c6', '인도': '#fd7e14', '아세안(베트남 포함)': '#50fa7b', '대만': '#8be9fd',
+                   '한국': '#50fa7b', '중국': '#ffd700', '멕시코': '#fd7e14', '베트남': '#bd93f9'};
+function eventMarks(minDate) {
+  const E = ((D.relations || {}).events || []).filter(e => !minDate || e.date >= minDate);
+  const shapes = E.map(e => ({type: 'line', xref: 'x', yref: 'paper', x0: e.date, x1: e.date, y0: 0, y1: 1, line: {color: 'rgba(160,160,176,0.35)', width: 1, dash: 'dot'}}));
+  const ann = E.map(e => ({xref: 'x', yref: 'paper', x: e.date, y: 1.0, text: String(((D.relations || {}).events || []).indexOf(e) + 1), showarrow: false,
+                          font: {size: 9, color: '#a0a0b0'}, yanchor: 'bottom', hovertext: `${e.date} ${e.title}`}));
+  return {shapes, annotations: ann};
+}
+function renderRelations() {
+  const R = D.relations || {};
+  if (!R.export_links) return;
+  const ev = eventMarks('1999-01-01');
+  const L = R.export_links;
+  Plotly.newPlot('rlLinks', Object.entries(L).map(([nm, v]) => ({x: v.map(r => r[0]), y: v.map(r => r[1]), name: nm, type: 'scatter', mode: 'lines',
+      line: {color: RL_COLORS[nm], width: 1.8}, customdata: v.map(r => [r[2], r[3]]),
+      hovertemplate: `${nm} %{x}: 상관 %{y:.2f} · %{customdata[0]}개월 선행 · 1σ당 수출 %{customdata[1]}%<extra></extra>`})),
+    lay({legend: {orientation: 'h', y: 1.14}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', range: [-0.4, 1], title: '상관'}, ...ev}), CFG);
+  let h = '<tr><th>상대국</th><th class="num">지금 상관</th><th class="num">선행</th><th class="num">1σ당 수출</th><th class="num">5년 전 상관</th><th class="num">최고(시기)</th></tr>';
+  for (const [nm, v] of Object.entries(L)) {
+    const last = v[v.length - 1], ago = v[Math.max(0, v.length - 61)];
+    const best = v.reduce((a, b) => b[1] > a[1] ? b : a, v[0]);
+    h += `<tr><td>${esc(nm)}</td><td class="num">${fmt(last[1])}</td><td class="num">${last[2]}개월</td><td class="num">${fmt(last[3], 1)}%</td><td class="num">${fmt(ago[1])}</td><td class="num">${fmt(best[1])} (${best[0].slice(0, 7)})</td></tr>`;
+  }
+  document.getElementById('rlLinkTable').innerHTML = h;
+  const S = R.export_shares || {};
+  Plotly.newPlot('rlShares', Object.entries(S).map(([nm, v]) => ({x: v.map(r => r[0]), y: v.map(r => r[1]), name: nm, type: 'scatter', mode: 'lines', line: {color: RL_COLORS[nm], width: 1.6}})),
+    lay({legend: {orientation: 'h', y: -0.15}, margin: {l: 50, r: 20, t: 20, b: 90}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: '%'}, ...eventMarks('1995-01-01')}), CFG);
+  const Hh = R.health || {};
+  document.getElementById('rlHealthSub').innerHTML = Object.entries(Hh).map(([k, v]) => `<b>${esc(k)}</b>: ${esc(v.desc)}`).join('<br>');
+  const hc = ['#ffd700', '#ff79c6', '#00d2ff'];
+  Plotly.newPlot('rlHealth', Object.entries(Hh).map(([k, v], i) => ({x: v.series.map(r => r[0]), y: v.series.map(r => r[1]), name: k, type: 'scatter', mode: 'lines', line: {color: hc[i % 3], width: 1.6}})),
+    lay({legend: {orientation: 'h', y: -0.15}, margin: {l: 50, r: 20, t: 20, b: 90}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', zeroline: true, zerolinecolor: '#6c6c7c'}, ...eventMarks('2000-01-01')}), CFG);
+  renderComp();
+  const E = R.events || [];
+  document.getElementById('rlEvents').innerHTML = '<tr><th>#</th><th>날짜</th><th>사건</th><th>종류</th><th>관련국</th><th>관련 업종</th><th>메모</th></tr>' +
+    E.map((e, i) => `<tr><td class="muted">${i + 1}</td><td>${esc(e.date)}</td><td>${esc(e.title)}</td><td class="muted">${esc(e.kind)}</td><td>${esc((e.partners || []).join(', '))}</td><td>${esc((e.sectors || []).join(', '))}</td><td class="muted">${esc(e.note || '')}</td></tr>`).join('');
+}
+let compCmd = '8542';
+function renderComp() {
+  const C = (D.relations || {}).us_competition || {};
+  const keys = ((D.relations || {}).us_competition_order || Object.keys(C)).filter(k => C[k]);
+  if (!keys.length) { document.getElementById('rlComp').innerHTML = '<div class="empty">미국 수입 데이터를 받는 중이거나 아직 없음 — 데이터 갱신 후 표시</div>'; return; }
+  if (!C[compCmd]) compCmd = keys[0];
+  document.getElementById('rlCompPick').innerHTML = keys.map(k => `<button class="chip ${k === compCmd ? 'active' : ''}" onclick="compCmd='${k}';renderComp()">${esc(C[k].name)}</button>`).join('');
+  const c = C[compCmd];
+  Plotly.newPlot('rlComp', Object.entries(c.series).map(([nm, v]) => ({x: v.map(r => r[0]), y: v.map(r => r[1]), name: nm, type: 'scatter', mode: 'lines',
+      line: {color: RL_COLORS[nm] || '#a0a0b0', width: nm === '한국' || nm === '중국' ? 2.4 : 1.2}})),
+    lay({legend: {orientation: 'h', y: 1.15}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: '미국 수입 중 %'}, ...eventMarks('2010-01-01')}), CFG);
+  let h = '<tr><th>품목</th><th class="num">미국 수입(12개월, 십억$)</th><th class="num">한국 점유</th><th class="num">3년 변화</th><th class="num">2017 대비</th><th class="num">중국 점유</th><th class="num">3년 변화</th><th class="num">2017 대비</th></tr>';
+  const sg = v => v === null || v === undefined ? '–' : (v > 0 ? '+' : '') + v.toFixed(1);
+  for (const k of keys) {
+    const sn = C[k].snapshot || {}, kr = sn['한국'] || {}, cn = sn['중국'] || {};
+    h += `<tr class="clickable" onclick="compCmd='${k}';renderComp()"><td>${esc(C[k].name)}</td><td class="num">${fmt(C[k].us_total_12m_bn, 0)}</td><td class="num">${fmt(kr.now, 1)}%</td><td class="num">${sg(kr.chg3y)}</td><td class="num">${sg(kr.vs2017)}</td>
+          <td class="num">${fmt(cn.now, 1)}%</td><td class="num">${sg(cn.chg3y)}</td><td class="num">${sg(cn.vs2017)}</td></tr>`;
+  }
+  document.getElementById('rlCompTable').innerHTML = h;
+}
+
+let J = null;
+async function jLoad() {
+  try { J = await (await fetch('/api/topdown/journal')).json(); } catch (e) { return; }
+  if (!J || J.status !== 'ok') return;
+  const sel = document.getElementById('jSubject'), bench = document.getElementById('jBench');
+  if (!sel.options.length) {
+    const groups = {};
+    J.subjects.forEach(x => (groups[x.group] = groups[x.group] || []).push(x));
+    let h = '';
+    for (const [g, xs] of Object.entries(groups)) h += `<optgroup label="${esc(g)}">` + xs.map(x => `<option value="${esc(x.key)}">${esc(x.name)}</option>`).join('') + '</optgroup>';
+    h += '<optgroup label="한국 개별 종목"><option value="__stock">종목 코드 직접 입력…</option></optgroup>';
+    sel.innerHTML = h;
+    bench.innerHTML += J.subjects.map(x => `<option value="${esc(x.key)}">${esc(x.name)}</option>`).join('');
+    sel.onchange = () => { document.getElementById('jStock').style.display = sel.value === '__stock' ? 'block' : 'none'; };
+    document.getElementById('jViews').innerHTML = Object.entries(J.views).map(([k, v], i) => `<label style="margin-right:10px;"><input type="radio" name="jView" value="${k}" ${i === 0 ? 'checked' : ''}> ${esc(v)}</label>`).join('');
+    document.getElementById('jHorizons').innerHTML = J.horizons.map(hh => `<label style="margin-right:10px;"><input type="radio" name="jHor" value="${hh}" ${hh === 6 ? 'checked' : ''}> ${hh}개월</label>`).join('');
+  }
+  const S = J.summary || {};
+  const pc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
+  let sh = `<table class="td"><tr><td>전체 기록</td><td class="num">${S.n_total}</td><td>진행 중</td><td class="num">${S.n_open}</td></tr>
+            <tr><td>채점됨</td><td class="num">${S.n_scored}</td><td>철회</td><td class="num">${S.n_withdrawn}</td></tr>`;
+  if (S.n_scored) {
+    sh += `<tr><td>적중률</td><td class="num"><b>${pc(S.hit_rate)}</b></td><td>기본 확률(그냥 찍기)</td><td class="num">${pc(S.base_rate)}</td></tr>
+           <tr><td>브라이어(나)</td><td class="num">${S.brier.toFixed(3)}</td><td>브라이어(기본 확률)</td><td class="num">${S.brier_base === null ? '–' : S.brier_base.toFixed(3)}</td></tr>
+           <tr><td>평균 결과(판단 방향 기준)</td><td class="num" colspan="3">${(S.avg_signed * 100).toFixed(1)}%p</td></tr></table>
+           <div class="td-sub" style="margin-top:8px;">확신도 구간별 실제 적중률</div><table class="td"><tr><th>확신도</th><th class="num">건수</th><th class="num">적중</th></tr>` +
+          Object.entries(S.calibration || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${v.n}</td><td class="num">${pc(v.hit)}</td></tr>`).join('') + '</table>';
+  } else sh += '</table><div class="empty" style="padding:12px;">아직 채점된 기록이 없습니다 — 기간(3~12개월)이 지나면 자동 채점.</div>';
+  document.getElementById('jSummary').innerHTML = sh;
+  const st = r => {
+    const s = r.score || {};
+    if (s.state === '채점') return `<span class="chip" style="${s.hit ? 'color:#50fa7b;border-color:#50fa7b' : 'color:#ff5555;border-color:#ff5555'}">${s.hit ? '적중' : '실패'}</span>`;
+    if (s.state === '진행 중') return `<span class="chip">진행 중 · ${s.days_left}일 남음</span>`;
+    return `<span class="chip">${esc(s.state || '')}</span>`;
+  };
+  const res = r => { const s = r.score || {}; if (s.outcome === undefined || s.outcome === null) return '–';
+    return `${(s.outcome * 100).toFixed(1)}%${r.benchmark ? ` <span class="muted">(${(s.ret * 100).toFixed(1)} − ${(s.ret_bench * 100).toFixed(1)})</span>` : ''}`; };
+  let th = '<tr><th>기록일</th><th>대상</th><th>판단</th><th class="num">기간</th><th class="num">확신</th><th>상태</th><th class="num">결과(지금까지)</th><th class="num">기본 확률</th><th>근거·메모</th><th></th></tr>';
+  (J.entries || []).forEach(r => {
+    const s = r.score || {};
+    const canWithdraw = !r.withdrawn && s.state !== '채점';
+    th += `<tr><td class="muted">${esc(r.at.slice(0, 10))}</td><td>${esc(r.subject_name)}${r.benchmark ? ` <span class="muted">vs ${esc(r.benchmark_name)}</span>` : ''}</td>
+      <td>${esc(J.views[r.view])}</td><td class="num">${r.horizon}개월</td><td class="num">${Math.round(r.confidence * 100)}%</td><td>${st(r)}</td>
+      <td class="num">${res(r)}</td><td class="num">${pc(s.base_rate)}</td>
+      <td style="font-size:12px;max-width:380px;">${esc(r.reasoning)}${(r.tags || []).length ? `<br><span class="muted">#${r.tags.map(esc).join(' #')}</span>` : ''}
+        ${(r.notes || []).map(n => `<br><span class="muted">${esc(n.at.slice(0, 10))} 메모:</span> ${esc(n.text)}`).join('')}
+        ${r.withdrawn ? `<br><span class="warn">철회 ${esc(r.withdrawn.at.slice(0, 10))}: ${esc(r.withdrawn.reason)}</span>` : ''}</td>
+      <td style="white-space:nowrap;"><button class="chip" onclick="jAction('${r.id}','note')">메모</button>${canWithdraw ? ` <button class="chip" onclick="jAction('${r.id}','withdraw')">철회</button>` : ''}</td></tr>`;
+  });
+  document.getElementById('jTable').innerHTML = (J.entries || []).length ? th : '<tr><td class="empty">아직 기록이 없습니다.</td></tr>';
+}
+async function jCreate() {
+  let subject = document.getElementById('jSubject').value;
+  if (subject === '__stock') {
+    const code = document.getElementById('jStock').value.trim();
+    if (!/^\d{6}$/.test(code)) { alert('종목 코드는 6자리 숫자'); return; }
+    subject = 'krstk:' + code;
+  }
+  const body = {subject, view: (document.querySelector('input[name=jView]:checked') || {}).value,
+    benchmark: document.getElementById('jBench').value || null, horizon: +(document.querySelector('input[name=jHor]:checked') || {}).value,
+    confidence: +document.getElementById('jConf').value / 100, reasoning: document.getElementById('jReason').value,
+    tags: document.getElementById('jTags').value.split(',').map(x => x.trim()).filter(Boolean)};
+  if (!confirm('기록하면 고칠 수 없습니다(메모 추가만 가능). 기록할까요?')) return;
+  const r = await (await fetch('/api/topdown/journal', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})).json();
+  const m = document.getElementById('jMsg');
+  if (r.status !== 'ok') { m.textContent = '실패: ' + r.message; m.className = 'down'; return; }
+  m.textContent = '기록됨 — 다음 거래일 종가부터 채점'; m.className = 'up';
+  document.getElementById('jReason').value = ''; document.getElementById('jTags').value = '';
+  jLoad();
+}
+async function jAction(id, action) {
+  const text = prompt(action === 'note' ? '추가할 메모(예: 근거가 바뀐 점, 새로 읽은 것)' : '철회 사유(기록에 남습니다)');
+  if (!text) return;
+  const r = await (await fetch(`/api/topdown/journal/${id}/${action}`, {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(action === 'note' ? {text} : {reason: text})})).json();
+  if (r.status !== 'ok') { alert(r.message); return; }
+  jLoad();
+}
+
+const ST_STYLE = {'강함': 'color:#50fa7b;border-color:#50fa7b', '약함': 'color:#ffd700;border-color:#ffd700', '끊김': 'color:#6c6c7c;border-color:#3e3e42',
+                  '우호': 'color:#50fa7b;border-color:#50fa7b', '비우호': 'color:#ff5555;border-color:#ff5555', '확대': 'color:#50fa7b;border-color:#50fa7b',
+                  '잠식': 'color:#ff5555;border-color:#ff5555', '유지': 'color:#a0a0b0', '가속': 'color:#50fa7b;border-color:#50fa7b', '감속': 'color:#fd7e14;border-color:#fd7e14'};
+const chipS = t => t ? `<span class="chip" style="${ST_STYLE[t] || ''}">${esc(t)}</span>` : '<span class="muted">–</span>';
+function renderReading() {
+  const R = D.reading || {};
+  if (!R.evidence) { document.getElementById('rdLinks').innerHTML = '<tr><td class="empty">시스템 판독 없음 — 전체 갱신(또는 시스템 판독 단계) 실행 후 표시</td></tr>'; return; }
+  const E = R.evidence;
+  document.getElementById('rdTitle').textContent = `이번 달 판독 (${R.t}, 자료는 그 시점 공개분)`;
+  let h = '<tr><th>상대국</th><th>연결</th><th class="num">상관</th><th class="num">선행</th><th>수요 판독</th><th>근거</th></tr>';
+  E.links.forEach(x => { h += `<tr><td>${esc(x.g)}</td><td>${chipS(x.state)}</td><td class="num">${fmt(x.rho)}</td><td class="num">${x.k}개월</td><td>${chipS(x.call)}</td><td style="font-size:12px;" class="muted">${esc(x.text)}</td></tr>`; });
+  document.getElementById('rdLinks').innerHTML = h;
+  document.getElementById('rdTotal').innerHTML = E.total ? `<b>한국 총수출</b> ${chipS(E.total.call)} <span class="muted">${esc(E.total.text)}</span>` : '';
+  const V = R.verdicts || {}, S = R.summary || {}, Hh = R.health;
+  const pc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
+  const vcol = v => /^(판독 유효|유효|실전 후보)/.test(v) ? 'color:#50fa7b;border-color:#50fa7b' : /^(부분|작게)/.test(v) ? 'color:#ffd700;border-color:#ffd700' : /^판정 불가/.test(v) ? '' : 'color:#ff5555;border-color:#ff5555';
+  let sc = '<table class="td">' + Object.entries(V).map(([k, v]) => `<tr><td>${esc(k)}</td><td><span class="chip" style="${vcol(v)}">${esc(v)}</span></td></tr>`).join('') + '</table>';
+  const dp = S.demand_pooled || {};
+  if (dp.all) sc += `<div class="td-sub" style="margin-top:8px;">상대국 수요 판독 적중: 전체 ${pc(dp.all.hit)} · ~2016 ${pc((dp.early || {}).hit)} · 2017~ ${pc((dp.late || {}).hit)} (추세 지속 기준 ${pc(dp.all.base_mom)}, 평균 회귀 기준 ${pc(dp.all.base_mr)})</div>`;
+  if (Hh) sc += `<div class="td-sub" style="color:#fbbf24;">최근 5년(${Hh.from.slice(0, 7)}~${Hh.to.slice(0, 7)}) 엔진 ${pc(Hh.engine)} vs 평균 회귀 ${pc(Hh.mean_reversion)} — 차이가 작으면 상대국 경기 정보가 덜 통하는 국면</div>`;
+  const C = S.competition || {};
+  if (C.all) sc += `<div class="td-sub">경쟁 판독 지속률: ${pc(C.all.hit)} (` + Object.entries(S.competition_by || {}).map(([k, v]) => `${esc(k.replace('kr', '한국').replace('cn', '중국'))} ${pc(v.hit)}`).join(', ') + ')</div>';
+  const SS = S.sectors || {};
+  if (SS.all) sc += `<div class="td-sub">업종 판독: IC ${fmt(SS.all.ic, 3)} (t ${fmt(SS.all.t, 1)}) · ~2016 ${fmt((SS.early || {}).ic, 3)} · 2017~ ${fmt((SS.late || {}).ic, 3)} · 우호/비우호 적중 ${pc(SS.all.hit)} · 상위2−하위2 6개월 ${fmt((SS.all.spread_top2 || 0) * 100, 1)}%p</div>
+      <div class="td-sub">성분별(참고): 수요 충격 IC ${fmt(SS.all.ic_D, 3)} (t ${fmt(SS.all.t_D, 1)}) · 미국 점유 IC ${fmt(SS.all.ic_C, 3)} (t ${fmt(SS.all.t_C, 1)}) — 가격 판독의 주력은 수요 충격</div>`;
+  document.getElementById('rdScore').innerHTML = sc;
+  let sh = '<tr><th>업종</th><th>판독</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th>근거</th></tr>';
+  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
+  document.getElementById('rdSectors').innerHTML = (E.sectors || []).length ? sh : '<tr><td class="empty">품목 자료(관세청) 수집 후 표시</td></tr>';
+  const LH = R.links_history || {};
+  const names = Object.keys(LH).filter(g => LH[g].length);
+  const dates = [...new Set(names.flatMap(g => LH[g].map(r => r[0])))].sort();
+  const z = names.map(g => { const m = Object.fromEntries(LH[g].map(r => [r[0], r[2]])); return dates.map(d => m[d] ?? null); });
+  Plotly.newPlot('rdHeat', [{z, x: dates, y: names, type: 'heatmap', colorscale: [[0, '#18181c'], [0.25, '#3e3e42'], [0.5, '#164e63'], [1, '#00d2ff']], zmin: 0, zmax: 1,
+    hovertemplate: '%{y} %{x}: 상관 %{z:.2f}<extra></extra>', colorbar: {thickness: 8, len: 0.8}}],
+    lay({margin: {l: 80, r: 10, t: 10, b: 30}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', autorange: 'reversed'}, ...eventMarks('2008-01-01')}), CFG);
+  let ch = '<tr><th>품목</th><th>기준월</th><th>한국 점유</th><th class="num">12개월 변화</th><th>중국 점유</th><th class="num">12개월 변화</th></tr>';
+  (E.competition || []).forEach(x => { const k = x.kr || {}, c = x.cn || {};
+    ch += `<tr><td>${esc(x.name)}</td><td class="muted">${esc((x.month || '').slice(0, 7))}</td><td>${fmt(k.share, 1)}% ${chipS(k.state)}</td><td class="num">${fmt(k.delta)}%p</td><td>${fmt(c.share, 1)}% ${chipS(c.state)}</td><td class="num">${fmt(c.delta)}%p</td></tr>`; });
+  document.getElementById('rdComp').innerHTML = ch;
+}
+
+let crashIdx = 0;
+function renderCrash() {
+  const C = D.crashes || [];
+  document.getElementById('crashPick').innerHTML = C.map((c, i) => `<button class="chip ${i === crashIdx ? 'active' : ''}" onclick="crashIdx=${i};renderCrash()">${esc(c.name)}</button>`).join('');
+  const c = C[crashIdx];
+  if (!c) return;
+  const shapes = c.bears.map(b => ({type: 'rect', xref: 'x', yref: 'paper', x0: b.peak, x1: b.trough, y0: 0, y1: 1, fillcolor: b.depth <= -0.3 ? 'rgba(255,85,85,0.18)' : 'rgba(253,126,20,0.12)', line: {width: 0}}));
+  Plotly.newPlot('crashChart', [{x: c.drawdown.map(x => x[0]), y: c.drawdown.map(x => x[1]), type: 'scatter', mode: 'lines', fill: 'tozeroy',
+                 line: {color: '#ff79c6', width: 1}, fillcolor: 'rgba(255,121,198,0.12)', hovertemplate: '%{x}: %{y:.1f}%<extra></extra>'}],
+                 lay({shapes, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', title: '고점 대비 %'}}), CFG);
+  let h = '<tr><th>고점</th><th>확정(−20%)</th><th>저점</th><th class="num">깊이</th><th class="num">고점→저점</th><th>회복(고점 복귀)</th><th>상태</th></tr>';
+  [...c.bears].reverse().forEach(b => {
+    h += `<tr><td>${b.peak}</td><td>${b.confirm}</td><td>${b.trough}</td><td class="num ${b.depth <= -0.3 ? 'down' : ''}">${fmt(b.depth * 100, 1)}%</td>
+          <td class="num">${b.days_to_trough}일</td><td>${b.recovered || '<span class="warn">미회복</span>'}</td><td>${b.trough_confirmed ? '' : '<span class="warn">진행 중</span>'}</td></tr>`;
+  });
+  document.getElementById('crashTable').innerHTML = h;
+}
+
+const VERDICT_STYLE = {'실전 후보': 'color:#50fa7b;border-color:#50fa7b', '작게 실험': 'color:#ffd700;border-color:#ffd700', '버림': 'color:#6c6c7c;border-color:#3e3e42'};
+function renderSignals() {
+  const R = D.signals || {};
+  const S = R.signals || [];
+  if (!S.length) {
+    document.getElementById('signalsBody').innerHTML = '<div class="empty">아직 검정한 신호가 없습니다.</div>';
+    return;
+  }
+  const pct = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
+  const eff = (x, fam) => !x || x.effect === null || x.effect === undefined ? '–' :
+    (fam.includes('업종') ? `IC ${x.effect.toFixed(3)} (t ${x.t.toFixed(1)}) · 차 ${(x.spread * 100).toFixed(1)}%p · 적중 ${pct(x.hit)}`
+                          : `${(x.effect * 100).toFixed(1)}%p (t ${x.t.toFixed(1)}) · 상승확률 유리 ${pct(x.p_up_fav)}(${x.n_fav ?? '?'}개월) / 불리 ${pct(x.p_up_unfav)}(${x.n_unfav ?? '?'}개월)`);
+  const src = (R.sources || []).map(x => `${x.stage}단계 ${esc(x.source)} · 사전등록 ${esc(x.prereg)}… · 구간 ${esc(x.periods[0])} / ${esc(x.periods[1])}`).join('<br>');
+  let h = `<div class="td-sub">${src}<br>지평 6개월. 뒤 구간이 확인 시험(한국 이식 규칙은 한국 전 기간이 확인).</div>
+    <table class="td"><tr><th>판정</th><th>#</th><th>신호</th><th>앞 구간</th><th>뒤 구간</th><th>지금 읽기</th></tr>`;
+  let fam = '';
+  S.forEach(x => {
+    if (x.family !== fam) { h += `<tr><td class="blk" colspan="6">${esc(x.family)}</td></tr>`; fam = x.family; }
+    h += `<tr><td><span class="chip" style="${VERDICT_STYLE[x.verdict] || ''}">${esc(x.verdict)}</span></td><td class="muted">${esc(x.id)}</td><td>${esc(x.name)}</td>
+          <td class="muted" style="font-size:12px;"><b>${esc((x.periods || [])[0] || '')}</b> ${eff(x.dev, x.family)}</td><td style="font-size:12px;"><b>${esc((x.periods || [])[1] || '')}</b> ${eff(x.conf, x.family)}</td>
+          <td style="font-size:12px;">${esc(x.current && x.current.text || '')} <span class="muted">${esc(x.current && x.current.date || '')}</span></td></tr>`;
+  });
+  h += '<tr><td class="blk" colspan="6">결합 규칙(확인 구간 1회)</td></tr>';
+  (R.combos || []).forEach(c => {
+    h += `<tr><td><span class="chip" style="${VERDICT_STYLE[c.verdict] || ''}">${esc(c.verdict)}</span></td><td class="muted">${esc(c.id)}</td><td>${esc(c.name)}</td><td colspan="2" style="font-size:12px;">${esc(c.text)}</td><td style="font-size:12px;">${esc(c.now || '')}</td></tr>`;
+  });
+  document.getElementById('signalsBody').innerHTML = h + '</table>';
+}
+
+function renderLedger() {
+  let h = '<tr><th>블록</th><th>키</th><th>이름</th><th>원천</th><th>주기</th><th class="num">발표 시차</th><th>시작</th><th>최신</th><th>상태</th></tr>';
+  (D.catalog || []).forEach(s => {
+    const st = s.missing ? '<span class="down">없음</span>' : s.stale ? `<span class="warn">오래됨(${s.days_old}일)</span>` : '<span class="up">정상</span>';
+    h += `<tr><td>${BLOCK_KO[s.block]}</td><td class="muted">${esc(s.key)}</td><td>${esc(s.name)}</td><td class="muted">${esc(s.source)} ${esc(s.sid)}</td><td>${s.freq}</td>
+          <td class="num">${s.lag_days === null ? '사후 라벨' : s.lag_days + '일'}</td><td class="muted">${s.first || '–'}</td><td>${s.last || '–'}</td><td>${st}</td></tr>`;
+  });
+  document.getElementById('ledgerTable').innerHTML = h;
+}
+
+async function load() {
+  try {
+    const r = await fetch('/api/topdown/stage1');
+    const j = await r.json();
+    if (j.status === 'error') { document.getElementById('tdGenerated').textContent = j.message; return; }
+    D = j;
+  } catch (e) { document.getElementById('tdGenerated').textContent = '불러오기 실패: ' + e; return; }
+  document.getElementById('tdGenerated').textContent = '계산 시각 ' + (D.generated_at || '').replace('T', ' ');
+  renderState(); renderReading(); renderRelations(); renderInfluence(); renderTrade(); renderCrash(); renderSignals(); renderLedger();
+}
+
+let runTimer = null;
+async function pollRun() {
+  try {
+    const j = await (await fetch('/api/research_datasets/global_macro/steps')).json();
+    const r = j.running, el = document.getElementById('tdRun'), btn = document.getElementById('tdRefresh');
+    btn.disabled = !!r;
+    el.innerHTML = r ? `<span class="warn">⏳ ${esc(r.step)} 실행 중 (${esc((r.started_at || '').replace('T', ' '))})</span>` : '';
+    if (j.log && j.log.length) document.getElementById('ledgerLog').innerHTML = `<details><summary class="muted" style="cursor:pointer;font-size:12px;">최근 실행 로그 ${esc(j.log[0])}</summary><pre class="log">${j.log.slice(1).map(esc).join('\n')}</pre></details>`;
+    if (!r && runTimer) { clearInterval(runTimer); runTimer = null; load(); }
+  } catch (e) { /* 무시 */ }
+}
+
+async function tdRefresh() {
+  if (!confirm('전체 갱신(원천 받기 → 패널 → 화면 JSON)을 시작할까요? 1~2분 걸립니다.')) return;
+  const r = await (await fetch('/api/research_datasets/global_macro/collect', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({step: 'all'})})).json();
+  if (r.status !== 'ok') { alert(r.message || '실행 실패'); return; }
+  pollRun();
+  if (!runTimer) runTimer = setInterval(pollRun, 5000);
+}
+
+function openFromHash() {
+  const p = (location.hash || '').slice(1);
+  const b = document.querySelector(`.td-tab[data-p="${p}"]`);
+  if (b) b.click();
+}
+window.addEventListener('hashchange', openFromHash);
+document.querySelectorAll('.td-tab').forEach(b => b.addEventListener('click', () => history.replaceState(null, '', '#' + b.dataset.p)));
+load().then(openFromHash); pollRun(); jLoad();
+{% endraw %}
+</script>
+</body>
+</html>

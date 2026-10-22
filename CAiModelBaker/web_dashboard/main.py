@@ -5288,6 +5288,69 @@ async def api_research_dataset_collect(name: str, payload: dict):
     return {"status": "ok", "job": info}
 
 
+# ---------------------------------------------------------------------------
+# 글로벌 탑다운 (/topdown) — 화면은 DataVault/staging/global_macro/derived/dashboard/<stage>.json 만 읽는다
+# ---------------------------------------------------------------------------
+@app.get("/topdown", response_class=HTMLResponse)
+async def topdown_page(request: Request):
+    return render_template("topdown.html", request=request)
+
+
+# 판독 일지 경로는 /api/topdown/{stage} 보다 먼저 등록해야 한다(FastAPI 는 등록 순서로 매칭)
+@app.get("/api/topdown/journal")
+async def api_topdown_journal():
+    """판독 일지 — 기록 목록(채점 포함)·요약·대상 목록."""
+    from shared.data_library.global_macro import journal as _j
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(None, _j.listing)
+    subs = await loop.run_in_executor(None, _j.subjects)
+    from shared.data_library.global_macro.dashboard import _clean
+    return JSONResponse(content=_clean({"status": "ok", **data, "subjects": subs, "views": _j.VIEWS, "horizons": list(_j.HORIZONS)}))
+
+
+@app.post("/api/topdown/journal")
+async def api_topdown_journal_create(payload: dict):
+    """판단 기록(고칠 수 없음). payload: subject, view, horizon, confidence(0.5~0.95), reasoning, benchmark?, tags?"""
+    from shared.data_library.global_macro import journal as _j
+    try:
+        ev = _j.create(str(payload.get("subject") or ""), str(payload.get("view") or ""), int(payload.get("horizon") or 0),
+                       float(payload.get("confidence") or 0), str(payload.get("reasoning") or ""),
+                       benchmark=(payload.get("benchmark") or None), tags=payload.get("tags") or [])
+    except (ValueError, TypeError) as e:
+        return {"status": "error", "message": str(e)}
+    return {"status": "ok", "entry": ev}
+
+
+@app.post("/api/topdown/journal/{entry_id}/{action}")
+async def api_topdown_journal_action(entry_id: str, action: str, payload: dict):
+    """메모 추가(action=note, text) 또는 철회(action=withdraw, reason — 만기 전만)."""
+    from shared.data_library.global_macro import journal as _j
+    try:
+        if action == "note":
+            ev = _j.note(entry_id, str(payload.get("text") or ""))
+        elif action == "withdraw":
+            ev = _j.withdraw(entry_id, str(payload.get("reason") or ""))
+        else:
+            return JSONResponse(status_code=400, content={"status": "error", "message": f"알 수 없는 동작: {action}"})
+    except ValueError as e:
+        return {"status": "error", "message": str(e)}
+    return {"status": "ok", "event": ev}
+
+
+@app.get("/api/topdown/{stage}")
+async def api_topdown(stage: str):
+    """단계별 화면용 JSON(stage1 …). 없으면 status=error — '전체 갱신'을 먼저 돌려야 함."""
+    import re as _re
+    from shared.data_library.global_macro import store as _gm
+    if not _re.fullmatch(r"stage\d{1,2}", stage):
+        return JSONResponse(status_code=400, content={"status": "error", "message": f"잘못된 단계: {stage}"})
+    fp = _gm.path("derived", "dashboard", f"{stage}.json")
+    if not os.path.exists(fp):
+        return {"status": "error", "message": f"{stage}.json 없음 — 연구 데이터셋 global_macro 의 '전체 갱신'을 먼저 실행"}
+    with open(fp, encoding="utf-8") as f:
+        return Response(content=f.read(), media_type="application/json")
+
+
 @app.post("/api/raw_backup/targets")
 async def api_raw_backup_add_target(payload: dict):
     br = _bk_module()

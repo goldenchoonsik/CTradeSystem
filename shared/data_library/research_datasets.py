@@ -212,7 +212,7 @@ def dataset_status(path: str, with_size: bool = True) -> dict:
     st["panel_quality"] = {"built_at": pq.get("built_at"), "prices": pq.get("prices", {}).get("rows"),
                            "codes": pq.get("prices", {}).get("codes"), "fin_companies": pq.get("fundamentals", {}).get("companies"),
                            "date_max": pq.get("prices", {}).get("date_max")} if pq else None
-    st["collector"] = "kr_equity" if name == "kr_equity" else None
+    st["collector"] = name if name in COLLECTORS else None
     if with_size:
         st["size_bytes"] = _dir_size(path)
     return st
@@ -415,22 +415,38 @@ def _daily_symbols(path) -> List[dict]:
     return out
 
 
-# ---------------------------------------------------------------- 수집 단계 실행 (kr_equity 만 — 다른 데이터셋은 읽기 전용)
+# ---------------------------------------------------------------- 수집 단계 실행 (수집기가 있는 데이터셋만 — 나머지는 읽기 전용)
+def _collector(name: str):
+    """(단계 목록, runner 모듈). 수집기 없는 데이터셋이면 None."""
+    if name == "kr_equity":
+        from shared.data_library.kr_equity import runner, sources
+        return sources.STEPS, runner
+    if name == "global_macro":
+        from shared.data_library.global_macro import runner
+        return runner.STEPS, runner
+    return None
+
+
+COLLECTORS = ("kr_equity", "global_macro")
+
+
 def steps(name: str, root: Optional[str] = None) -> Optional[dict]:
     """데이터셋의 실행 가능한 단계 목록 + 실행 중 작업 + 최근 로그. 수집기가 없는 데이터셋이면 steps=[]."""
     if _safe_dataset_path(name, root) is None:
         return None
-    if name != "kr_equity":
+    c = _collector(name)
+    if c is None:
         return {"steps": [], "running": None, "log": []}
-    from shared.data_library.kr_equity import runner, sources
-    return {"steps": sources.STEPS, "running": runner.running(), "log": runner.log_tail()}
+    st, runner = c
+    return {"steps": st, "running": runner.running(), "log": runner.log_tail()}
 
 
 def start_step(name: str, step: str, full: bool = False) -> dict:
     """단계 실행(백그라운드 프로세스). 실패 사유는 RuntimeError 메시지."""
-    if name != "kr_equity":
+    c = _collector(name)
+    if c is None:
         raise RuntimeError(f"수집기가 없는 데이터셋: {name}")
-    from shared.data_library.kr_equity import runner, sources
-    if step not in {s["key"] for s in sources.STEPS}:
+    st, runner = c
+    if step not in {s["key"] for s in st}:
         raise RuntimeError(f"알 수 없는 단계: {step}")
     return runner.start(step, full=full)
