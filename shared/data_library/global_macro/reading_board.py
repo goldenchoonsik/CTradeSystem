@@ -122,6 +122,15 @@ def build() -> dict:
     # 연결 상태 이력(월 × 상대국)
     links_hist = {g: [[r["t"], r["links"][g]["state"], round(r["links"][g]["rho"], 3)] for r in hist if g in r["links"]] for g in R.PARTNERS}
     sec_hist = {s: [[r["t"], round(r["sectors"][s]["score"], 3), round(r["sectors"][s]["score_D"], 3)] for r in hist if s in r.get("sectors", {})] for s in R.SECTOR_HS}
+    # 관계 그래프 탭용: 상대국별 수요 판독 이력(월 × 가속/감속), 업종 수출 노출(연도별 — 판독 t 는 t−1 월의 전년 비중을 씀)
+    demand_hist = {g: [[r["t"], r["demand"][g]["call"], round(r["demand"][g]["delta"], 4)] for r in hist if g in r.get("demand", {})] for g in R.PARTNERS}
+    expo_by_year = {}
+    if D.items is not None:
+        years = sorted({(pd.Timestamp(r["t"]) - pd.offsets.MonthEnd(1)).year - 1 for r in hist})
+        for yr in years:
+            ex = R.sector_exposure(D, yr)
+            if ex:
+                expo_by_year[str(yr)] = {s: {g: round(w, 4) for g, w in v.items() if w > 0} for s, v in ex.items()}
     try:                                                                       # L3 종목 후보(현재 파악) — 업종 대응·가격 자료 없으면 비움
         from . import stocks as _st
         stock_cands = _st.candidates(latest.get("sectors") or {})
@@ -131,6 +140,7 @@ def build() -> dict:
     out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health,
            "forward": S["forward"], "forward_ce": S["forward_ce"], "stocks": stock_cands,
            "evidence": evidence(D, latest, expo), "links_history": links_hist, "sector_history": sec_hist,
+           "demand_history": demand_hist, "exposure_by_year": expo_by_year,
            "has_items": D.items is not None, "note": "판독 = 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽음. 성적 = 같은 방식으로 2008~ 매달 재현한 결과."}
     recs = []
     for r in hist:

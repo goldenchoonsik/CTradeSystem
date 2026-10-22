@@ -36,6 +36,7 @@
 | 데이터 | `DataVault/staging/global_macro/` (dataset.json, raw/, series/, derived/, derived/dashboard/) |
 | 화면 | 대시보드 `/topdown` 페이지, `/api/topdown/*` |
 | 가설 검정·탐색(연구) | 이 폴더 — 단계별 사전등록 |
+| 관계 원장(대응표: 상대국·그룹·업종·품목·수입 시장, 선언 엣지·이력) | `shared/data_library/global_macro/reference/relations_ledger.json` + 접근자 `ledger.py` — 코드에 대응표 리터럴 금지(테스트 래칫), 바꿀 땐 valid_to/reason |
 
 ## 단계
 
@@ -47,6 +48,7 @@
 | 4a. 무역 연결(실물 경로) | 노출(총수출 vs TiVA 부가가치)·민감도·영향력 지수 지도 + 수출 가중 선행지수 검정(한국 T1·T3, 대만 T2) — `PREREGISTRATION_stage4_trade.md`, `results_stage4_trade.md`, `registry_stage4.json` | 완료(10-22) |
 | 4b. 관계 판독판 | 화면 '🔭 관계 판독' 탭: 상대국 경기→한국 수출 5년 이동 연결 강도, 수출 비중 추이, 관계 건강도(중국 경기→코스피·G7 역발상·미국 업종→한국 업종), 미국 수입시장 점유 경쟁(Comtrade), 국면 사건(reference/events.json) | 완료(10-22) |
 | 4c. 판독 일지 | 화면 '📓 판독 일지' 탭 + `/api/topdown/journal`, 저장 `journal/entries.jsonl`(append-only), 다음 거래일 종가 시작·만기 자동 채점·기본 확률·브라이어·확신도 구간 적중 — `shared/data_library/global_macro/journal.py` | 완료(10-22) |
+| 4d. 관계 그래프 | 화면 '🧩 관계 그래프' 탭(Cytoscape): 상대국 그룹 → 한국 수출·코스피 → 코스피 업종 7 → 경쟁 품목(선언, 점선)·종목 후보. 실선 = 측정 엣지(총수출 비중·업종 노출·주가 연결도·업종 베타), 색 = 상태(연결·수요·업종 판독), 월 슬라이더(2008-01~, `?m=YYYY-MM`), 노드 클릭 = 근거 사슬(원장 구성·연결·수요·비중·민감도·사건·HS·품목·종목). 데이터 추가 없음 — reading.json 에 demand_history·exposure_by_year, stage1.json 에 ledger(요약+선언 엣지) | 완료(10-22) |
 
 ## 방향 전환 (2026-10-22, 사용자)
 
@@ -99,6 +101,8 @@
 - 2026-10-22: 목표 문구 정정 — 사용자 "목표 자체가 대폭락 예측이 아니다". 대폭락 회피를 성공 기준 맨 앞에서 내리고 '방향 예측 확률'을 첫 기준으로. 약세장 기록은 참고 렌즈로만.
 - 2026-10-22: 1단계 완료 — 결과 요약은 아래 '1단계 결과'.
 - 2026-10-22(저녁): 탑다운 작업 커밋(브랜치 feat/global-topdown, ee580f1). R5-D 전진 확인 고정, 4b 유럽 경쟁(E1 무효·E2 작게 실험→R5-CE 트랙·E3 버림), 5단계 종목(S1 작게 실험·S2 버림) — 각 절 참조. 선행 연구: `../20261022_samsung_single/` (삼성 단일 종목, 메모리 사이클 원인, 나스닥 금리).
+- 2026-10-22(밤): **관계 원장 분리** — 대응표 13개(trade.PARTNERS·EXTRA_TIVA/CLI, reading.PARTNERS·SECTOR_HS·SECTOR_US, kr_industry.SECTORS, kr_ksic.KSIC2_TO_SECTOR, us/eu_imports.PARTNERS·PRODUCTS, relations.LINK_PAIRS·SHARE_GROUPS)를 코드 리터럴에서 `reference/relations_ledger.json`(노드 6층·선언 엣지 181개·종류 카탈로그 11, valid_from/valid_to/reason)으로 옮김. 값은 그대로(옮기기 전 스냅샷 `shared/tests/fixtures/global_macro_tables_20261022.json` 과 값·순서 동일 테스트). 이유: 코드↔자료 분리·유지보수·관계 시각화(그래프 탭)의 단일 원천. **사전등록 해시**: 그동안 코드 파일(kr_industry·trade·eu_imports·reading·stocks·kr_ksic) 해시가 대응표 고정 역할을 했는데 이 이동으로 파일 해시가 바뀜 → 각 .sha256 에 원장 해시 a4e93d6d… 를 **추가**(옛 줄은 그대로 = 옮기기 전 코드, 커밋 046c844 에서 확인 가능). 이후 대응표 변경은 원장 해시·fixture·이 기록으로 추적.
+- 2026-10-22(밤): 관계 그래프 탭(4d) — 가벼운 판. 품목·종목·주가 연결도는 현재 값만(과거 달에선 흐리게). 판독 이력은 그 달 기록이 없으면 '판독 없음'(이전 달을 끌어오지 않음 — 처음 구현에서 끊긴 상대국이 옛 판독으로 표시된 결함 수리). 다음 = 엣지 저장소(측정 엣지 append-only)로 그래프를 저장소 기반으로.
 
 ## 1단계 결과 (2026-10-22, 기술 통계 — 판정 없음)
 
@@ -157,3 +161,13 @@
 - 채점: 적중(방향), 기본 확률(기록 이전 20년, 같은 기간 그 방향 비율) 대비, 브라이어(확신도) vs 기본 확률 브라이어, 확신도 구간별 적중률.
 - 대상: 지수 7·환율/원자재 4·한국 업종 20·미국 49업종(월)·한국 개별 종목(Creon 수정주가). 한국 업종·종목 채점은 kr_equity Creon 수집이 돌아야 최신.
 - 30건 이상 쌓이면 '판독 vs 기본 확률 vs 기계 규칙(신호 상태 탭)'을 비교해 목표(예측 확률↑) 달성 여부를 판단.
+
+## 관계 원장 (2026-10-22, `reference/relations_ledger.json` a4e93d6d…)
+
+- **무엇**: 탑다운의 모든 '대응표'(무엇이 무엇에 해당하는가)를 한 파일에 — 노드 6층(country 28·group 13·kr_sector 20·product 16·import_market 2·tiva_aggregate 4), 선언 엣지 181(종류 11: country_tiva·country_cli·aggregate_cli·group_member(scope reading|links|share)·group_cli·sector_kf49·sector_us_ip·sector_ksic·sector_hs(include|exclude)·sector_product·market_partner).
+- **선언 엣지 vs 측정 엣지**: 원장은 선언(대응)만. 연결 강도·비중·점유·베타 같은 측정값은 derived/ 산출물 — 섞지 않는다(엣지 저장소는 다음 단계).
+- **이력**: 엣지마다 valid_from/valid_to/reason. 바꿀 땐 옛 엣지를 닫고 새 엣지를 열며 이유를 적는다(지우지 않음). `ledger.*(as_of=…)` 로 그 시점 표를 재구성.
+- **검증기** `ledger.validate`: 종류 카탈로그·노드 참조·날짜 순서·닫힌 엣지 reason·중복·제외 HS 가 갈 곳·판독 그룹의 선행지수·시장 전체 코드. 로드 시 실패하면 예외.
+- **래칫** `test_no_hardcoded_mapping_tables_outside_ledger`: 모듈에 대응표 리터럴(이름 10개, 업종 코드 키, 상대국 튜플)이 있으면 실패.
+- **동일성** `test_ledger_reproduces_tables_frozen_on_20261022`: 옮기기 전 스냅샷과 값·순서 동일. 원장을 바꾸면 이 fixture 도 날짜·이유와 함께 갱신(= 사전등록 결과가 어떤 표로 계산됐는지 추적).
+- 발견: 검증기가 처음에 '아세안·대만 그룹에 선행지수 없음'을 잡았는데 이는 비중 전용 그룹이라 정상 → 규칙을 판독·연결 그룹에만 적용. 관계판의 '유럽'은 ECOS 대륙 집계 한 열(EUR), 판독 엔진의 '유럽'은 6개국 합 — 같은 이름, 다른 구성(scope 로 구분, 원장에 reason 기록).
