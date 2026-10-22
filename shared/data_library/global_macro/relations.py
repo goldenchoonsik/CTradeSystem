@@ -14,14 +14,14 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-from . import catalog, kr_industry, store, trade
+from . import catalog, kr_industry, ledger, store, trade
 from . import panel as gp
 
 WINDOW = 60                 # 5년 이동창(월)
 LAGS = range(0, 10)
-LINK_PAIRS = [("중국+홍콩", ["CN", "HK"], "CHN"), ("미국", ["US"], "USA"), ("유럽", ["EUR"], "DEU"), ("일본", ["JP"], "JPN"), ("인도", ["IN"], "IND")]
-SHARE_GROUPS = {"중국+홍콩": ["CN", "HK"], "미국": ["US"], "아세안(베트남 포함)": ["VN", "SG", "MY", "ID", "TH", "PH"], "유럽": ["EUR"],
-                "일본": ["JP"], "대만": ["TW"], "인도": ["IN"]}
+# 그룹 정의는 관계 원장(group_member scope=links|share)에서 읽음 — 2026-10-22 이동, 값 동일
+LINK_PAIRS = [(g, codes, cli) for g, (codes, cli) in ledger.groups("links").items()]      # (이름, ECOS 열, 선행지수 TiVA 코드)
+SHARE_GROUPS = {g: codes for g, (codes, _) in ledger.groups("share").items()}
 
 
 def _trade(name: str) -> pd.DataFrame:

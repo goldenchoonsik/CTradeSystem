@@ -1,0 +1,571 @@
+{
+ "trade.PARTNERS": {
+  "CN": [
+   "중국",
+   "CHN",
+   "CHNLOLITOAASTSAM"
+  ],
+  "HK": [
+   "홍콩",
+   "HKG",
+   "CHNLOLITOAASTSAM"
+  ],
+  "US": [
+   "미국",
+   "USA",
+   "USALOLITOAASTSAM"
+  ],
+  "JP": [
+   "일본",
+   "JPN",
+   "JPNLOLITOAASTSAM"
+  ],
+  "DE": [
+   "독일",
+   "DEU",
+   "DEULOLITOAASTSAM"
+  ],
+  "FR": [
+   "프랑스",
+   "FRA",
+   "FRALOLITOAASTSAM"
+  ],
+  "IT": [
+   "이탈리아",
+   "ITA",
+   "ITALOLITOAASTSAM"
+  ],
+  "GB": [
+   "영국",
+   "GBR",
+   "GBRLOLITOAASTSAM"
+  ],
+  "NL": [
+   "네덜란드",
+   "NLD",
+   null
+  ],
+  "PL": [
+   "폴란드",
+   "POL",
+   null
+  ],
+  "VN": [
+   "베트남",
+   "VNM",
+   null
+  ],
+  "TW": [
+   "대만",
+   "TWN",
+   null
+  ],
+  "SG": [
+   "싱가포르",
+   "SGP",
+   null
+  ],
+  "MY": [
+   "말레이시아",
+   "MYS",
+   null
+  ],
+  "ID": [
+   "인도네시아",
+   "IDN",
+   "IDNLOLITOAASTSAM"
+  ],
+  "TH": [
+   "태국",
+   "THA",
+   null
+  ],
+  "PH": [
+   "필리핀",
+   "PHL",
+   null
+  ],
+  "IN": [
+   "인도",
+   "IND",
+   "INDLOLITOAASTSAM"
+  ],
+  "MX": [
+   "멕시코",
+   "MEX",
+   "MEXLOLITOAASTSAM"
+  ],
+  "CA": [
+   "캐나다",
+   "CAN",
+   "CANLOLITOAASTSAM"
+  ],
+  "AU": [
+   "호주",
+   "AUS",
+   "AUSLOLITOAASTSAM"
+  ],
+  "TR": [
+   "튀르키예",
+   "TUR",
+   "TURLOLITOAASTSAM"
+  ],
+  "BR": [
+   "브라질",
+   "BRA",
+   "BRALOLITOAASTSAM"
+  ],
+  "RU": [
+   "러시아",
+   "RUS",
+   null
+  ],
+  "SA": [
+   "사우디",
+   "SAU",
+   null
+  ],
+  "AE": [
+   "UAE",
+   "ARE",
+   null
+  ],
+  "QA": [
+   "카타르",
+   "QAT",
+   null
+  ]
+ },
+ "trade.EXTRA_TIVA": [
+  "W",
+  "EU27_2020",
+  "ASEAN",
+  "ESP"
+ ],
+ "trade.EXTRA_CLI": {
+  "ESP": "ESPLOLITOAASTSAM"
+ },
+ "reading.PARTNERS": {
+  "중국+홍콩": [
+   [
+    "CN",
+    "HK"
+   ],
+   "CHN"
+  ],
+  "미국": [
+   [
+    "US"
+   ],
+   "USA"
+  ],
+  "유럽": [
+   [
+    "DE",
+    "FR",
+    "IT",
+    "GB",
+    "NL",
+    "PL"
+   ],
+   "DEU"
+  ],
+  "일본": [
+   [
+    "JP"
+   ],
+   "JPN"
+  ],
+  "인도": [
+   [
+    "IN"
+   ],
+   "IND"
+  ],
+  "멕시코": [
+   [
+    "MX"
+   ],
+   "MEX"
+  ],
+  "인도네시아": [
+   [
+    "ID"
+   ],
+   "IDN"
+  ],
+  "호주": [
+   [
+    "AU"
+   ],
+   "AUS"
+  ],
+  "캐나다": [
+   [
+    "CA"
+   ],
+   "CAN"
+  ],
+  "튀르키예": [
+   [
+    "TR"
+   ],
+   "TUR"
+  ],
+  "브라질": [
+   [
+    "BR"
+   ],
+   "BRA"
+  ]
+ },
+ "reading.SECTOR_HS": {
+  "U013": {
+   "name": "전기·전자",
+   "include": [
+    "85",
+    "8471",
+    "8473",
+    "9013"
+   ],
+   "exclude": []
+  },
+  "U015": {
+   "name": "운송장비·부품",
+   "include": [
+    "87",
+    "89"
+   ],
+   "exclude": []
+  },
+  "U008": {
+   "name": "화학",
+   "include": [
+    "27",
+    "29",
+    "33",
+    "39",
+    "40"
+   ],
+   "exclude": []
+  },
+  "U011": {
+   "name": "금속",
+   "include": [
+    "72",
+    "73"
+   ],
+   "exclude": []
+  },
+  "U012": {
+   "name": "기계·장비",
+   "include": [
+    "84"
+   ],
+   "exclude": [
+    "8471",
+    "8473"
+   ]
+  },
+  "U009": {
+   "name": "제약",
+   "include": [
+    "30"
+   ],
+   "exclude": []
+  },
+  "U014": {
+   "name": "의료·정밀기기",
+   "include": [
+    "90"
+   ],
+   "exclude": [
+    "9013"
+   ]
+  }
+ },
+ "reading.SECTOR_US": {
+  "U013": [
+   "8542",
+   "8471",
+   "8517",
+   "8528",
+   "9013",
+   "8507"
+  ],
+  "U015": [
+   "8703",
+   "8708",
+   "89"
+  ],
+  "U008": [
+   "39",
+   "2710"
+  ],
+  "U011": [
+   "72"
+  ],
+  "U012": [
+   "84"
+  ],
+  "U009": [
+   "30"
+  ]
+ },
+ "kr_industry.SECTORS": {
+  "U005": [
+   "음식료·담배",
+   "Food",
+   "Food",
+   "C10"
+  ],
+  "U006": [
+   "섬유·의류",
+   "Clths",
+   "Clths",
+   "C14"
+  ],
+  "U007": [
+   "종이·목재",
+   "Paper",
+   "Paper",
+   "C17"
+  ],
+  "U008": [
+   "화학",
+   "Chems",
+   "Chems",
+   "C20"
+  ],
+  "U009": [
+   "제약",
+   "Drugs",
+   "Drugs",
+   "C21"
+  ],
+  "U010": [
+   "비금속",
+   "BldMt",
+   "BldMt",
+   "C23"
+  ],
+  "U011": [
+   "금속",
+   "Steel",
+   "Steel",
+   "C24"
+  ],
+  "U012": [
+   "기계·장비",
+   "Mach",
+   "Mach",
+   "C29"
+  ],
+  "U013": [
+   "전기·전자",
+   "Chips",
+   "Chips",
+   "C26"
+  ],
+  "U014": [
+   "의료·정밀기기",
+   "MedEq",
+   "LabEq",
+   "C27"
+  ],
+  "U015": [
+   "운송장비·부품",
+   "Autos",
+   "Autos",
+   "C30"
+  ],
+  "U016": [
+   "유통",
+   "Rtail",
+   null,
+   null
+  ],
+  "U017": [
+   "전기·가스",
+   "Util",
+   "Util",
+   null
+  ],
+  "U018": [
+   "건설",
+   "Cnstr",
+   null,
+   null
+  ],
+  "U019": [
+   "운송·창고",
+   "Trans",
+   null,
+   null
+  ],
+  "U020": [
+   "통신",
+   "Telcm",
+   null,
+   null
+  ],
+  "U021": [
+   "금융",
+   "Banks",
+   null,
+   null
+  ],
+  "U024": [
+   "증권",
+   "Fin",
+   null,
+   null
+  ],
+  "U025": [
+   "보험",
+   "Insur",
+   null,
+   null
+  ],
+  "U026": [
+   "일반서비스",
+   "BusSv",
+   null,
+   null
+  ]
+ },
+ "kr_ksic.KSIC2_TO_SECTOR": {
+  "C10": "U005",
+  "C14": "U006",
+  "C17": "U007",
+  "C20": "U008",
+  "C21": "U009",
+  "C23": "U010",
+  "C24": "U011",
+  "C29": "U012",
+  "C26": "U013",
+  "C27": "U014",
+  "C30": "U015"
+ },
+ "us_imports.PARTNERS": {
+  "5800": "한국",
+  "5700": "중국",
+  "5880": "일본",
+  "2010": "멕시코",
+  "5520": "베트남",
+  "5830": "대만",
+  "-": "전체"
+ },
+ "us_imports.PRODUCTS": {
+  "8542": "반도체(집적회로)",
+  "8471": "컴퓨터",
+  "8517": "통신기기(휴대폰)",
+  "8528": "모니터·TV",
+  "9013": "디스플레이 패널 등",
+  "8703": "승용차",
+  "8708": "자동차 부품",
+  "8507": "배터리",
+  "72": "철강",
+  "39": "플라스틱",
+  "2710": "석유제품",
+  "89": "선박",
+  "30": "의약품",
+  "84": "기계(84류)",
+  "85": "전기기기(85류)",
+  "TOTAL": "전체"
+ },
+ "eu_imports.PARTNERS": {
+  "KR": "한국",
+  "CN": "중국",
+  "JP": "일본",
+  "US": "미국",
+  "TW": "대만",
+  "VN": "베트남",
+  "MX": "멕시코",
+  "-": "역외 전체"
+ },
+ "relations.LINK_PAIRS": [
+  [
+   "중국+홍콩",
+   [
+    "CN",
+    "HK"
+   ],
+   "CHN"
+  ],
+  [
+   "미국",
+   [
+    "US"
+   ],
+   "USA"
+  ],
+  [
+   "유럽",
+   [
+    "EUR"
+   ],
+   "DEU"
+  ],
+  [
+   "일본",
+   [
+    "JP"
+   ],
+   "JPN"
+  ],
+  [
+   "인도",
+   [
+    "IN"
+   ],
+   "IND"
+  ]
+ ],
+ "relations.SHARE_GROUPS": {
+  "중국+홍콩": [
+   "CN",
+   "HK"
+  ],
+  "미국": [
+   "US"
+  ],
+  "아세안(베트남 포함)": [
+   "VN",
+   "SG",
+   "MY",
+   "ID",
+   "TH",
+   "PH"
+  ],
+  "유럽": [
+   "EUR"
+  ],
+  "일본": [
+   "JP"
+  ],
+  "대만": [
+   "TW"
+  ],
+  "인도": [
+   "IN"
+  ]
+ },
+ "trade_signal.CLI_OF": {
+  "CN": "CHN",
+  "HK": "CHN",
+  "US": "USA",
+  "JP": "JPN",
+  "DE": "DEU",
+  "FR": "FRA",
+  "IT": "ITA",
+  "GB": "GBR",
+  "ID": "IDN",
+  "IN": "IND",
+  "MX": "MEX",
+  "CA": "CAN",
+  "AU": "AUS",
+  "TR": "TUR",
+  "BR": "BRA"
+ }
+}

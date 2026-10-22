@@ -12,16 +12,13 @@ from typing import Dict
 
 import pandas as pd
 
-from . import store
+from . import ledger, store
 from .store import log
 
 URL = "https://api.census.gov/data/timeseries/intltrade/imports/hs"
-PARTNERS: Dict[str, str] = {"5800": "한국", "5700": "중국", "5880": "일본", "2010": "멕시코", "5520": "베트남", "5830": "대만", "-": "전체"}
-PRODUCTS: Dict[str, str] = {                     # HS(2·4자리, TOTAL=전 품목) → 판독용 이름
-    "8542": "반도체(집적회로)", "8471": "컴퓨터", "8517": "통신기기(휴대폰)", "8528": "모니터·TV", "9013": "디스플레이 패널 등",
-    "8703": "승용차", "8708": "자동차 부품", "8507": "배터리", "72": "철강", "39": "플라스틱", "2710": "석유제품",
-    "89": "선박", "30": "의약품", "84": "기계(84류)", "85": "전기기기(85류)", "TOTAL": "전체",
-}
+# 상대국·품목은 관계 원장(reference/relations_ledger.json, import_market "us"·product 노드)에서 읽음 — 2026-10-22 이동, 값 동일
+PARTNERS: Dict[str, str] = ledger.market_partners("us")      # Census CTY_CODE → 이름('-' = 전체)
+PRODUCTS: Dict[str, str] = ledger.products()                  # HS(2·4자리, TOTAL=전 품목) → 판독용 이름
 START = "2010-01"
 
 

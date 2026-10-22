@@ -9,7 +9,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from . import analytics, catalog, store
+from . import analytics, catalog, ledger, store
 
 MARKETS = ["US", "EU", "JP", "CN", "KR"]
 MARKET_KO = {"US": "미국 S&P500", "EU": "독일 DAX", "JP": "일본 닛케이", "CN": "중국 상하이", "KR": "한국 코스피"}
@@ -258,6 +258,7 @@ def build() -> dict:
         "reading": store.read_json(store.path("derived", "dashboard", "reading.json")) or {},
         "kr_exports": kr_exports(data),
         "signals": merged_signals(),
+        "ledger": ledger.summary() | ledger.graph_view(),
     }
     os.makedirs(store.path("derived", "dashboard"), exist_ok=True)
     fp = store.path("derived", "dashboard", "stage1.json")

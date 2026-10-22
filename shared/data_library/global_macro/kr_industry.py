@@ -3,7 +3,7 @@
   derived/kr_industry/sector_close.parquet   코스피 업종 지수 월말 종가(열 = U코드, + U001 코스피)
   derived/kr_industry/prod.parquet           KOSIS 광업제조업동향조사 생산지수 원지수(열 = KSIC 코드), 월(기간 끝 날짜)
 대응표 SECTORS: 한국 업종 ↔ 미국 Ken French 49업종 ↔ 미국 FRED 업종 생산(industry.FUND_MAP 키) ↔ KOSIS 산업 코드.
-(2026-10-22 3단계 사전등록 전에 고정 — 바꾸면 PLAN.md 기록에 날짜·이유)
+(2026-10-22 3단계 사전등록 전에 고정, 같은 날 관계 원장 reference/relations_ledger.json 으로 이동 — 바꾸면 원장에서 valid_to/reason, PLAN.md 에 날짜·이유)
 """
 import json
 import os
@@ -15,34 +15,13 @@ import pandas as pd
 
 from shared.data_library.paths import data_vault_path
 
-from . import store
+from . import ledger, store
 from .store import log
 
 KOSIS_LAG_DAYS = 35     # 산업활동동향은 다음 달 말 공표
 
-# 코드: (이름, 미국 KF49, 미국 업종 생산(FUND_MAP 키), KOSIS KSIC)
-SECTORS: Dict[str, tuple] = {
-    "U005": ("음식료·담배", "Food", "Food", "C10"),
-    "U006": ("섬유·의류", "Clths", "Clths", "C14"),
-    "U007": ("종이·목재", "Paper", "Paper", "C17"),
-    "U008": ("화학", "Chems", "Chems", "C20"),
-    "U009": ("제약", "Drugs", "Drugs", "C21"),
-    "U010": ("비금속", "BldMt", "BldMt", "C23"),
-    "U011": ("금속", "Steel", "Steel", "C24"),
-    "U012": ("기계·장비", "Mach", "Mach", "C29"),
-    "U013": ("전기·전자", "Chips", "Chips", "C26"),
-    "U014": ("의료·정밀기기", "MedEq", "LabEq", "C27"),
-    "U015": ("운송장비·부품", "Autos", "Autos", "C30"),
-    "U016": ("유통", "Rtail", None, None),
-    "U017": ("전기·가스", "Util", "Util", None),
-    "U018": ("건설", "Cnstr", None, None),
-    "U019": ("운송·창고", "Trans", None, None),
-    "U020": ("통신", "Telcm", None, None),
-    "U021": ("금융", "Banks", None, None),
-    "U024": ("증권", "Fin", None, None),
-    "U025": ("보험", "Insur", None, None),
-    "U026": ("일반서비스", "BusSv", None, None),
-}
+# 코드: (이름, 미국 KF49, 미국 업종 생산(FUND_MAP 키), KOSIS KSIC) — 관계 원장(reference/relations_ledger.json)에서 읽음(2026-10-22 이동, 값 동일)
+SECTORS: Dict[str, tuple] = ledger.kr_sectors()
 MARKET = "U001"
 
 

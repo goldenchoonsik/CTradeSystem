@@ -13,8 +13,8 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
+from . import ledger, store
 from . import panel as gp
-from . import store
 
 WINDOW, LAGS, H = 60, range(0, 10), 6
 STRONG, WEAK = 0.5, 0.25
@@ -22,25 +22,10 @@ SHARE_BAND = 0.3                       # %p
 # R5-D 전진 확인: 이 달(월말) 이후 판독만 전진 기록(reading/forward_log.jsonl, append-only)으로 보관·채점한다.
 FORWARD_FROM = pd.Timestamp("2026-10-31")
 FORWARD_MIN_MONTHS, FORWARD_MAX_MONTHS = 24, 36         # 채점 가능한 달 수 — 24 에 1차 판정, 보류면 36 에 최종
-# 상대국 그룹: ECOS 국가 코드 → 선행지수(TiVA 코드)
-PARTNERS: Dict[str, tuple] = {
-    "중국+홍콩": (["CN", "HK"], "CHN"), "미국": (["US"], "USA"), "유럽": (["DE", "FR", "IT", "GB", "NL", "PL"], "DEU"),
-    "일본": (["JP"], "JPN"), "인도": (["IN"], "IND"), "멕시코": (["MX"], "MEX"), "인도네시아": (["ID"], "IDN"),
-    "호주": (["AU"], "AUS"), "캐나다": (["CA"], "CAN"), "튀르키예": (["TR"], "TUR"), "브라질": (["BR"], "BRA"),
-}
-# 코스피 업종 ↔ 한국 수출 품목(HS 4자리 접두, 관세청) — 제외 목록은 다른 업종으로 감
-SECTOR_HS: Dict[str, dict] = {
-    "U013": {"name": "전기·전자", "include": ["85", "8471", "8473", "9013"], "exclude": []},
-    "U015": {"name": "운송장비·부품", "include": ["87", "89"], "exclude": []},
-    "U008": {"name": "화학", "include": ["27", "29", "33", "39", "40"], "exclude": []},
-    "U011": {"name": "금속", "include": ["72", "73"], "exclude": []},
-    "U012": {"name": "기계·장비", "include": ["84"], "exclude": ["8471", "8473"]},
-    "U009": {"name": "제약", "include": ["30"], "exclude": []},
-    "U014": {"name": "의료·정밀기기", "include": ["90"], "exclude": ["9013"]},
-}
-# 업종 ↔ 미국 수입 품목(Census, us_imports.PRODUCTS 키) — 미국 시장 경쟁 성분
-SECTOR_US: Dict[str, List[str]] = {"U013": ["8542", "8471", "8517", "8528", "9013", "8507"], "U015": ["8703", "8708", "89"],
-                                   "U008": ["39", "2710"], "U011": ["72"], "U012": ["84"], "U009": ["30"]}
+# 대응표는 관계 원장(reference/relations_ledger.json) 에서 읽는다 — 2026-10-22 코드 리터럴에서 이동(값 동일, 테스트 fixture 로 고정)
+PARTNERS: Dict[str, tuple] = ledger.groups("reading")          # 상대국 그룹: (ECOS 국가 코드 목록, 선행지수 TiVA 코드)
+SECTOR_HS: Dict[str, dict] = ledger.sector_hs()                # 코스피 업종 ↔ 한국 수출 품목(HS 4자리 접두, 관세청) — 제외 목록은 다른 업종으로 감
+SECTOR_US: Dict[str, List[str]] = ledger.sector_products()     # 업종 ↔ 미국·EU 수입 품목(product 노드 키) — 시장 경쟁 성분
 
 
 def _hs_in(hs4: str, spec: dict) -> bool:

@@ -17,12 +17,12 @@ import pandas as pd
 
 from shared.data_library.paths import data_vault_path
 
-from . import kr_industry, store
+from . import ledger, store
 from .store import log
 
 URL = "https://opendart.fss.or.kr/api/company.json"
-# KSIC 대분류 C(제조업) 2자리 → 코스피 업종(SECTORS 의 4번째 열에서 역산). 제조업 밖은 None.
-KSIC2_TO_SECTOR: Dict[str, str] = {v[3]: k for k, v in kr_industry.SECTORS.items() if v[3]}
+# KSIC 대분류 C(제조업) 2자리 → 코스피 업종(관계 원장 sector_ksic 역산). 제조업 밖은 None.
+KSIC2_TO_SECTOR: Dict[str, str] = ledger.ksic2_to_sector()
 
 
 def ksic2(code: Optional[str]) -> Optional[str]:

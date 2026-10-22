@@ -477,3 +477,92 @@ def test_sector_beta_uses_only_data_up_to_t():
     sm2 = sm.copy(); sm2.loc[sm2.index > t] = 1e9                                 # t 이후를 망가뜨려도 같다
     assert stocks.sector_beta(sm2, sec, mk, t).equals(b)
     assert stocks.sector_beta(sm.iloc[:10], sec, mk, idx[9]).isna().all()        # 관측 부족 → NaN
+
+
+# ---------------------------------------------------------------- 관계 원장(reference/relations_ledger.json)
+def _tables_now() -> dict:
+    from shared.data_library.global_macro import eu_imports, kr_industry, kr_ksic, relations, trade, trade_signal, us_imports
+    from shared.data_library.global_macro import reading as R
+    return {
+        "trade.PARTNERS": {k: list(v) for k, v in trade.PARTNERS.items()}, "trade.EXTRA_TIVA": trade.EXTRA_TIVA, "trade.EXTRA_CLI": trade.EXTRA_CLI,
+        "reading.PARTNERS": {k: [list(v[0]), v[1]] for k, v in R.PARTNERS.items()}, "reading.SECTOR_HS": R.SECTOR_HS, "reading.SECTOR_US": R.SECTOR_US,
+        "kr_industry.SECTORS": {k: list(v) for k, v in kr_industry.SECTORS.items()}, "kr_ksic.KSIC2_TO_SECTOR": kr_ksic.KSIC2_TO_SECTOR,
+        "us_imports.PARTNERS": us_imports.PARTNERS, "us_imports.PRODUCTS": us_imports.PRODUCTS, "eu_imports.PARTNERS": eu_imports.PARTNERS,
+        "relations.LINK_PAIRS": [list(x) for x in relations.LINK_PAIRS], "relations.SHARE_GROUPS": relations.SHARE_GROUPS,
+        "trade_signal.CLI_OF": trade_signal.CLI_OF,
+    }
+
+
+def test_ledger_reproduces_tables_frozen_on_20261022():
+    """옛 결과 = 새 결과: 2026-10-22 코드 리터럴에서 뜬 스냅샷과 원장 접근자가 만든 표가 값·순서까지 같다.
+    (사전등록 결과들이 그 표로 계산됐으므로, 원장을 바꾸면 이 fixture 도 날짜·이유와 함께 갱신해야 한다)"""
+    import os
+    fp = os.path.join(os.path.dirname(__file__), "fixtures", "global_macro_tables_20261022.json")
+    with open(fp, encoding="utf-8") as f:
+        frozen = json.load(f)
+    now = _tables_now()
+    assert set(now) == set(frozen)
+    for k in frozen:
+        assert now[k] == frozen[k], k
+        if isinstance(frozen[k], dict):
+            assert list(now[k]) == list(frozen[k]), f"{k} 순서"
+
+
+def test_ledger_file_validates_and_has_history_fields():
+    from shared.data_library.global_macro import ledger
+    L = ledger.load()
+    assert ledger.validate(L) == []
+    assert all(e["valid_from"] and "valid_to" in e for e in L["edges"])
+    s = ledger.summary()
+    assert s["nodes"]["kr_sector"] == 20 and s["edges"]["country_tiva"] == 27 and len(s["sha256"]) == 64
+
+
+def test_ledger_validator_catches_broken_references_and_history():
+    import copy
+    from shared.data_library.global_macro import ledger
+    L = copy.deepcopy(ledger.load())
+    L["edges"].append({"type": "sector_hs", "from": "U013", "to": "99", "mode": "exclude", "valid_from": "2026-10-22", "valid_to": None})   # 갈 곳 없는 제외
+    L["edges"].append({"type": "sector_kf49", "from": "U999", "to": "Chips", "valid_from": "2026-10-22", "valid_to": None})                 # 없는 업종
+    L["edges"].append({"type": "country_cli", "from": "CN", "to": "X", "valid_from": "2026-10-22", "valid_to": "2026-10-01"})               # 닫힌 날짜 역순·reason 없음
+    L["edges"].append({"type": "nope", "from": "CN", "to": "X", "valid_from": "2026-10-22", "valid_to": None})                              # 카탈로그에 없는 종류
+    errs = ledger.validate(L)
+    assert any("갈 곳 없음" in e for e in errs) and any("U999" in e for e in errs) and any("valid_from 이전" in e for e in errs)
+    assert any("reason 필수" in e for e in errs) and any("카탈로그에 없음" in e for e in errs)
+
+
+def test_ledger_as_of_returns_mapping_valid_at_that_date(monkeypatch):
+    """대응을 바꿀 땐 옛 엣지를 닫고 새 엣지를 연다 — as_of 로 그 시점 표를 다시 만들 수 있어야 한다."""
+    import copy
+    from shared.data_library.global_macro import ledger
+    L = copy.deepcopy(ledger.load())
+    for e in L["edges"]:
+        if e["type"] == "sector_kf49" and e["from"] == "U014":
+            e["valid_to"], e["reason"] = "2027-01-01", "시험: 의료정밀을 LabEq 로"
+    L["edges"].append({"type": "sector_kf49", "from": "U014", "to": "LabEq", "valid_from": "2027-01-01", "valid_to": None, "reason": "시험"})
+    assert ledger.validate(L) == []
+    monkeypatch.setattr(ledger, "load", lambda: L)
+    assert ledger.kr_sectors(as_of="2026-12-31")["U014"][1] == "MedEq"
+    assert ledger.kr_sectors(as_of="2027-01-01")["U014"][1] == "LabEq"
+    assert ledger.kr_sectors()["U014"][1] == "LabEq"          # 기본 = 지금 유효한 것
+
+
+def test_no_hardcoded_mapping_tables_outside_ledger():
+    """래칫: 대응표(상대국·그룹·업종·품목·수입 시장)는 원장에만 — 모듈에 dict/list 리터럴로 적으면 실패."""
+    import glob
+    import os
+    import re
+    from shared.data_library import global_macro
+    names = r"(PARTNERS|SECTORS|SECTOR_HS|SECTOR_US|PRODUCTS|KSIC2_TO_SECTOR|LINK_PAIRS|SHARE_GROUPS|EXTRA_TIVA|EXTRA_CLI)"
+    literal_assign = re.compile(r"^" + names + r"\s*(:[^=\n]*)?=\s*[\{\[\(][\s\(]*[\"']", re.M)   # 괄호 뒤 바로 문자열 상수 = 리터럴(원장 읽는 컴프리헨션은 통과)
+    sector_key = re.compile(r'^\s*"U0\d\d"\s*:', re.M)
+    ecos_tuple = re.compile(r'^\s*"[A-Z]{2}"\s*:\s*\("[^"]+",\s*"[A-Z]{3}"', re.M)
+    bad = []
+    for fp in sorted(glob.glob(os.path.join(os.path.dirname(global_macro.__file__), "*.py"))):
+        if os.path.basename(fp) == "ledger.py":
+            continue
+        src = open(fp, encoding="utf-8").read()
+        for rx, what in ((literal_assign, "대응표 리터럴 대입"), (sector_key, "업종 코드 리터럴 키"), (ecos_tuple, "상대국 튜플 리터럴")):
+            m = rx.search(src)
+            if m:
+                bad.append(f"{os.path.basename(fp)}: {what} — {m.group(0).strip()[:60]}")
+    assert not bad, "대응표는 reference/relations_ledger.json 에만:\n" + "\n".join(bad)

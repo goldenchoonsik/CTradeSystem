@@ -1,0 +1,501 @@
+{
+ "title": "글로벌 탑다운 관계 원장 — 노드와 선언 엣지(대응표)",
+ "version": 1,
+ "fixed_at": "2026-10-22",
+ "rules": [
+  "코드는 이 파일만 읽는다(대응표 하드코딩 → 테스트 실패). 바꾸면 valid_to 로 닫고 새 엣지를 valid_from 으로 열며 reason 을 적는다(지우지 않는다).",
+  "사전등록 결과의 해시 대상: 2026-10-22 이전은 코드 파일(kr_industry·trade·eu_imports·reading·stocks·kr_ksic), 이후는 이 파일. 값은 그날 코드와 동일(테스트 fixture 로 고정).",
+  "선언 엣지(여기)는 '무엇이 무엇에 대응하는가'이고, 측정 엣지(연결 강도·비중·점유·베타)는 derived/ 산출물이다 — 섞지 않는다."
+ ],
+ "edge_types": {
+  "country_tiva": {
+   "from": "country",
+   "to": "tiva_code",
+   "desc": "ECOS 상대국 코드 → OECD TiVA 국가 코드(부가가치 노출)"
+  },
+  "country_cli": {
+   "from": "country",
+   "to": "fred_series",
+   "desc": "상대국 → OECD 경기선행지수 FRED id(없으면 가중 합성에서 빠짐)"
+  },
+  "aggregate_cli": {
+   "from": "tiva_aggregate",
+   "to": "fred_series",
+   "desc": "TiVA 집계/추가 국가 → 선행지수 FRED id"
+  },
+  "group_member": {
+   "from": "group",
+   "to": "country",
+   "attrs": {
+    "scope": "reading(판독 엔진 R1~R5) | links(관계판 연결 강도) | share(관계판 수출 비중)"
+   },
+   "desc": "상대국 그룹 구성원"
+  },
+  "group_cli": {
+   "from": "group",
+   "to": "tiva_code",
+   "desc": "그룹의 경기 대리 선행지수 국가(partner_cli 열)"
+  },
+  "sector_kf49": {
+   "from": "kr_sector",
+   "to": "kf49",
+   "desc": "코스피 업종 → Ken French 49업종"
+  },
+  "sector_us_ip": {
+   "from": "kr_sector",
+   "to": "us_ip",
+   "desc": "코스피 업종 → FRED 업종 산업생산(industry.FUND_MAP 키)"
+  },
+  "sector_ksic": {
+   "from": "kr_sector",
+   "to": "ksic2",
+   "desc": "코스피 업종 → KSIC 2자리(KOSIS 생산지수·DART 종목 분류)"
+  },
+  "sector_hs": {
+   "from": "kr_sector",
+   "to": "hs_prefix",
+   "attrs": {
+    "mode": "include | exclude(제외분은 다른 업종의 include 로 간다)"
+   },
+   "desc": "코스피 업종 → 한국 수출 품목 HS 접두(관세청)"
+  },
+  "sector_product": {
+   "from": "kr_sector",
+   "to": "product",
+   "desc": "코스피 업종 → 미국·EU 수입 경쟁 품목(product 노드)"
+  },
+  "market_partner": {
+   "from": "import_market",
+   "to": "market_code",
+   "attrs": {
+    "name": "표시 이름"
+   },
+   "desc": "수입 시장별 상대국 코드('-' = 전체/역외 전체)"
+  }
+ },
+ "nodes": {
+  "country": {
+   "CN": {
+    "name": "중국"
+   },
+   "HK": {
+    "name": "홍콩"
+   },
+   "US": {
+    "name": "미국"
+   },
+   "JP": {
+    "name": "일본"
+   },
+   "DE": {
+    "name": "독일"
+   },
+   "FR": {
+    "name": "프랑스"
+   },
+   "IT": {
+    "name": "이탈리아"
+   },
+   "GB": {
+    "name": "영국"
+   },
+   "NL": {
+    "name": "네덜란드"
+   },
+   "PL": {
+    "name": "폴란드"
+   },
+   "VN": {
+    "name": "베트남"
+   },
+   "TW": {
+    "name": "대만"
+   },
+   "SG": {
+    "name": "싱가포르"
+   },
+   "MY": {
+    "name": "말레이시아"
+   },
+   "ID": {
+    "name": "인도네시아"
+   },
+   "TH": {
+    "name": "태국"
+   },
+   "PH": {
+    "name": "필리핀"
+   },
+   "IN": {
+    "name": "인도"
+   },
+   "MX": {
+    "name": "멕시코"
+   },
+   "CA": {
+    "name": "캐나다"
+   },
+   "AU": {
+    "name": "호주"
+   },
+   "TR": {
+    "name": "튀르키예"
+   },
+   "BR": {
+    "name": "브라질"
+   },
+   "RU": {
+    "name": "러시아"
+   },
+   "SA": {
+    "name": "사우디"
+   },
+   "AE": {
+    "name": "UAE"
+   },
+   "QA": {
+    "name": "카타르"
+   },
+   "EUR": {
+    "name": "유럽(ECOS 대륙 집계 901Y119/30)"
+   }
+  },
+  "group": {
+   "중국+홍콩": {},
+   "미국": {},
+   "유럽": {},
+   "일본": {},
+   "인도": {},
+   "멕시코": {},
+   "인도네시아": {},
+   "호주": {},
+   "캐나다": {},
+   "튀르키예": {},
+   "브라질": {},
+   "아세안(베트남 포함)": {},
+   "대만": {}
+  },
+  "kr_sector": {
+   "U005": {
+    "name": "음식료·담배"
+   },
+   "U006": {
+    "name": "섬유·의류"
+   },
+   "U007": {
+    "name": "종이·목재"
+   },
+   "U008": {
+    "name": "화학"
+   },
+   "U009": {
+    "name": "제약"
+   },
+   "U010": {
+    "name": "비금속"
+   },
+   "U011": {
+    "name": "금속"
+   },
+   "U012": {
+    "name": "기계·장비"
+   },
+   "U013": {
+    "name": "전기·전자"
+   },
+   "U014": {
+    "name": "의료·정밀기기"
+   },
+   "U015": {
+    "name": "운송장비·부품"
+   },
+   "U016": {
+    "name": "유통"
+   },
+   "U017": {
+    "name": "전기·가스"
+   },
+   "U018": {
+    "name": "건설"
+   },
+   "U019": {
+    "name": "운송·창고"
+   },
+   "U020": {
+    "name": "통신"
+   },
+   "U021": {
+    "name": "금융"
+   },
+   "U024": {
+    "name": "증권"
+   },
+   "U025": {
+    "name": "보험"
+   },
+   "U026": {
+    "name": "일반서비스"
+   }
+  },
+  "product": {
+   "8542": {
+    "name": "반도체(집적회로)"
+   },
+   "8471": {
+    "name": "컴퓨터"
+   },
+   "8517": {
+    "name": "통신기기(휴대폰)"
+   },
+   "8528": {
+    "name": "모니터·TV"
+   },
+   "9013": {
+    "name": "디스플레이 패널 등"
+   },
+   "8703": {
+    "name": "승용차"
+   },
+   "8708": {
+    "name": "자동차 부품"
+   },
+   "8507": {
+    "name": "배터리"
+   },
+   "72": {
+    "name": "철강"
+   },
+   "39": {
+    "name": "플라스틱"
+   },
+   "2710": {
+    "name": "석유제품"
+   },
+   "89": {
+    "name": "선박"
+   },
+   "30": {
+    "name": "의약품"
+   },
+   "84": {
+    "name": "기계(84류)"
+   },
+   "85": {
+    "name": "전기기기(85류)"
+   },
+   "TOTAL": {
+    "name": "전체"
+   }
+  },
+  "import_market": {
+   "us": {
+    "name": "미국 수입(Census)",
+    "code_system": "Census CTY_CODE",
+    "total_code": "-"
+   },
+   "eu": {
+    "name": "EU 역외 수입(Eurostat Comext)",
+    "code_system": "ISO2",
+    "total_code": "-",
+    "ext_total": "EXT_EU27_2020"
+   }
+  },
+  "tiva_aggregate": {
+   "W": {
+    "name": "세계"
+   },
+   "EU27_2020": {
+    "name": "EU27"
+   },
+   "ASEAN": {
+    "name": "아세안"
+   },
+   "ESP": {
+    "name": "스페인"
+   }
+  }
+ },
+ "edges": [
+  {"type": "country_tiva", "from": "CN", "to": "CHN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "CN", "to": "CHNLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "HK", "to": "HKG", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "HK", "to": "CHNLOLITOAASTSAM", "reason": "홍콩은 중국 재수출 창구 → 중국 경기", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "US", "to": "USA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "US", "to": "USALOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "JP", "to": "JPN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "JP", "to": "JPNLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "DE", "to": "DEU", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "DE", "to": "DEULOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "FR", "to": "FRA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "FR", "to": "FRALOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "IT", "to": "ITA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "IT", "to": "ITALOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "GB", "to": "GBR", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "GB", "to": "GBRLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "NL", "to": "NLD", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "PL", "to": "POL", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "VN", "to": "VNM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "TW", "to": "TWN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "SG", "to": "SGP", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "MY", "to": "MYS", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "ID", "to": "IDN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "ID", "to": "IDNLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "TH", "to": "THA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "PH", "to": "PHL", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "IN", "to": "IND", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "IN", "to": "INDLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "MX", "to": "MEX", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "MX", "to": "MEXLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "CA", "to": "CAN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "CA", "to": "CANLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "AU", "to": "AUS", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "AU", "to": "AUSLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "TR", "to": "TUR", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "TR", "to": "TURLOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "BR", "to": "BRA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_cli", "from": "BR", "to": "BRALOLITOAASTSAM", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "RU", "to": "RUS", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "SA", "to": "SAU", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "AE", "to": "ARE", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "country_tiva", "from": "QA", "to": "QAT", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "aggregate_cli", "from": "ESP", "to": "ESPLOLITOAASTSAM", "reason": "TiVA 에만 있고 ECOS 상대국엔 없는 나라 — 선행지수만 받음", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "중국+홍콩", "to": "CN", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "중국+홍콩", "to": "HK", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "중국+홍콩", "to": "CHN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "미국", "to": "US", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "미국", "to": "USA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "DE", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "FR", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "IT", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "GB", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "NL", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "PL", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "유럽", "to": "DEU", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "일본", "to": "JP", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "일본", "to": "JPN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "인도", "to": "IN", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "인도", "to": "IND", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "멕시코", "to": "MX", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "멕시코", "to": "MEX", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "인도네시아", "to": "ID", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "인도네시아", "to": "IDN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "호주", "to": "AU", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "호주", "to": "AUS", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "캐나다", "to": "CA", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "캐나다", "to": "CAN", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "튀르키예", "to": "TR", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "튀르키예", "to": "TUR", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "브라질", "to": "BR", "scope": "reading", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_cli", "from": "브라질", "to": "BRA", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "중국+홍콩", "to": "CN", "scope": "links", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "중국+홍콩", "to": "HK", "scope": "links", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "미국", "to": "US", "scope": "links", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "EUR", "scope": "links", "reason": "관계판 유럽은 ECOS 대륙 집계 한 열(판독 엔진은 6개국 합)", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "일본", "to": "JP", "scope": "links", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "인도", "to": "IN", "scope": "links", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "중국+홍콩", "to": "CN", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "중국+홍콩", "to": "HK", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "미국", "to": "US", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "아세안(베트남 포함)", "to": "VN", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "아세안(베트남 포함)", "to": "SG", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "아세안(베트남 포함)", "to": "MY", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "아세안(베트남 포함)", "to": "ID", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "아세안(베트남 포함)", "to": "TH", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "아세안(베트남 포함)", "to": "PH", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "유럽", "to": "EUR", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "일본", "to": "JP", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "대만", "to": "TW", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "group_member", "from": "인도", "to": "IN", "scope": "share", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U005", "to": "Food", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U005", "to": "Food", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U005", "to": "C10", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U006", "to": "Clths", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U006", "to": "Clths", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U006", "to": "C14", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U007", "to": "Paper", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U007", "to": "Paper", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U007", "to": "C17", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U008", "to": "Chems", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U008", "to": "Chems", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U008", "to": "C20", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U009", "to": "Drugs", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U009", "to": "Drugs", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U009", "to": "C21", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U010", "to": "BldMt", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U010", "to": "BldMt", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U010", "to": "C23", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U011", "to": "Steel", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U011", "to": "Steel", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U011", "to": "C24", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U012", "to": "Mach", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U012", "to": "Mach", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U012", "to": "C29", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U013", "to": "Chips", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U013", "to": "Chips", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U013", "to": "C26", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U014", "to": "MedEq", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U014", "to": "LabEq", "reason": "FRED 업종 생산엔 의료기기가 없어 LabEq(계측기기)로", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U014", "to": "C27", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U015", "to": "Autos", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U015", "to": "Autos", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ksic", "from": "U015", "to": "C30", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U016", "to": "Rtail", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U017", "to": "Util", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_us_ip", "from": "U017", "to": "Util", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U018", "to": "Cnstr", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U019", "to": "Trans", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U020", "to": "Telcm", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U021", "to": "Banks", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U024", "to": "Fin", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U025", "to": "Insur", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_kf49", "from": "U026", "to": "BusSv", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U013", "to": "85", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U013", "to": "8471", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U013", "to": "8473", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U013", "to": "9013", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U015", "to": "87", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U015", "to": "89", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U008", "to": "27", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U008", "to": "29", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U008", "to": "33", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U008", "to": "39", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U008", "to": "40", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U011", "to": "72", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U011", "to": "73", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U012", "to": "84", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U012", "to": "8471", "mode": "exclude", "reason": "컴퓨터·디스플레이는 전기·전자로", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U012", "to": "8473", "mode": "exclude", "reason": "컴퓨터·디스플레이는 전기·전자로", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U009", "to": "30", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U014", "to": "90", "mode": "include", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_hs", "from": "U014", "to": "9013", "mode": "exclude", "reason": "컴퓨터·디스플레이는 전기·전자로", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U013", "to": "8542", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U013", "to": "8471", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U013", "to": "8517", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U013", "to": "8528", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U013", "to": "9013", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U013", "to": "8507", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U015", "to": "8703", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U015", "to": "8708", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U015", "to": "89", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U008", "to": "39", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U008", "to": "2710", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U011", "to": "72", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U012", "to": "84", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_product", "from": "U009", "to": "30", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "5800", "name": "한국", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "5700", "name": "중국", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "5880", "name": "일본", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "2010", "name": "멕시코", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "5520", "name": "베트남", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "5830", "name": "대만", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "us", "to": "-", "name": "전체", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "KR", "name": "한국", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "CN", "name": "중국", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "JP", "name": "일본", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "US", "name": "미국", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "TW", "name": "대만", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "VN", "name": "베트남", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "MX", "name": "멕시코", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "market_partner", "from": "eu", "to": "-", "name": "역외 전체", "valid_from": "2026-10-22", "valid_to": null}
+ ]
+}

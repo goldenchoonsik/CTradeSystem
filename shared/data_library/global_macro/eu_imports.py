@@ -12,13 +12,13 @@ from typing import Dict
 
 import pandas as pd
 
-from . import store
+from . import ledger, store
 from .store import log
 from .us_imports import PRODUCTS  # 품목표는 미국과 같은 16개(비교 가능하도록)
 
 URL = "https://ec.europa.eu/eurostat/api/comext/dissemination/sdmx/2.1/data/DS-045409"
-EXT = "EXT_EU27_2020"
-PARTNERS: Dict[str, str] = {"KR": "한국", "CN": "중국", "JP": "일본", "US": "미국", "TW": "대만", "VN": "베트남", "MX": "멕시코", "-": "역외 전체"}
+EXT = ledger.market("eu")["ext_total"]                      # 역외 합계 상대국 코드(EXT_EU27_2020)
+PARTNERS: Dict[str, str] = ledger.market_partners("eu")     # ISO2 → 이름('-' = 역외 전체) — 관계 원장에서 읽음(2026-10-22 이동, 값 동일)
 START = "2010-01"
 
 

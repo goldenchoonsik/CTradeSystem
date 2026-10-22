@@ -13,31 +13,21 @@ import io
 import json
 import os
 from datetime import date
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
-from . import sources, store
+from . import ledger, sources, store
 from .store import log
 
 TIVA_URL = "https://sdmx.oecd.org/sti-public/rest/data/OECD.STI.PIE,DSD_TIVA_MAINLV@DF_MAINLV,1.1/"
 CLI_LAG_DAYS = 20
 TRADE_LAG_DAYS = 15
 
-# ECOS 국가 코드: (이름, TiVA 코드, 선행지수 FRED id 또는 None)
-PARTNERS: Dict[str, Tuple[str, str, Optional[str]]] = {
-    "CN": ("중국", "CHN", "CHNLOLITOAASTSAM"), "HK": ("홍콩", "HKG", "CHNLOLITOAASTSAM"),   # 홍콩은 중국 재수출 창구 → 중국 경기
-    "US": ("미국", "USA", "USALOLITOAASTSAM"), "JP": ("일본", "JPN", "JPNLOLITOAASTSAM"),
-    "DE": ("독일", "DEU", "DEULOLITOAASTSAM"), "FR": ("프랑스", "FRA", "FRALOLITOAASTSAM"), "IT": ("이탈리아", "ITA", "ITALOLITOAASTSAM"),
-    "GB": ("영국", "GBR", "GBRLOLITOAASTSAM"), "NL": ("네덜란드", "NLD", None), "PL": ("폴란드", "POL", None),
-    "VN": ("베트남", "VNM", None), "TW": ("대만", "TWN", None), "SG": ("싱가포르", "SGP", None), "MY": ("말레이시아", "MYS", None),
-    "ID": ("인도네시아", "IDN", "IDNLOLITOAASTSAM"), "TH": ("태국", "THA", None), "PH": ("필리핀", "PHL", None),
-    "IN": ("인도", "IND", "INDLOLITOAASTSAM"), "MX": ("멕시코", "MEX", "MEXLOLITOAASTSAM"), "CA": ("캐나다", "CAN", "CANLOLITOAASTSAM"),
-    "AU": ("호주", "AUS", "AUSLOLITOAASTSAM"), "TR": ("튀르키예", "TUR", "TURLOLITOAASTSAM"), "BR": ("브라질", "BRA", "BRALOLITOAASTSAM"),
-    "RU": ("러시아", "RUS", None), "SA": ("사우디", "SAU", None), "AE": ("UAE", "ARE", None), "QA": ("카타르", "QAT", None),
-}
-EXTRA_TIVA = ["W", "EU27_2020", "ASEAN", "ESP"]          # 집계·추가(스페인 선행지수 있음)
-EXTRA_CLI = {"ESP": "ESPLOLITOAASTSAM"}
+# 대응표는 관계 원장(reference/relations_ledger.json, ledger.py) 에서 읽는다 — 2026-10-22 코드 리터럴에서 이동(값 동일, 테스트 fixture 로 고정)
+PARTNERS: Dict[str, Tuple[str, str, Optional[str]]] = ledger.trade_partners()      # ECOS 코드: (이름, TiVA 코드, 선행지수 FRED id 또는 None)
+EXTRA_TIVA: List[str] = ledger.tiva_aggregates()                                   # 집계·추가(스페인 선행지수 있음)
+EXTRA_CLI: Dict[str, str] = ledger.aggregate_cli()
 
 
 def _ecos_partner(kind: str, code: str) -> pd.Series:
