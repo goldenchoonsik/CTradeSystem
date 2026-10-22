@@ -695,3 +695,18 @@ def test_export_share_parser_handles_row_col_region_and_rowspan_layouts():
     assert X.parse_xml(bad) is None
     # (6) 가격표와 매출표가 같이 있으면 매출표를 고른다
     assert X.parse_xml(bad + t2)["method"] == "cols"
+
+
+def test_export_share_reads_cp949_filings_declared_as_utf8():
+    """옛 공시(~2019)는 헤더가 utf-8 이어도 실제 cp949 — 본문·첨부 전부 읽히고 표가 파싱돼야 한다."""
+    import io
+    import zipfile
+    from shared.data_library.global_macro import kr_export_share as X
+    body = '<?xml version="1.0" encoding="utf-8"?><DOCUMENT>' + _xml_table("가. 매출실적 (단위 : 백만원)", [["품목", "수출", "내수", "합계"], ["a", "30", "70", "100"], ["합계", "30", "70", "100"]]) + "</DOCUMENT>"
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("20190401000001.xml", body.encode("cp949"))
+        z.writestr("20190401000001_00760.xml", "<DOCUMENT>첨부</DOCUMENT>".encode("cp949"))
+    xml = X.main_xml(buf.getvalue())
+    assert "매출실적" in xml and xml.index("매출실적") < xml.index("첨부")       # 본문이 첨부보다 앞
+    assert X.parse_xml(xml)["share"] == pytest.approx(0.3)

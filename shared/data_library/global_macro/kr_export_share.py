@@ -115,7 +115,15 @@ def main_xml(zip_bytes: bytes) -> str:
     """본문(<접수번호>.xml) 먼저, 그 뒤 첨부(감사보고서 — 지역별 매출 주석이 여기 있는 회사가 많다) 순으로 이어 붙인다."""
     zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
     names = sorted(zf.namelist(), key=lambda n: (0 if re.fullmatch(r"\d+\.xml", os.path.basename(n)) else 1, n))
-    return "\n".join(zf.read(n).decode("utf-8", errors="replace") for n in names)
+    return "\n".join(_decode(zf.read(n)) for n in names)
+
+
+def _decode(b: bytes) -> str:
+    """옛 공시(~2019 접수)는 헤더에 utf-8 이라 적혀 있어도 실제는 cp949 — utf-8 엄격 디코딩이 실패하면 cp949."""
+    try:
+        return b.decode("utf-8")
+    except UnicodeDecodeError:
+        return b.decode("cp949", errors="replace")
 
 
 # ---------------------------------------------------------------- 파싱: 수출(해외)·내수(국내) 분리 표 찾기
