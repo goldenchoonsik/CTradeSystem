@@ -79,12 +79,17 @@ def score_comp(D, hist):
     return pd.DataFrame(rows)
 
 
+SECTOR_COLS = ["t", "s", "score", "score_D", "D", "C", "out", "hit", "hit_D", "has_C"]
+
+
 def score_sectors(D, hist):
+    """업종 판독 채점. 반환: (행 = 월 × 업종, IC DataFrame[composite, D] = 월별 업종 간 순위상관).
+    composite = 사전등록 점수 z(D)+z(C), D = R5-D 수요 충격만(z(D); 옛 이력엔 score_D 가 없어 D 로 대신 — 순위는 같다)."""
     rows, ics = [], {}
     k = D.close["U001"]
     for r in hist:
         t = pd.Timestamp(r["t"])
-        if not r["sectors"] or t not in D.close.index:
+        if not r.get("sectors") or t not in D.close.index:
             continue
         T = me(t, R.H)
         if T not in D.close.index:
@@ -95,13 +100,15 @@ def score_sectors(D, hist):
             o = np.log(D.close.loc[T, s] / D.close.loc[t, s]) - rk
             if pd.isna(o):
                 continue
-            sub.append((s, v["score"], o, v["C"] is not None))
-            rows.append({"t": t, "s": s, "score": v["score"], "D": v["D"], "C": v["C"], "out": o,
-                         "hit": (o > 0) == (v["score"] > 0) if v["score"] != 0 else np.nan, "has_C": v["C"] is not None})
+            sd = v["score_D"] if v.get("score_D") is not None else v["D"]
+            sub.append((s, v["score"], sd, o))
+            rows.append({"t": t, "s": s, "score": v["score"], "score_D": sd, "D": v["D"], "C": v["C"], "out": o,
+                         "hit": (o > 0) == (v["score"] > 0) if v["score"] != 0 else np.nan,
+                         "hit_D": (o > 0) == (sd > 0) if sd != 0 else np.nan, "has_C": v["C"] is not None})
         if len(sub) >= 5:
-            d = pd.DataFrame(sub, columns=["s", "score", "out", "c"])
-            ics[t] = d.score.rank().corr(d.out.rank())
-    return pd.DataFrame(rows), pd.Series(ics, dtype=float)
+            d = pd.DataFrame(sub, columns=["s", "score", "score_D", "out"])
+            ics[t] = {"composite": d.score.rank().corr(d.out.rank()), "D": d.score_D.rank().corr(d.out.rank())}
+    return pd.DataFrame(rows, columns=SECTOR_COLS), pd.DataFrame.from_dict(ics, orient="index", dtype=float).reindex(columns=["composite", "D"])
 
 
 def summarize(res_d, res_c, res_s, ic):
@@ -129,19 +136,63 @@ def summarize(res_d, res_c, res_s, ic):
     if len(res_s):
         out["sectors"] = {}
         for per, m_ic, m_s in (("all", ic.index == ic.index, res_s.t == res_s.t), ("early", ic.index <= SPLIT, res_s.t <= SPLIT), ("late", ic.index > SPLIT, res_s.t > SPLIT)):
-            icm, t, n = mean_nw(ic[m_ic], R.H)
+            icm, t, n = mean_nw(ic["composite"][m_ic], R.H)
             ss = res_s[m_s]
             out["sectors"][per] = {"ic": icm, "t": t, "n_months": n, "hit": float(ss.hit.dropna().mean()) if len(ss) else None,
                                    "base_up": float((ss.out > 0).mean()) if len(ss) else None}
-            # 기술 보충(판정 아님): 성분별 IC, 상위 2 − 하위 2 업종 6개월 차
-            comp = {}
-            for col in ("D", "C"):
-                g = ss.dropna(subset=[col]).groupby("t")
-                ic_c = pd.Series({t_: d[col].rank().corr(d.out.rank()) for t_, d in g if len(d) >= 5}, dtype=float)
-                comp[col] = mean_nw(ic_c, R.H)[:2]
-            sp = pd.Series({t_: d.nlargest(2, "score").out.mean() - d.nsmallest(2, "score").out.mean() for t_, d in ss.groupby("t") if len(d) >= 5}, dtype=float)
-            out["sectors"][per].update(ic_D=comp["D"][0], t_D=comp["D"][1], ic_C=comp["C"][0], t_C=comp["C"][1],
-                                       spread_top2=float(sp.mean()) if len(sp) else None, spread_hit=float((sp > 0).mean()) if len(sp) else None)
+            # 기술 보충(판정 아님): 성분별 IC, 상위 2 − 하위 2 업종 6개월 차. 수요 충격만(score_D)은 R5-D 의 과거 재현(사후 선택).
+            ic_D, t_D, _ = mean_nw(ic["D"][m_ic], R.H)
+            g = ss.dropna(subset=["C"]).groupby("t")
+            ic_c = pd.Series({t_: d["C"].rank().corr(d.out.rank()) for t_, d in g if len(d) >= 5}, dtype=float)
+            ic_C, t_C, _ = mean_nw(ic_c, R.H)
+            sp = _spread(ss, "score")
+            spD = _spread(ss, "score_D")
+            out["sectors"][per].update(ic_D=ic_D, t_D=t_D, ic_C=ic_C, t_C=t_C,
+                                       spread_top2=float(sp.mean()) if len(sp) else None, spread_hit=float((sp > 0).mean()) if len(sp) else None,
+                                       hit_D=float(ss.hit_D.dropna().mean()) if len(ss) and ss.hit_D.notna().any() else None,
+                                       spread_top2_D=float(spD.mean()) if len(spD) else None)
+    return out
+
+
+def _spread(ss: pd.DataFrame, col: str) -> pd.Series:
+    """월별 상위 2 − 하위 2 업종의 6개월 초과수익 차."""
+    return pd.Series({t_: d.nlargest(2, col).out.mean() - d.nsmallest(2, col).out.mean() for t_, d in ss.groupby("t") if len(d) >= 5}, dtype=float)
+
+
+def forward(res_s: pd.DataFrame, ic: pd.DataFrame, n_readings: int = 0) -> dict:
+    """R5-D 전진 확인(PREREGISTRATION_reading_engine_D.md). 입력은 전진 기록(forward_log)으로 만든 채점 행·IC 만.
+    상태: 대기(채점 가능한 달 0) → 확인 중 n/24 → 24개월에 1차 판정(확정·기각·보류) → 보류면 36개월에 최종(확정·기각)."""
+    out = {"from": str(R.FORWARD_FROM.date()), "min_months": R.FORWARD_MIN_MONTHS, "max_months": R.FORWARD_MAX_MONTHS,
+           "n_readings": int(n_readings), "n_months": 0, "status": "대기", "ic_D": None, "t_D": None, "ic_composite": None, "t_composite": None,
+           "spread_top2_D": None, "hit_D": None, "first_scorable": str(me(R.FORWARD_FROM, R.H + 1).date())}
+    if res_s is None or not len(res_s):
+        return out
+    ss = res_s[res_s.t >= R.FORWARD_FROM]
+    icf = ic[ic.index >= R.FORWARD_FROM] if ic is not None and len(ic) else pd.DataFrame(columns=["composite", "D"])
+    n = int(len(icf))
+    out["n_months"] = n
+    if n == 0:
+        return out
+    def _m(v):
+        v = v.dropna()
+        return (float(v.mean()) if len(v) else None, float(mean_nw(v, R.H)[1]) if len(v) >= 24 else None)
+    out["ic_D"], out["t_D"] = _m(icf["D"])
+    out["ic_composite"], out["t_composite"] = _m(icf["composite"])
+    spD = _spread(ss, "score_D")
+    out["spread_top2_D"] = float(spD.mean()) if len(spD) else None
+    out["hit_D"] = float(ss.hit_D.dropna().mean()) if ss.hit_D.notna().any() else None
+    if n < R.FORWARD_MIN_MONTHS:
+        out["status"] = f"확인 중 {n}/{R.FORWARD_MIN_MONTHS}"
+        return out
+    icD, icC, sp = out["ic_D"] or 0.0, out["ic_composite"] or 0.0, out["spread_top2_D"] or 0.0
+    if icD <= 0:
+        out["status"] = "기각"
+    elif sp > 0 and icD >= icC:
+        out["status"] = "확정"
+    elif n < R.FORWARD_MAX_MONTHS:
+        out["status"] = f"보류 {n}/{R.FORWARD_MAX_MONTHS}"
+    else:
+        out["status"] = "확정" if sp > 0 else "기각"
     return out
 
 
@@ -164,6 +215,9 @@ def verdicts(S):
         v["R5 업종(가격)"] = "실전 후보" if pos and (s["all"]["ic"] or 0) > 0 and (s["all"]["t"] or 0) >= 2 else "작게 실험" if pos else "버림"
     else:
         v["R5 업종(가격)"] = "판정 불가(품목 자료 대기)"
+    f = S.get("forward")
+    if f:
+        v["R5-D 수요 충격만(전진 확인)"] = f["status"]
     return v
 
 

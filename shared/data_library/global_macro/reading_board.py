@@ -1,7 +1,8 @@
 """시스템 판독 화면용 — 매달 판독 엔진을 2008~ 현재까지 그 시점 자료로 재현하고, 최신 판독(근거 사슬)·과거 성적·연결 상태 이력을 쓴다.
 
   derived/dashboard/reading.json   화면 '🧭 시스템 판독' 탭이 읽음
-  reading/history.parquet          월 × 상대국·업종 판독 이력
+  reading/history.parquet          월 × 상대국·업종 판독 이력(매번 재계산)
+  reading/forward_log.jsonl        FORWARD_FROM 이후 판독을 처음 생성된 그대로 보관(append-only) — R5-D 전진 확인은 이것만 채점
 """
 import json
 import os
@@ -41,11 +42,50 @@ def evidence(D, latest: dict, expo: dict) -> dict:
         txt = f"수출 노출 상위: " + ", ".join(f"{g} {w * 100:.0f}%" for g, w in top)
         txt += f" · 수요 충격 {v['D']:+.3f}"
         txt += f" · 미국 시장 한국 점유 변화 {v['C']:+.2f}%p" if v["C"] is not None else " · 미국 점유 자료 없음"
-        out["sectors"].append({"s": s, "name": v["name"], "reading": v["reading"], "score": v["score"], "D": v["D"], "C": v["C"], "text": txt})
+        out["sectors"].append({"s": s, "name": v["name"], "reading": v["reading"], "score": v["score"], "D": v["D"], "C": v["C"], "text": txt,
+                               "score_D": v.get("score_D"), "reading_D": v.get("reading_D")})
     from . import us_imports
     for cmd, c in latest.get("competition", {}).items():
         out["competition"].append({"cmd": cmd, "name": us_imports.PRODUCTS.get(cmd, cmd), "kr": c.get("kr"), "cn": c.get("cn"), "month": c.get("month")})
     return out
+
+
+def forward_log_path() -> str:
+    return store.path("reading", "forward_log.jsonl")
+
+
+def forward_log_read() -> list:
+    fp = forward_log_path()
+    if not os.path.exists(fp):
+        return []
+    with open(fp, encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+def forward_log_append(hist: list) -> int:
+    """FORWARD_FROM 이후 판독 중 아직 없는 달을 처음 생성된 그대로 덧붙인다(수정·덮어쓰기 없음). 반환 = 추가한 건수."""
+    have = {e["t"] for e in forward_log_read()}
+    new = 0
+    os.makedirs(os.path.dirname(forward_log_path()), exist_ok=True)
+    with open(forward_log_path(), "a", encoding="utf-8") as f:
+        for r in hist:
+            if pd.Timestamp(r["t"]) < R.FORWARD_FROM or r["t"] in have or not r.get("sectors"):
+                continue
+            keep = {s: {k: v.get(k) for k in ("name", "score", "score_D", "D", "C", "reading", "reading_D")} for s, v in r["sectors"].items()}
+            ev = {"t": r["t"], "logged_at": datetime.now().isoformat(timespec="seconds"),
+                  "demand": {g: {"call": d["call"], "delta": d["delta"]} for g, d in r.get("demand", {}).items()},
+                  "total": (r.get("total") or {}).get("call"), "sectors": keep}
+            f.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
+            have.add(r["t"])
+            new += 1
+    return new
+
+
+def forward_status(D) -> dict:
+    """전진 기록만으로 R5-D 채점 — 로그에 적힌 점수를 그대로 쓰고, 이후 실제 업종 수익으로만 채점한다."""
+    entries = forward_log_read()
+    res_f, ic_f = E.score_sectors(D, [{"t": e["t"], "sectors": e["sectors"]} for e in entries])
+    return E.forward(res_f, ic_f, n_readings=len(entries))
 
 
 def build() -> dict:
@@ -54,6 +94,9 @@ def build() -> dict:
     res_d, res_c = E.score_demand(D, hist), E.score_comp(D, hist)
     res_s, ic = E.score_sectors(D, hist)
     S = E.summarize(res_d, res_c, res_s, ic)
+    n_new = forward_log_append(hist)
+    S["forward"] = forward_status(D)
+    S["forward"]["new_this_run"] = n_new
     V = E.verdicts(S)
     latest = hist[-1]
     L = pd.Timestamp(latest["t"]) - pd.offsets.MonthEnd(1)
@@ -67,8 +110,8 @@ def build() -> dict:
                   "engine": float(recent.hit.mean()), "mean_reversion": float(recent.base_mr.mean()), "trend": float(recent.base_mom.dropna().mean())}
     # 연결 상태 이력(월 × 상대국)
     links_hist = {g: [[r["t"], r["links"][g]["state"], round(r["links"][g]["rho"], 3)] for r in hist if g in r["links"]] for g in R.PARTNERS}
-    sec_hist = {s: [[r["t"], round(r["sectors"][s]["score"], 3)] for r in hist if s in r.get("sectors", {})] for s in R.SECTOR_HS}
-    out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health,
+    sec_hist = {s: [[r["t"], round(r["sectors"][s]["score"], 3), round(r["sectors"][s]["score_D"], 3)] for r in hist if s in r.get("sectors", {})] for s in R.SECTOR_HS}
+    out = {"generated_at": datetime.now().isoformat(timespec="seconds"), "t": latest["t"], "verdicts": V, "summary": S, "health": health, "forward": S["forward"],
            "evidence": evidence(D, latest, expo), "links_history": links_hist, "sector_history": sec_hist,
            "has_items": D.items is not None, "note": "판독 = 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽음. 성적 = 같은 방식으로 2008~ 매달 재현한 결과."}
     recs = []
@@ -77,7 +120,7 @@ def build() -> dict:
             d = r["demand"].get(g, {})
             recs.append({"t": r["t"], "kind": "link", "key": g, "state": lk["state"], "rho": lk["rho"], "k": lk["k"], "call": d.get("call"), "delta": d.get("delta")})
         for s, v in r.get("sectors", {}).items():
-            recs.append({"t": r["t"], "kind": "sector", "key": s, "state": v["reading"], "rho": v["score"], "k": None, "call": None, "delta": v["D"]})
+            recs.append({"t": r["t"], "kind": "sector", "key": s, "state": v["reading"], "rho": v["score"], "k": None, "call": v["reading_D"], "delta": v["D"]})
     os.makedirs(store.path("reading"), exist_ok=True)
     pd.DataFrame(recs).to_parquet(store.path("reading", "history.parquet"))
     from .dashboard import _clean
@@ -86,5 +129,20 @@ def build() -> dict:
     with open(fp + ".tmp", "w", encoding="utf-8") as f:
         json.dump(_clean(out), f, ensure_ascii=False, allow_nan=False, default=str)
     os.replace(fp + ".tmp", fp)
-    store.log(f"[reading] {latest['t']} 판독 · 판정 {V}")
+    refresh_stage1(_clean(out))
+    store.log(f"[reading] {latest['t']} 판독 · 판정 {V} · 전진 기록 +{n_new}")
     return out
+
+
+def refresh_stage1(reading: dict) -> bool:
+    """화면은 stage1.json 안의 'reading' 을 읽는다 — '시스템 판독' 단계만 돌려도 화면이 바뀌도록 그 부분만 바꿔 넣는다."""
+    fp = store.path("derived", "dashboard", "stage1.json")
+    if not os.path.exists(fp):
+        return False
+    with open(fp, encoding="utf-8") as f:
+        d = json.load(f)
+    d["reading"] = reading
+    with open(fp + ".tmp", "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False, allow_nan=False, default=str)
+    os.replace(fp + ".tmp", fp)
+    return True

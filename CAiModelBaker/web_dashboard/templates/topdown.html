@@ -102,7 +102,9 @@
     </div>
     <div class="td-card">
       <h3>업종 판독 — 수출 노출 × 수요 + 미국 시장 점유</h3>
-      <div class="td-sub">우호/비우호는 업종 간 상대 점수(z). 근거: 업종 품목 수출의 상대국 노출, 수요 충격(노출 × 수요 판독), 미국 시장 한국 점유 변화.</div>
+      <div class="td-sub">우호/비우호는 업종 간 상대 점수(z). 근거: 업종 품목 수출의 상대국 노출, 수요 충격(노출 × 수요 판독), 미국 시장 한국 점유 변화.
+        <b>합성</b> = 사전등록 점수(수요 + 미국 점유). <b>수요 충격만</b>(R5-D) = 과거 재현에서 더 좋았지만 결과를 보고 고른 것이라 2026-10 이후 전진 기록으로만 판정.</div>
+      <div id="rdForward" class="td-sub" style="color:#fbbf24;"></div>
       <table class="td" id="rdSectors"></table>
     </div>
     <div class="td-card">
@@ -531,7 +533,7 @@ function renderReading() {
   document.getElementById('rdTotal').innerHTML = E.total ? `<b>한국 총수출</b> ${chipS(E.total.call)} <span class="muted">${esc(E.total.text)}</span>` : '';
   const V = R.verdicts || {}, S = R.summary || {}, Hh = R.health;
   const pc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
-  const vcol = v => /^(판독 유효|유효|실전 후보)/.test(v) ? 'color:#50fa7b;border-color:#50fa7b' : /^(부분|작게)/.test(v) ? 'color:#ffd700;border-color:#ffd700' : /^판정 불가/.test(v) ? '' : 'color:#ff5555;border-color:#ff5555';
+  const vcol = v => /^(판독 유효|유효|실전 후보|확정)/.test(v) ? 'color:#50fa7b;border-color:#50fa7b' : /^(부분|작게|확인 중|보류)/.test(v) ? 'color:#ffd700;border-color:#ffd700' : /^(판정 불가|대기)/.test(v) ? '' : 'color:#ff5555;border-color:#ff5555';
   let sc = '<table class="td">' + Object.entries(V).map(([k, v]) => `<tr><td>${esc(k)}</td><td><span class="chip" style="${vcol(v)}">${esc(v)}</span></td></tr>`).join('') + '</table>';
   const dp = S.demand_pooled || {};
   if (dp.all) sc += `<div class="td-sub" style="margin-top:8px;">상대국 수요 판독 적중: 전체 ${pc(dp.all.hit)} · ~2016 ${pc((dp.early || {}).hit)} · 2017~ ${pc((dp.late || {}).hit)} (추세 지속 기준 ${pc(dp.all.base_mom)}, 평균 회귀 기준 ${pc(dp.all.base_mr)})</div>`;
@@ -540,11 +542,15 @@ function renderReading() {
   if (C.all) sc += `<div class="td-sub">경쟁 판독 지속률: ${pc(C.all.hit)} (` + Object.entries(S.competition_by || {}).map(([k, v]) => `${esc(k.replace('kr', '한국').replace('cn', '중국'))} ${pc(v.hit)}`).join(', ') + ')</div>';
   const SS = S.sectors || {};
   if (SS.all) sc += `<div class="td-sub">업종 판독: IC ${fmt(SS.all.ic, 3)} (t ${fmt(SS.all.t, 1)}) · ~2016 ${fmt((SS.early || {}).ic, 3)} · 2017~ ${fmt((SS.late || {}).ic, 3)} · 우호/비우호 적중 ${pc(SS.all.hit)} · 상위2−하위2 6개월 ${fmt((SS.all.spread_top2 || 0) * 100, 1)}%p</div>
-      <div class="td-sub">성분별(참고): 수요 충격 IC ${fmt(SS.all.ic_D, 3)} (t ${fmt(SS.all.t_D, 1)}) · 미국 점유 IC ${fmt(SS.all.ic_C, 3)} (t ${fmt(SS.all.t_C, 1)}) — 가격 판독의 주력은 수요 충격</div>`;
+      <div class="td-sub">성분별(참고): 수요 충격만 IC ${fmt(SS.all.ic_D, 3)} (t ${fmt(SS.all.t_D, 1)}, 적중 ${pc(SS.all.hit_D)}, 상위2−하위2 ${fmt((SS.all.spread_top2_D || 0) * 100, 1)}%p) · 미국 점유 IC ${fmt(SS.all.ic_C, 3)} (t ${fmt(SS.all.t_C, 1)}) — 과거 재현에선 수요 충격이 주력(사후 선택이라 판정엔 안 씀)</div>`;
+  const F = R.forward;
+  if (F) sc += `<div class="td-sub" style="color:#fbbf24;">R5-D 전진 확인(${F.from.slice(0, 7)}~ 판독, 기록 그대로 채점): <b>${esc(F.status)}</b> · 기록 ${F.n_readings}건 · 채점 가능 ${F.n_months}개월(1차 판정 ${F.min_months}, 최종 ${F.max_months})`
+    + (F.n_months ? ` · 전진 IC 수요만 ${fmt(F.ic_D, 3)} vs 합성 ${fmt(F.ic_composite, 3)} · 상위2−하위2 ${fmt((F.spread_top2_D || 0) * 100, 1)}%p · 적중 ${pc(F.hit_D)}` : ` · 첫 채점 ${F.first_scorable}`) + '</div>';
   document.getElementById('rdScore').innerHTML = sc;
-  let sh = '<tr><th>업종</th><th>판독</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th>근거</th></tr>';
-  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
+  let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th>근거</th></tr>';
+  (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdSectors').innerHTML = (E.sectors || []).length ? sh : '<tr><td class="empty">품목 자료(관세청) 수집 후 표시</td></tr>';
+  document.getElementById('rdForward').textContent = F ? `전진 확인 상태: ${F.status} — ${F.n_readings}건 기록(reading/forward_log.jsonl, 고쳐 쓰지 않음), 채점 ${F.n_months}개월` : '';
   const LH = R.links_history || {};
   const names = Object.keys(LH).filter(g => LH[g].length);
   const dates = [...new Set(names.flatMap(g => LH[g].map(r => r[0])))].sort();

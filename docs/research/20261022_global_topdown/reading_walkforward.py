@@ -38,7 +38,7 @@ def main():
             d = r["demand"].get(g, {})
             recs.append({"t": r["t"], "kind": "link", "key": g, "state": lk["state"], "rho": lk["rho"], "k": lk["k"], "call": d.get("call"), "delta": d.get("delta")})
         for s, v in r["sectors"].items():
-            recs.append({"t": r["t"], "kind": "sector", "key": s, "state": v["reading"], "rho": v["score"], "k": None, "call": None, "delta": v["D"]})
+            recs.append({"t": r["t"], "kind": "sector", "key": s, "state": v["reading"], "rho": v["score"], "k": None, "call": v["reading_D"], "delta": v["D"]})
     os.makedirs(store.path("reading"), exist_ok=True)
     pd.DataFrame(recs).to_parquet(store.path("reading", "history.parquet"))
     report(res)
@@ -63,7 +63,8 @@ def report(res):
               "", " · ".join(f"{k} n={v['n']} 지속 {pc(v['hit'])}" for k, v in S.get("competition_by", {}).items())]
     if "sectors" in S:
         L += ["", "## R5 업종 판독 — 업종 6개월 초과수익(코스피 대비)", ""] + [
-            f"- {p}: IC {v['ic']:+.3f} (t {v['t']:+.1f}, {v['n_months']}개월), 우호/비우호 적중 {pc(v['hit'])} (업종이 코스피를 이긴 비율 {pc(v['base_up'])})" for p, v in S["sectors"].items() if v.get("ic") is not None]
+            f"- {p}: IC {v['ic']:+.3f} (t {v['t']:+.1f}, {v['n_months']}개월), 우호/비우호 적중 {pc(v['hit'])} (업종이 코스피를 이긴 비율 {pc(v['base_up'])})"
+            f" · 수요 충격만(R5-D, 사후 선택) IC {v['ic_D']:+.3f} (t {v['t_D']:+.1f}), 적중 {pc(v.get('hit_D'))}, 상위2−하위2 {(v.get('spread_top2_D') or 0) * 100:+.1f}%p" for p, v in S["sectors"].items() if v.get("ic") is not None]
     lt = res.get("latest") or {}
     if lt:
         L += ["", f"## 최신 판독 ({lt['t']})", ""]

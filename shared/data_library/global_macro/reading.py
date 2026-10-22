@@ -5,6 +5,8 @@
   R3 총수출 판독  R2 를 전년 수출 비중으로 가중 합
   R4 경쟁 판독   미국 수입 중 한국산 점유의 최근 12개월 변화 → 확대/유지/잠식(중국산도 표시)
   R5 업종 판독   업종 품목의 상대국 노출 × R2 수요 충격 + 미국 시장 점유 변화 → 우호/비우호
+  R5-D          수요 충격 성분만(z(D))으로 읽는 변형 — 과거 재현 결과를 보고 고른 것이라(사후 선택) 판정은
+                FORWARD_FROM 이후 전진 기록으로만 한다 (PREREGISTRATION_reading_engine_D.md, 2026-10-22 고정)
 """
 from typing import Dict, List, Optional
 
@@ -17,6 +19,9 @@ from . import store
 WINDOW, LAGS, H = 60, range(0, 10), 6
 STRONG, WEAK = 0.5, 0.25
 SHARE_BAND = 0.3                       # %p
+# R5-D 전진 확인: 이 달(월말) 이후 판독만 전진 기록(reading/forward_log.jsonl, append-only)으로 보관·채점한다.
+FORWARD_FROM = pd.Timestamp("2026-10-31")
+FORWARD_MIN_MONTHS, FORWARD_MAX_MONTHS = 24, 36         # 채점 가능한 달 수 — 24 에 1차 판정, 보류면 36 에 최종
 # 상대국 그룹: ECOS 국가 코드 → 선행지수(TiVA 코드)
 PARTNERS: Dict[str, tuple] = {
     "중국+홍콩": (["CN", "HK"], "CHN"), "미국": (["US"], "USA"), "유럽": (["DE", "FR", "IT", "GB", "NL", "PL"], "DEU"),
@@ -207,9 +212,11 @@ def sectors(D: Data, t, dem: Dict[str, dict], comp: Dict[str, dict], expo_cache:
     z = lambda c: (df[c].astype(float) - df[c].astype(float).mean()) / df[c].astype(float).std() if df[c].notna().sum() >= 3 and df[c].astype(float).std() > 0 else pd.Series(0.0, index=df.index)
     zD = z("D")
     zC = z("C") if df["C"].notna().sum() >= 3 else pd.Series(0.0, index=df.index)
+    lab = lambda v: "우호" if v > 0 else "비우호" if v < 0 else "중립"
     for s in raw:
         sc = float(zD[s] + (zC[s] if pd.notna(df.loc[s, "C"]) else 0.0))
-        raw[s].update(score=sc, reading="우호" if sc > 0 else "비우호" if sc < 0 else "중립")
+        sd = float(zD[s])                                   # R5-D: 수요 충격 성분만
+        raw[s].update(score=sc, reading=lab(sc), score_D=sd, reading_D=lab(sd))
     return raw
 
 

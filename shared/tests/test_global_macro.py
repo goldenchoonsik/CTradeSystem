@@ -351,3 +351,64 @@ def test_reading_demand_uses_known_lead_or_latest():
     assert lk["k"] == 8                              # 선행 8개월 ≥ 7 → 목표월(t+6)의 원인 값(t−2)이 이미 공개됨
     assert d["x_month"] == "2010-04-30" and d["call"] in ("가속", "감속")
     assert d["yhat"] == pytest.approx(lk["alpha"] + lk["beta"] * x["2010-04-30"])
+
+
+# ---------------------------------------------------------------- R5-D 수요 충격 단독 변형·전진 확인
+def test_reading_sectors_demand_only_variant_ignores_us_share():
+    from shared.data_library.global_macro import reading as R
+    t = pd.Timestamp("2010-06-30")
+    secs = list(R.SECTOR_HS)
+    expo = {2009: {s: {"미국": 0.5 + 0.05 * i, "유럽": 0.3} for i, s in enumerate(secs)}}
+    dem = {"미국": {"delta": 0.10}, "유럽": {"delta": -0.05}}
+    hit = "U013"                                                              # 미국 점유 자료가 있는 업종 하나만 잠식
+    comp = {cmd: {"kr": {"delta": -3.0 if cmd in R.SECTOR_US[hit] else 0.0}, "us_imports_12m": 1e9} for s in secs for cmd in R.SECTOR_US.get(s, [])}
+    out = R.sectors(None, t, dem, comp, expo)
+    df = pd.DataFrame(out).T
+    zD = (df.D.astype(float) - df.D.astype(float).mean()) / df.D.astype(float).std()
+    assert np.allclose(df.score_D.astype(float), zD)                          # 수요 충격만 = z(D)
+    assert all(v["reading_D"] == ("우호" if v["score_D"] > 1e-12 else "비우호" if v["score_D"] < -1e-12 else "중립") for v in out.values())
+    assert out[hit]["score"] < out[hit]["score_D"]                            # 미국 점유 잠식은 합성 점수만 깎는다
+    assert (df.score != df.score_D).any()
+
+
+def _fwd_hist(ts, n_sec=5):
+    from shared.data_library.global_macro import reading as R
+    secs = list(R.SECTOR_HS)[:n_sec]
+    return [{"t": str(t.date()), "demand": {"미국": {"call": "가속", "delta": 0.1}}, "total": {"call": "가속"},
+             "sectors": {s: {"name": s, "score": float(i), "score_D": float(-i), "D": -i / 10, "C": None, "reading": "우호", "reading_D": "비우호"} for i, s in enumerate(secs)}} for t in ts]
+
+
+def test_forward_log_is_append_only_and_only_after_freeze(stage):
+    from shared.data_library.global_macro import reading as R, reading_board as B
+    ts = [R.FORWARD_FROM - pd.offsets.MonthEnd(1), R.FORWARD_FROM, R.FORWARD_FROM + pd.offsets.MonthEnd(1)]
+    assert B.forward_log_append(_fwd_hist(ts)) == 2                            # 고정일 이전 판독은 기록하지 않는다
+    assert [e["t"] for e in B.forward_log_read()] == [str(ts[1].date()), str(ts[2].date())]
+    changed = _fwd_hist(ts)
+    for r in changed:
+        for v in r["sectors"].values():
+            v["score_D"] = 999.0                                                # 재계산 값이 달라져도
+    assert B.forward_log_append(changed) == 0                                  # 이미 있는 달은 덮어쓰지 않는다
+    assert all(v["score_D"] != 999.0 for e in B.forward_log_read() for v in e["sectors"].values())
+
+
+def test_forward_status_waits_then_judges(stage):
+    from shared.data_library.global_macro import reading as R, reading_eval as E
+    empty = pd.DataFrame(columns=E.SECTOR_COLS)
+    f = E.forward(empty, pd.DataFrame(columns=["composite", "D"]), n_readings=3)
+    assert f["status"] == "대기" and f["n_readings"] == 3 and f["n_months"] == 0 and f["first_scorable"] == "2027-05-31"
+    secs = list(R.SECTOR_HS)[:5]
+    def _case(n, icD, icC, spread_sign):
+        months = pd.date_range(R.FORWARD_FROM, periods=n, freq="ME")
+        rows = []
+        for t in months:
+            for i, s in enumerate(secs):
+                rows.append({"t": t, "s": s, "score": float(i), "score_D": float(i), "D": i, "C": None,
+                             "out": spread_sign * 0.01 * i, "hit": True, "hit_D": True, "has_C": False})
+        ic = pd.DataFrame({"composite": icC, "D": icD}, index=months)
+        return E.forward(pd.DataFrame(rows, columns=E.SECTOR_COLS), ic, n_readings=n)
+    assert _case(10, 0.1, 0.05, 1)["status"] == "확인 중 10/24"
+    assert _case(24, 0.1, 0.05, 1)["status"] == "확정"                         # IC>0, 합성 이상, 상위−하위 > 0
+    assert _case(24, -0.1, 0.05, 1)["status"] == "기각"
+    assert _case(24, 0.1, 0.2, 1)["status"] == "보류 24/36"                    # 합성보다 못하면 보류
+    assert _case(36, 0.1, 0.2, 1)["status"] == "확정"                          # 최종: IC>0 & 차이>0
+    assert _case(36, 0.1, 0.2, -1)["status"] == "기각"
