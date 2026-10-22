@@ -54,7 +54,8 @@ def find_report(corp_code: str, year: int) -> Optional[dict]:
 def fetch_doc(rcept_no: str) -> bytes:
     raw = store.get(f"{DOC_URL}?crtfc_key={_key()}&rcept_no={rcept_no}", timeout=180)
     if not raw.startswith(b"PK"):
-        raise RuntimeError(f"DART document {rcept_no}: zip 아님 ({raw[:120]!r})")
+        m = re.search(rb"<status>(\d+)</status>", raw)
+        raise RuntimeError(f"DART document {rcept_no}: status {m.group(1).decode() if m else '?'} zip 아님 ({raw[:120]!r})")
     return raw
 
 
@@ -65,14 +66,17 @@ def index_path(year: int) -> str:
 def read_index(year: int) -> pd.DataFrame:
     fp = index_path(year)
     cols = ["stock_code", "corp_code", "rcept_no", "report_nm", "rcept_dt", "bytes", "status"]
-    return pd.read_csv(fp, dtype=str) if os.path.exists(fp) else pd.DataFrame(columns=cols)
+    if not os.path.exists(fp):
+        return pd.DataFrame(columns=cols)
+    return pd.read_csv(fp, dtype=str).drop_duplicates("stock_code", keep="last").reset_index(drop=True)   # 재시도 줄은 뒤에 붙음 → 마지막 줄이 현재
 
 
-def fetch(year: int = 2025, limit: Optional[int] = None, sleep: float = 0.25) -> dict:
-    """대상 종목의 사업보고서 원문을 받는다(받은 건 건너뜀, 목록 조회 결과도 index 에 남겨 재조회 안 함)."""
+def fetch(year: int = 2025, limit: Optional[int] = None, sleep: float = 0.25, retry_errors: bool = False) -> dict:
+    """대상 종목의 사업보고서 원문을 받는다(받은 건 건너뜀, 목록 조회 결과도 index 에 남겨 재조회 안 함).
+    DART 일 한도 초과(status 020)는 기록하지 않고 즉시 멈춘다(다음 날 다시 실행하면 이어서). retry_errors=True 면 전에 error 로 적힌 종목을 다시 시도(index 는 append-only 라 새 줄이 뒤에 붙고 read_index 는 마지막 줄을 쓴다)."""
     t = targets()
     idx = read_index(year)
-    done = set(idx.stock_code)
+    done = set(idx[~idx.status.str.startswith("error")].stock_code) if retry_errors else set(idx.stock_code)
     os.makedirs(os.path.dirname(index_path(year)), exist_ok=True)
     new, fail = 0, []
     with open(index_path(year), "a", newline="", encoding="utf-8") as f:
@@ -100,6 +104,9 @@ def fetch(year: int = 2025, limit: Optional[int] = None, sleep: float = 0.25) ->
                 if new % 50 == 0:
                     log(f"[export_share] {year} 수신 {new}건 (대상 {len(t)}, 진행 {i + 1})")
             except Exception as e:   # noqa: BLE001
+                if "020" in str(e) or "한도" in str(e) or "초과" in str(e):           # 일 한도 — 기록 없이 중단
+                    log(f"[export_share] DART 한도 초과로 중단({new}건 받음): {str(e)[:80]}")
+                    break
                 fail.append(f"{r.stock_code} {str(e)[:80]}")
                 w.writerow([r.stock_code, r.corp_code, "", "", "", 0, f"error: {str(e)[:60]}"]); f.flush()
                 time.sleep(sleep * 4)
