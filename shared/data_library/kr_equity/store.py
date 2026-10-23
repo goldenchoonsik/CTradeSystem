@@ -171,6 +171,21 @@ def corpcode_zip() -> Optional[str]:
     return os.path.join(d, zs[-1]) if zs else None
 
 
+def marcap_snapshots(year: int) -> List[Tuple[str, str]]:
+    """raw/marcap/<연도>/<받은날 YYYYMMDD>.parquet → [(받은날, 경로)] 오래된 순."""
+    d = path("raw", "marcap", str(year))
+    if not os.path.isdir(d):
+        return []
+    return [(f[:8], os.path.join(d, f)) for f in sorted(os.listdir(d)) if f.endswith(".parquet") and f[:8].isdigit()]
+
+
+def marcap_files() -> Dict[int, str]:
+    """연도 → 가장 최근 스냅샷 경로 (읽기는 언제나 연도별 최신 하나)."""
+    d = path("raw", "marcap")
+    years = sorted(int(y) for y in os.listdir(d) if y.isdigit()) if os.path.isdir(d) else []
+    return {y: s[-1][1] for y in years if (s := marcap_snapshots(y))}
+
+
 def corp_rows() -> Iterator[Tuple[str, str, str]]:
     """(corp_code, stock_code, corp_name) — 종목코드 있는 회사만."""
     z = corpcode_zip()

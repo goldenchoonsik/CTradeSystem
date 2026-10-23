@@ -135,14 +135,139 @@ def test_derive_q4_from_annual_minus_q3_cumulative():
     assert out[out.q < 4].sales.tolist() == [10.0, 20.0, 30.0]
 
 
-def test_parse_naver_and_shares():
+def test_parse_naver():
     d = panel.parse_naver(b'<x><item data="20170428|150|158|110|117|18522676" /><item data="20170502|98|106|79|79|11917330" /></x>')
     assert list(d.close) == [117.0, 79.0] and str(d.date.iloc[0].date()) == "2017-04-28"
     assert panel.parse_naver(b"<x></x>").empty
-    j = {"response": {"list": [{"se": "보통주", "rcept_no": "20170331004360", "distb_stock_co": "26,177,380"},
-                               {"se": "합계", "rcept_no": "20170331004360", "distb_stock_co": "26,177,380"}]}}
-    assert panel.parse_shares_file(j) == ("20170331", 26177380.0)
-    assert panel.parse_shares_file({"response": {"list": [{"se": "비고", "rcept_no": "1", "distb_stock_co": "-"}]}}) is None
+
+
+# ---------------------------------------------------------------- KRX 공식 시총(marcap)·daily_ext 검사
+def _marcap_bytes(year, rows):
+    import io
+    m = pd.DataFrame(rows, columns=["Code", "Date", "Close", "Stocks", "Marcap", "Market"])
+    m["Date"] = pd.to_datetime(m.Date)
+    b = io.BytesIO()
+    m.to_parquet(b, index=False)
+    return b.getvalue()
+
+
+def _put_marcap(root, year, fetched, rows):
+    d = root / "raw" / "marcap" / str(year)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{fetched}.parquet").write_bytes(_marcap_bytes(year, rows))
+
+
+def test_read_marcap_latest_snapshot_per_year_and_missing_year(stage):
+    with pytest.raises(RuntimeError, match="krx_marcap"):
+        panel.read_marcap()
+    _put_marcap(stage, 2013, "20260101", [("000010", "2013-01-02", 100.0, 10, 1000.0, "KOSPI")])
+    _put_marcap(stage, 2013, "20261021", [("000010", "2013-01-02", 200.0, 10, 2000.0, "KOSPI"),
+                                          ("000020", "2013-01-02", 50.0, 4, 200.0, "KOSDAQ")])
+    _put_marcap(stage, 2015, "20261021", [("000010", "2015-01-02", 300.0, 10, 3000.0, "KOSPI")])
+    with pytest.raises(RuntimeError, match="2014"):
+        panel.read_marcap()                                   # 빠진 해가 있으면 조용히 넘어가지 않는다
+    _put_marcap(stage, 2014, "20261021", [("000010", "2014-01-02", 250.0, 10, 2500.0, "KOSPI")])
+    k = panel.read_marcap(["A000010"])
+    assert k.code.unique().tolist() == ["A000010"] and k.krx_mcap.tolist() == [2000.0, 2500.0, 3000.0]
+    assert store.marcap_files()[2013].endswith("20261021.parquet")
+
+
+def test_krx_marcap_step_keeps_closed_years_and_rejects_bad_files(stage, monkeypatch):
+    from datetime import datetime as real_dt
+    calls = []
+
+    class R:
+        def __init__(self, content):
+            self.content = content
+
+    def fake_get(url, **kw):
+        y = int(url.rsplit("-", 1)[1][:4])
+        calls.append(y)
+        if y == 2014:
+            return R(_marcap_bytes(2013, [("000010", "2013-12-30", 1.0, 1, 1.0, "KOSPI")]))   # 다른 해 → 거부
+        return R(_marcap_bytes(y, [("000010", f"{y}-01-02", 1.0, 1, 1.0, "KOSPI")]))
+
+    class FakeDT(real_dt):
+        now_value = real_dt(2026, 10, 21, 9, 0)
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.now_value
+    monkeypatch.setattr(sources, "get", fake_get)
+    monkeypatch.setattr(sources, "datetime", FakeDT)
+    assert sources.run_krx_marcap() is False                  # 2014 실패
+    assert not store.marcap_snapshots(2014) and len(store.marcap_snapshots(2013)) == 1
+    calls.clear()
+    FakeDT.now_value = real_dt(2026, 10, 25, 9, 0)
+    sources.run_krx_marcap()
+    assert calls == [2014]                                    # 끝난 해는 다시 받지 않고, 올해는 7일 안 지남
+    calls.clear()
+    FakeDT.now_value = real_dt(2026, 10, 29, 9, 0)
+    sources.run_krx_marcap()
+    assert calls == [2014, 2026] and len(store.marcap_snapshots(2026)) == 2
+
+
+def test_delisted_ext_is_krx_mcap_with_adjusted_shares_and_drops_code_reuse():
+    uni = pd.DataFrame({"code": ["A000010"], "delist_date": ["2020-01-10"]})
+    nv = pd.DataFrame({"code": ["A000010"] * 3, "date": pd.to_datetime(["2020-01-08", "2020-01-09", "2020-01-13"]),
+                       "close": [500.0, 400.0, 300.0]})          # 네이버 수정 종가(뒤에 5:1 병합 → 무수정의 5배)
+    krx = pd.DataFrame({"code": ["A000010"] * 3, "date": pd.to_datetime(["2020-01-08", "2020-01-09", "2020-01-13"]),
+                        "krx_mcap": [1000.0, 800.0, 9e12], "krx_close": [100.0, 80.0, 1.0]})
+    d = panel.delisted_ext(nv, uni, krx)
+    assert d.market_cap.tolist() == [1000.0, 800.0]          # 상폐일 이후 같은 코드(다른 회사)는 버린다
+    assert d.shares_listed.tolist() == [2.0, 2.0] and set(d.mcap_src) == {"krx"}
+
+
+def _ext_frames(n=300, codes=("A1", "A2", "A3"), src="krx"):
+    days = pd.bdate_range("2020-01-01", periods=n)
+    e, px, krx = [], [], []
+    for c in codes:
+        mc = np.full(n, 1e8)
+        e.append(pd.DataFrame({"code": c, "date": days, "shares_listed": 1e6, "market_cap": mc, "mcap_src": src}))
+        px.append(pd.DataFrame({"code": c, "date": days, "close": 100.0, "close_unadj": 100.0}))
+        krx.append(pd.DataFrame({"code": c, "date": days, "krx_mcap": mc, "krx_close": 100.0}))
+    return pd.concat(e, ignore_index=True), pd.concat(px, ignore_index=True), pd.concat(krx, ignore_index=True)
+
+
+def test_check_ext_passes_clean_and_writes_report(stage):
+    e, px, krx = _ext_frames()
+    rep = panel.check_ext(e, px, krx)
+    assert rep["passed"] and json.load(open(stage / "quality" / "daily_ext_check.json", encoding="utf-8"))["passed"]
+
+
+def test_check_ext_fails_on_unit_typo_spike(stage):
+    e, px, krx = _ext_frames()
+    typo = (e.code == "A3") & e.date.between(e.date.iloc[100], e.date.iloc[160])
+    e.loc[typo, ["market_cap", "shares_listed"]] *= 1000      # 보고서 ×1000 오기 한 분기(가격은 그대로)
+    krx.loc[typo.to_numpy(), "krx_mcap"] *= 1000
+    with pytest.raises(panel.ExtCheckError, match="spike") as ex:
+        panel.check_ext(e, px, krx)
+    assert "dominance" in str(ex.value)
+    rep = json.load(open(stage / "quality" / "daily_ext_check.json", encoding="utf-8"))
+    assert rep["spike"]["examples"][0]["code"] == "A3" and not rep["passed"]
+
+
+def test_check_ext_allows_bonus_issue_gap_between_ex_date_and_listing():
+    """무상증자 1:14 — 권리락일부터 무수정 종가 1/15, 신주 상장(30거래일 뒤)까지 KRX 공식 시총도 1/15 (아리바이오홀딩스 2023-12)."""
+    e, px, krx = _ext_frames()
+    a = (e.code == "A3").to_numpy()
+    i = np.flatnonzero(a)
+    ex_, listing = i[100:], i[100:130]
+    px.loc[ex_, "close_unadj"] = 100.0 / 15
+    krx.loc[ex_, "krx_close"] = 100.0 / 15
+    e.loc[listing, ["market_cap", "shares_listed"]] = [1e8 / 15, 1e6 / 15]
+    krx.loc[listing, "krx_mcap"] = 1e8 / 15
+    assert panel.check_ext(e, px, krx)["passed"]
+
+
+def test_check_ext_official_tolerates_short_listing_gap_but_not_persistent(stage):
+    e, px, krx = _ext_frames(src="creon")
+    i = np.flatnonzero((e.code == "A2").to_numpy())
+    krx.loc[i[50:52], "krx_mcap"] *= 4                          # 신주 상장일 반영 차이 이틀
+    assert panel.check_ext(e, px, krx)["passed"]
+    krx.loc[i[200:206], "krx_mcap"] *= 4                        # 엿새 연속 4배 → 원천 오류
+    with pytest.raises(panel.ExtCheckError, match="official"):
+        panel.check_ext(e, px, krx)
 
 
 def test_read_creon_restores_regular_session_from_1m(stage, monkeypatch):

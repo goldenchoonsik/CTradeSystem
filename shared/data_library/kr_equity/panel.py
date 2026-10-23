@@ -2,7 +2,10 @@
 
   prices_1d.parquet       code·date·open/high/low/close/volume/value(수정) · close_unadj · factor · src · reg_fix
                           reg_fix 0 정규장 그대로 / 1 2026-09-14~ 1분봉으로 정규장 복원 / 2 복원 불가(NaN) / 3 네이버(시간외 포함 여부 미확인)
-  daily_ext.parquet       code·date·shares_listed·market_cap·foreign_hold_qty·foreign_hold_pct·inst_net_qty  (상장=Creon, 상폐=DART 주식수×네이버 종가 근사, mcap_approx=1)
+  daily_ext.parquet       code·date·shares_listed·market_cap·foreign_hold_qty·foreign_hold_pct·inst_net_qty·mcap_src·mcap_approx
+                          market_cap = 그날 실제 시총 (상장=Creon, 상폐=KRX 공식 일별 시총 raw/marcap) — mcap_src creon/krx
+                          shares_listed = 수정 기준 주식수(시총 ÷ 수정 종가, Creon 필드 12 기준) — 그날의 실제 주식수가 아님
+                          mcap_approx 는 예전 호환 열(항상 0). 쓰기 전 check_ext 검사(실패 시 파일 안 씀, quality/daily_ext_check.json)
                           흐름 = foreign_hold_qty 일변화(외국인 순매수 근사, 기업행위 점프 주의)·inst_net_qty(기관 일 순매수)
   fundamentals_q.parquet  stock_code·period_end·rcept_dt·분기 손익(3개월치)·재무상태·fs_div  — 결합은 rcept_dt 이후에만(미래참조 방지)
   index_1d.parquet        지수 OHLCV
@@ -142,37 +145,140 @@ def build_prices() -> pd.DataFrame:
     return p
 
 
-# ---------------------------------------------------------------- 주식수·시총 (상장=Creon, 상폐=DART×네이버 근사)
-def parse_shares_file(j: dict):
-    """stockTotqySttus 응답 → (rcept_dt, 보통주 발행주식수) | None. 보통주 행이 없으면 합계."""
-    lst = (j.get("response") or {}).get("list") or []
-    rows = {r.get("se", "").strip(): r for r in lst}
-    r = rows.get("보통주") or rows.get("합계")
-    if not r:
-        return None
-    try:
-        n = float(str(r.get("distb_stock_co", "")).replace(",", ""))
-    except ValueError:
-        return None
-    if not np.isfinite(n) or n <= 0:
-        return None
-    return r["rcept_no"][:8], n
+# ---------------------------------------------------------------- 주식수·시총 (상장=Creon, 상폐=KRX 공식 marcap)
+# 예전 상폐 종목 시총 = 'DART 보고서 유통주식수(접수일부터) × 네이버 수정 종가' 근사는 두 군데서 틀렸다(2026-10-21 실측, KRX 공식 대비
+# 상폐 행의 29%가 2배 이상, 7%가 10배 이상): ① 수정 종가(뒤 기업행위 기준)에 그날 주식수를 곱해 감자·병합 전 구간이 병합 비율만큼
+# 부풀고(분할·무상증자 전은 쪼그라듦) ② DART 보고서 단위 오기(카프로 2023 반기 40,000,000,000주 등 ×1000)를 그대로 받았다.
+# → 상폐 종목 시총은 KRX 공식 일별 시총(그날 상장주식수 × 그날 실제 종가)으로 바꾸고, 쓰기 전에 check_ext 를 통과시킨다.
+CHECK_IDENTITY = (0.5, 2.0)     # 시총 ÷ (수정 주식수 × 수정 종가) 허용 범위
+CHECK_OFFICIAL = 3.0            # KRX 공식 시총 대비 배수
+CHECK_OFFICIAL_RUN = 5          # ... 가 이만큼 연속(거래일)이면 실패 — 하루 이틀은 신주 상장일 반영 차이(흥아해운 2021-07 ×4)
+CHECK_SPIKE = 10.0              # 수정 주식수가 이 배수 넘게 뛰었다가
+CHECK_SPIKE_BACK = 2.0          # ... 이 배수 안으로 되돌아오면 단위 오기 모양
+CHECK_SPIKE_WINDOW = 130        # ... 되돌아오는 기간(거래일, 보고서 두 번 사이 넘게)
+CHECK_DOMINANCE = 0.5           # 한 종목 시총 ÷ 그날 전 종목 합계 상한
 
 
-def delisted_shares() -> pd.DataFrame:
-    corp2stock = {c: s for c, s, _ in store.corp_rows()}
-    recs = []
-    for fp in glob.glob(path("raw", "dart", "shares", "*", "*.json")):
-        j = store.read_json(fp)
-        got = parse_shares_file(j or {})
-        if not got:
-            continue
-        corp = os.path.basename(os.path.dirname(fp))
-        y, rc = os.path.basename(fp)[:-5].split("_")
-        recs.append(("A" + corp2stock.get(corp, ""), int(y), rc, got[0], got[1]))
-    s = pd.DataFrame(recs, columns=["code", "bsns_year", "reprt_code", "rcept_dt", "shares"])
-    s["rcept_dt"] = pd.to_datetime(s.rcept_dt, format="%Y%m%d")
-    return s.sort_values(["code", "rcept_dt"]).drop_duplicates(["code", "rcept_dt"], keep="last")
+class ExtCheckError(RuntimeError):
+    """daily_ext 검사 실패 — 파일을 쓰지 않는다(사례는 quality/daily_ext_check.json)."""
+
+
+def read_marcap(codes=None) -> pd.DataFrame:
+    """KRX 공식 일별 시세·시총(raw/marcap 연도별 최신 스냅샷) → code·date·krx_close·krx_shares·krx_mcap·krx_market (codes 는 A 붙은 코드)."""
+    files = {y: f for y, f in store.marcap_files().items() if y >= START.year}
+    if not files:
+        raise RuntimeError("원천(raw/marcap)이 없다 — krx_marcap 단계를 먼저 실행하세요 (상폐 종목 시총·시총 대조의 원천)")
+    gap = sorted(set(range(START.year, max(files) + 1)) - set(files))
+    if gap:
+        raise RuntimeError(f"raw/marcap 에 빠진 해 {gap} — krx_marcap 단계를 다시 실행하세요")
+    flt = None if codes is None else [("Code", "in", sorted({c[1:] for c in codes}))]
+    m = pd.concat([pd.read_parquet(f, columns=["Code", "Date", "Close", "Stocks", "Marcap", "Market"], filters=flt)
+                   for _, f in sorted(files.items())], ignore_index=True)
+    out = pd.DataFrame({"code": "A" + m.Code.astype(str), "date": pd.to_datetime(m.Date), "krx_close": m.Close.astype("float64"),
+                        "krx_shares": m.Stocks.astype("float64"), "krx_mcap": m.Marcap.astype("float64"), "krx_market": m.Market.astype(str)})
+    return out[out.date >= START].drop_duplicates(["code", "date"], keep="last").reset_index(drop=True)
+
+
+def delisted_ext(nv: pd.DataFrame, uni: pd.DataFrame, krx: pd.DataFrame) -> pd.DataFrame:
+    """상폐 종목(네이버 일봉) 행: market_cap = KRX 공식 시총, shares_listed = 시총 ÷ 네이버 수정 종가.
+    shares_listed 는 Creon 필드 12 와 같은 '수정 기준' 주식수다(상장 종목도 시총 ÷ (주식수 × 수정 종가) 중앙값 0.9996) —
+    그날의 실제 주식수가 아니라 수정 거래량과 짝이 맞는 값(회전율 = 수정 거래량 ÷ shares_listed)."""
+    dl = pd.to_datetime(uni.set_index("code").delist_date, errors="coerce")
+    k = krx[krx.code.isin(set(nv.code))]
+    k = k[~(k.date >= k.code.map(dl))]                     # 상폐일 이후 같은 코드 = 코드 재사용(다른 회사)
+    m = nv.merge(k[["code", "date", "krx_mcap"]], on=["code", "date"], how="inner")
+    m = m[(m.close > 0) & (m.krx_mcap > 0)]
+    return pd.DataFrame({"code": m.code.to_numpy(), "date": m.date.to_numpy(), "shares_listed": (m.krx_mcap / m.close).to_numpy(),
+                         "market_cap": m.krx_mcap.to_numpy(), "foreign_hold_qty": np.nan, "foreign_hold_pct": np.nan,
+                         "inst_net_qty": np.nan, "mcap_src": "krx"})
+
+
+def _examples(d: pd.DataFrame, n: int = 20) -> list:
+    d = d.head(n).copy()
+    for c in d.columns:
+        if pd.api.types.is_datetime64_any_dtype(d[c]):
+            d[c] = d[c].dt.strftime("%Y-%m-%d")
+    return json.loads(d.to_json(orient="records", force_ascii=False))
+
+
+def check_ext(e: pd.DataFrame, px: pd.DataFrame, krx: pd.DataFrame) -> dict:
+    """daily_ext 를 쓰기 전 검사 — 하나라도 걸리면 ExtCheckError, 결과는 언제나 quality/daily_ext_check.json.
+      identity   시총 ÷ (shares_listed × 수정 종가) 가 1/2~2 — 주식수·시총 단위 오기, 수정 기준 어긋남
+      official   KRX 공식이 아닌 시총(Creon)이 KRX 공식과 3배 넘게 다른 날이 5거래일 이상 이어지면 실패
+      spike      수정 주식수(시총 ÷ 수정 종가)가 10배 넘게 뛰었다가 130거래일 안에 2배 이내로 되돌아오고, 그 두 날 모두 그날 주식수
+                 (시총 ÷ 무수정 종가)도 10배 넘게 움직였으면 실패 — 가격은 그대로인데 시총만 오가는 단위 오기의 모양.
+                 정리매매 폭락·출자전환 신주처럼 한 방향으로 끝나는 변화, 무상증자 권리락~신주상장 사이(KRX 공식 시총도 한 달간
+                 1/15 — 아리바이오홀딩스 2023-12-26~2024-01-26), 감자 뒤 출자전환처럼 기업행위로 설명되는 왕복은 진짜라 걸지 않는다
+      dominance  한 종목 시총이 그날 전 종목 합계의 절반을 넘으면 실패
+    px: code·date·close(수정)·close_unadj(무수정, 없으면 KRX 종가), krx: read_marcap() 결과."""
+    x = e[["code", "date", "shares_listed", "market_cap", "mcap_src"]].copy()
+    x["code"] = x.code.astype(str)
+    x["mcap_src"] = x.mcap_src.astype(str)
+    x = x.merge(px[["code", "date", "close", "close_unadj"]], on=["code", "date"], how="left")
+    x = x.merge(krx[["code", "date", "krx_mcap", "krx_close"]], on=["code", "date"], how="left")
+    x = x.sort_values(["code", "date"]).reset_index(drop=True)
+    rep = {"checked_at": datetime.now().isoformat(timespec="seconds"), "rows": int(len(x)),
+           "thresholds": {"identity": CHECK_IDENTITY, "official": CHECK_OFFICIAL, "official_run": CHECK_OFFICIAL_RUN,
+                          "spike": CHECK_SPIKE, "spike_back": CHECK_SPIKE_BACK, "spike_window": CHECK_SPIKE_WINDOW,
+                          "dominance": CHECK_DOMINANCE}}
+    ok = (x.market_cap > 0) & (x.shares_listed > 0) & (x.close > 0)
+    y = x[ok].reset_index(drop=True)
+
+    r = y.market_cap / (y.shares_listed * y.close)
+    bad = y.assign(ratio=r)[(r < CHECK_IDENTITY[0]) | (r > CHECK_IDENTITY[1])]     # 거른 뒤 assign 하면 빈 표가 r 의 색인을 통째로 받는다
+    rep["identity"] = {"checked": int(len(y)), "violations": int(len(bad)),
+                       "examples": _examples(bad[["code", "date", "mcap_src", "market_cap", "shares_listed", "close", "ratio"]])}
+
+    o = x[(x.mcap_src != "krx") & (x.market_cap > 0) & (x.krx_mcap > 0)].reset_index(drop=True)
+    q = o.market_cap / o.krx_mcap
+    flag = (q > CHECK_OFFICIAL) | (q < 1 / CHECK_OFFICIAL)
+    run = flag.groupby((~flag | (o.code != o.code.shift())).cumsum()).transform("sum")
+    bad = o.assign(ratio=q, run=run)[flag & (run >= CHECK_OFFICIAL_RUN)]
+    rep["official"] = {"checked": int(len(o)), "off_days": int(flag.sum()), "violations": int(len(bad)),
+                       "codes": sorted(bad.code.unique().tolist())[:50],
+                       "examples": _examples(bad[["code", "date", "mcap_src", "market_cap", "krx_mcap", "ratio", "run"]])}
+
+    code = y.code.to_numpy()
+    same = code[1:] == code[:-1]
+
+    def step(v):
+        s = np.log(v.to_numpy(dtype="float64"))
+        d = np.full(len(s), np.nan)
+        d[1:][same] = np.diff(s)[same]
+        return s, d
+    s, ds = step(y.market_cap / y.close)                                          # 수정 주식수
+    _, ds_raw = step(y.market_cap / y.close_unadj.where(y.close_unadj > 0, y.krx_close))   # 그날 주식수
+    big = np.log(CHECK_SPIKE)
+    pos = np.flatnonzero(np.abs(ds) >= big)
+    spikes = []
+    for a, i in enumerate(pos):
+        for j in pos[a + 1:]:
+            if j - i > CHECK_SPIKE_WINDOW or code[j] != code[i]:
+                break
+            if np.sign(ds[j]) != np.sign(ds[i]) and abs(s[j] - s[i - 1]) <= np.log(CHECK_SPIKE_BACK):
+                if np.isfinite(ds_raw[i]) and np.isfinite(ds_raw[j]) and min(abs(ds_raw[i]), abs(ds_raw[j])) < big:
+                    break                                                         # 기업행위로 설명되는 왕복(가격도 같이 움직임)
+                spikes.append({"code": code[i], "mcap_src": y.mcap_src.iat[i], "from": f"{y.date.iat[i]:%Y-%m-%d}",
+                               "to": f"{y.date.iat[j]:%Y-%m-%d}", "jump": float(np.exp(ds[i])), "market_cap_peak": float(y.market_cap.iat[i])})
+                break
+    rep["spike"] = {"big_jumps": int(len(pos)), "violations": len(spikes), "examples": spikes[:20]}
+
+    t = x[x.market_cap > 0]
+    g = t.groupby("date").market_cap
+    share = (g.max() / g.sum())
+    top = t.loc[t.groupby("date").market_cap.idxmax(), ["date", "code", "mcap_src", "market_cap"]].set_index("date")
+    bad = top.assign(share=share)[share > CHECK_DOMINANCE].reset_index()
+    rep["dominance"] = {"dates": int(len(share)), "max_share": float(share.max()), "violations": int(len(bad)),
+                        "examples": _examples(bad)}
+
+    rep["passed"] = all(rep[k]["violations"] == 0 for k in ("identity", "official", "spike", "dominance"))
+    os.makedirs(path("quality"), exist_ok=True)
+    with open(path("quality", "daily_ext_check.json"), "w", encoding="utf-8") as f:
+        json.dump(rep, f, ensure_ascii=False, indent=1, default=str)
+    if not rep["passed"]:
+        raise ExtCheckError("daily_ext 검사 실패 — " + ", ".join(f"{k} {rep[k]['violations']}건" for k in ("identity", "official", "spike", "dominance")
+                                                            if rep[k]["violations"]) + " (사례: quality/daily_ext_check.json, 파일은 쓰지 않음)")
+    return rep
 
 
 def build_ext(prices: pd.DataFrame = None) -> pd.DataFrame:
@@ -186,27 +292,27 @@ def build_ext(prices: pd.DataFrame = None) -> pd.DataFrame:
         d["date"] = pd.to_datetime(d.date, format="%Y%m%d")
         d = d[d.date >= START].drop_duplicates("date")
         d.insert(0, "code", r.code)
-        d["mcap_approx"] = np.int8(0)
+        d["mcap_src"] = "creon"
         parts.append(d)
-    # 상폐 종목: 보고서별 발행주식수(접수일 이후 적용) × 네이버 수정 종가 — 분할·병합이 보고서 뒤에 있으면 어긋난다(근사)
-    sh = delisted_shares() if os.path.isdir(path("raw", "dart", "shares")) else pd.DataFrame()
-    if len(sh):
-        if prices is None:
-            prices = pd.read_parquet(derived("prices_1d.parquet"), columns=["code", "date", "close", "src"])
-        nv = prices[prices.src == "naver"][["code", "date", "close"]].copy()
-        nv["code"] = nv.code.astype(str)
-        nv = nv.sort_values("date")
-        m = pd.merge_asof(nv, sh[["code", "rcept_dt", "shares"]].rename(columns={"rcept_dt": "date"}).sort_values("date"),
-                          on="date", by="code", direction="backward")
-        m = m.dropna(subset=["shares"])
-        d = pd.DataFrame({"code": m.code, "date": m.date, "shares_listed": m.shares, "market_cap": m.shares * m.close,
-                          "foreign_hold_qty": np.nan, "foreign_hold_pct": np.nan, "inst_net_qty": np.nan, "mcap_approx": np.int8(1)})
-        parts.append(d)
+    if prices is None:
+        prices = pd.read_parquet(derived("prices_1d.parquet"), columns=["code", "date", "close", "close_unadj", "src"])
+    px = prices[["code", "date", "close", "close_unadj", "src"]].copy()
+    px["code"] = px.code.astype(str)
+    px["close"] = px.close.astype("float64")
+    px["close_unadj"] = px.close_unadj.astype("float64")
+    krx = read_marcap()
+    parts.append(delisted_ext(px[px.src == "naver"][["code", "date", "close"]], uni, krx))
     e = pd.concat(parts, ignore_index=True)
+    e["mcap_approx"] = np.int8(0)                          # 예전 호환 열 — 근사 시총은 더 없다(상폐도 KRX 공식)
+    rep = check_ext(e, px, krx)
+    del krx
     e["code"] = e.code.astype("category")
+    e["mcap_src"] = e.mcap_src.astype("category")
     e["foreign_hold_pct"] = e.foreign_hold_pct.astype("float32")
     e.to_parquet(derived("daily_ext.parquet"), index=False)
-    log(f"[panel] ext {len(e):,} rows, {e.code.nunique()} codes (상폐 근사 {int((e.mcap_approx == 1).sum()):,}행)", "build_panel.txt")
+    log(f"[panel] ext {len(e):,} rows, {e.code.nunique()} codes (상폐 KRX 공식 {int((e.mcap_src == 'krx').sum()):,}행) — 검사 통과 "
+        f"(Creon↔KRX 3배 초과 {rep['official']['off_days']}일·연속 없음, 큰 주식수 점프 {rep['spike']['big_jumps']}건·되돌림 없음, "
+        f"최대 단일 비중 {rep['dominance']['max_share']:.1%})", "build_panel.txt")
     return e
 
 
@@ -342,12 +448,16 @@ def quality() -> dict:
                                "note": "2015-06-15 이전 상하한 15% — 장기 정지 재개일(기준가 재평가) 포함"}
     Q["prices"] = q
     e2 = e[e.date >= "2014-01-01"]
+    chk = store.read_json(path("quality", "daily_ext_check.json")) or {}
     Q["daily_ext"] = {"rows": int(len(e2)), "codes": int(e2.code.nunique()),
                       "market_cap_zero_or_nan": int(((e2.market_cap <= 0) | e2.market_cap.isna()).sum()),
                       "shares_zero": int((e2.shares_listed <= 0).sum()),
-                      "delisted_with_approx_mcap": int(e2[e2.mcap_approx == 1].code.nunique()),
+                      "rows_by_src": {str(k): int(v) for k, v in e2.mcap_src.value_counts().items()},
+                      "delisted_with_mcap": int(e2[e2.mcap_src == "krx"].code.nunique()),
                       "delisted_total": int((uni.status == "delisted").sum()),
-                      "note": "상폐 종목 시총 = DART 보고서 발행주식수 × 네이버 수정 종가(근사, mcap_approx=1)"}
+                      "check": {k: chk[k]["violations"] for k in ("identity", "official", "spike", "dominance") if k in chk},
+                      "check_passed": chk.get("passed"),
+                      "note": "시총: 상장=Creon, 상폐=KRX 공식 일별 시총(raw/marcap). shares_listed 는 수정 기준(시총 ÷ 수정 종가)"}
     lag = (fin.rcept_dt - fin.period_end).dt.days
     Q["fundamentals"] = {"company_quarters": int(len(fin)), "companies": int(fin.stock_code.nunique()),
                          "by_year": {int(k): int(v) for k, v in fin.groupby("bsns_year").stock_code.nunique().items()},

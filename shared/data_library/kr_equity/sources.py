@@ -6,15 +6,17 @@
   dart_fnltt    DART 주요계정 2015~올해 × 분기·반기·연간 (최근 2개년의 '자료 없음'은 다시 조회)
   dart_events   DART 주요사항 7종 — 마지막 조회일 다음 날부터 오늘까지 창 하나 추가(회사당 1회)
   dart_list     DART 공시 목록 2014-01~지난달 (없는 달·페이지만)
-  dart_shares   DART 주식총수현황 — 상폐 종목(상장 종목 주식수는 Creon daily_ext)
+  dart_shares   DART 주식총수현황 — 상폐 종목, 참고 원천(시총에는 쓰지 않는다 — 보고서 단위 오기 ×1000 실측)
+  krx_marcap    KRX 전 종목 일별 시총·상장주식수(FinanceData/marcap 연도별 parquet, 상폐 포함) — 상폐 종목 시총·시총 대조의 원천
 """
 import csv
 import hashlib
+import io
 import json
 import os
 import re
 import time
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
 
 from . import store
@@ -25,6 +27,10 @@ EVENT_APIS = [("tsstkAqDecsn", "자기주식 취득 결정"), ("tsstkDpDecsn", "
               ("cvbdIsDecsn", "전환사채 발행 결정"), ("bdwtIsDecsn", "신주인수권부사채 발행 결정"),
               ("fricDecsn", "무상증자 결정"), ("crDecsn", "감자 결정")]
 EVENTS_MIN_GAP_DAYS = 7          # 마지막 창 이후 이만큼 지나야 새 창을 연다
+MARCAP_URL = "https://raw.githubusercontent.com/FinanceData/marcap/master/data/marcap-{year}.parquet"
+MARCAP_COLS = ("Code", "Date", "Close", "Stocks", "Marcap", "Market")
+MARCAP_FIRST_YEAR = 2013         # 패널 시작(panel.START)과 같은 해
+MARCAP_REFRESH_DAYS = 7          # 끝나지 않은 해의 스냅샷은 이만큼 지나야 다시 받는다
 
 # 단계 목록(UI·CLI 공용). runner: linux = 이 모듈, creon = Windows universe_driver.py
 STEPS: List[dict] = [
@@ -34,7 +40,8 @@ STEPS: List[dict] = [
     {"key": "dart_fnltt", "title": "DART 주요계정", "runner": "linux", "desc": "2015~올해 분기·반기·연간, 100개사 묶음; 최근 2개년 '자료 없음'은 재조회"},
     {"key": "dart_events", "title": "DART 주요사항 7종", "runner": "linux", "desc": "자사주·증자·CB·BW·무상·감자 — 마지막 조회일 이후 창 추가"},
     {"key": "dart_list", "title": "DART 공시 목록", "runner": "linux", "desc": "2014-01~지난달, 유가·코스닥, 없는 달만"},
-    {"key": "dart_shares", "title": "DART 주식총수(상폐)", "runner": "linux", "desc": "상폐 종목 발행주식수(보고서별) — 시총 근사용"},
+    {"key": "dart_shares", "title": "DART 주식총수(상폐)", "runner": "linux", "desc": "상폐 종목 발행주식수(보고서별) — 참고용, 시총에는 쓰지 않음(보고서 단위 오기 ×1000 이 섞여 있다)"},
+    {"key": "krx_marcap", "title": "KRX 일별 시총(marcap)", "runner": "linux", "desc": "KRX 전 종목 일별 시총·상장주식수(상폐 포함, FinanceData/marcap) — 상폐 종목 시총과 Creon 시총 대조의 원천; 끝난 해는 한 번만, 올해는 7일마다 새 스냅샷"},
     {"key": "creon_universe", "title": "Creon 상장 스냅샷", "runner": "creon", "desc": "현재 상장 보통주 목록 → reference/listed_snapshot.csv (다음에 kind 실행)"},
     {"key": "creon_daily", "title": "Creon 수정 일봉", "runner": "creon", "desc": "상장 종목 수정 일봉 증분(--full: 기업행위 반영 위해 전체 재수집) → 끝나면 원천 적재(기업행위 원장)까지 자동"},
     {"key": "creon_daily_unadj", "title": "Creon 무수정 일봉", "runner": "creon", "desc": "상장 종목 무수정 일봉 증분 → 끝나면 원천 적재(raw/creon/candle_1d_unadj)까지 자동"},
@@ -365,6 +372,50 @@ def run_dart_shares() -> bool:
     return True
 
 
+# ---------------------------------------------------------------- KRX 일별 시총 (marcap)
+def marcap_problem(content: bytes, year: int) -> Optional[str]:
+    """받은 marcap 연도 파일 검사 — 문제 설명 | None."""
+    import pandas as pd
+    if not (content.startswith(b"PAR1") and content.endswith(b"PAR1")):
+        return "parquet 아님"
+    try:
+        m = pd.read_parquet(io.BytesIO(content), columns=list(MARCAP_COLS))
+    except Exception as e:
+        return f"읽기 실패 {e}"
+    if m.empty:
+        return "빈 파일"
+    if set(pd.to_datetime(m.Date).dt.year.unique()) != {year}:
+        return "다른 해의 날짜가 섞임"
+    return None
+
+
+def run_krx_marcap() -> bool:
+    """KRX 전 종목 일별 시총·상장주식수 — FinanceData/marcap(KRX 정보데이터시스템 일별 전 종목 시세를 모은 공개 저장소) 연도별 parquet.
+    raw/marcap/<연도>/<받은날>.parquet 로 쌓는다(덮어쓰기 없음, 읽기는 연도별 최신). 다음 해 2월 이후에 받은 스냅샷이 있으면 그 해는 끝."""
+    today = datetime.now()
+    years = list(range(MARCAP_FIRST_YEAR, today.year + 1))
+    job = Job("krx_marcap", "KRX 일별 시총·상장주식수 (marcap)", len(years), "연도")
+    for y in years:
+        snaps = store.marcap_snapshots(y)
+        if snaps:
+            last = datetime.strptime(snaps[-1][0], "%Y%m%d").date()
+            if last >= date(y + 1, 2, 1) or (today.date() - last).days < MARCAP_REFRESH_DAYS:
+                job.tick(skipped=True)
+                continue
+        r = get(MARCAP_URL.format(year=y), timeout=180)
+        if r is None:
+            job.tick(failed=str(y))
+            continue
+        bad = marcap_problem(r.content, y)
+        if bad:
+            job.tick(failed=f"{y}:{bad}")
+            continue
+        write_once(path("raw", "marcap", str(y), f"{today:%Y%m%d}.parquet"), r.content)
+        job.tick(fetched=True)
+    job.finish()
+    return job.s["failed_n"] == 0
+
+
 def run_creon_bronze() -> bool:
     from . import bronze
     return bronze.run(log=log)["failed"] == 0
@@ -377,7 +428,7 @@ def run_gold() -> bool:
 
 
 RUNNERS = {"kind": run_kind, "naver": run_naver, "dart_corpcode": run_dart_corpcode, "dart_fnltt": run_dart_fnltt,
-           "dart_events": run_dart_events, "dart_list": run_dart_list, "dart_shares": run_dart_shares,
+           "dart_events": run_dart_events, "dart_list": run_dart_list, "dart_shares": run_dart_shares, "krx_marcap": run_krx_marcap,
            "creon_bronze": run_creon_bronze, "gold": run_gold}
 
 
