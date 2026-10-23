@@ -2,10 +2,10 @@ name: 🚀 CTradeSystem Vultr CI/CD Auto Deployment
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]        # main 푸시 = 테스트만(배포 없음)
     tags:
-      - 'v*' # v1.0.0, v1.0.1 등 버전 태그 푸시 시 트리거
-  workflow_dispatch: # GitHub 웹 UI에서 수동 클릭 실행 가능
+      - 'v*'                  # v1.5.0 같은 버전 태그 푸시 = 테스트 + 서버 배포 (2026-10-23: main 푸시 단독 배포 폐지)
+  workflow_dispatch: # GitHub 웹 UI에서 수동 클릭 실행 — 비상용 배포
 
 concurrency:
   group: vultr-deploy
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: 📥 1. Repository Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # 태그 커밋이 main 위에 있는지 검사하려면 전체 이력 필요
 
       - name: 🐍 2. Set up Python Environment
         uses: actions/setup-python@v5
@@ -40,8 +42,17 @@ jobs:
           echo "🔬 Running Pre-deploy Tests for deployed components (CTrade/CCommander/shared)..."
           PYTHONPATH=$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/CTrade:$GITHUB_WORKSPACE/CAiModelBaker:$GITHUB_WORKSPACE/CCommander pytest -v CTrade CCommander shared
 
+      - name: 🏷️ 4.5. Tag must point at a commit on main
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git fetch --no-tags origin main
+          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "✅ $GITHUB_REF_NAME ($GITHUB_SHA) is on main — deploying"
+          else
+            echo "❌ $GITHUB_REF_NAME ($GITHUB_SHA) is NOT on main — refusing to deploy a non-main commit"; exit 1
+          fi
       - name: 🔑 5. Setup Native SSH Key
-        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p ~/.ssh
           python -c "
@@ -63,7 +74,7 @@ jobs:
           SSH_KEY: ${{ secrets.VULTR_SSH_KEY }}
 
       - name: 🔌 6. Sync Code, Build .env & Restart Service on Vultr
-        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         env:
           VULTR_IP: ${{ secrets.VULTR_IP }}
           UPBIT_ACCESS_KEY: ${{ secrets.UPBIT_ACCESS_KEY }}
