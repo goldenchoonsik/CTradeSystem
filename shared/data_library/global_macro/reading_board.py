@@ -23,22 +23,41 @@ def _pct(v):
     return None if v is None or (isinstance(v, float) and np.isnan(v)) else float(v)
 
 
+# 화면 용어(2026-10-22, 사용자: 창작 용어 대신 통용 용어) — 엔진 내부 값(강함/약함/끊김·가속/감속)은 사전등록 코드·기록 그대로 두고 표시만 바꾼다.
+#   연결 상태 → 경기 동조성(상대국 경기 ↔ 그 나라로의 한국 수출, 최근 5년 상관계수): 높음/낮음/없음
+#   수요 판독 → 수출 증가율 전망(6개월 뒤 전년비 vs 지금): 확대/둔화(증가율이 양수일 때), 회복/악화(음수가 끼는 때) — 수출 동향 보고서 표현
+LINK_KO = {"강함": "높음", "약함": "낮음", "끊김": "없음"}
+
+
+def trend_label(ylast: float, yhat: float) -> str:
+    """수출 증가율 전망 라벨 — 로그 전년비 ylast(지금) → yhat(6개월 뒤)."""
+    if yhat > ylast:
+        return "회복" if ylast < 0 else "확대"
+    return "악화" if yhat < 0 else "둔화"
+
+
 def evidence(D, latest: dict, expo: dict) -> dict:
     """최신 판독을 사람이 읽을 근거 문장으로."""
     out = {"links": [], "total": None, "sectors": [], "competition": []}
     for g, lk in latest["links"].items():
         d = latest["demand"].get(g)
-        txt = f"연결 {lk['state']} — 최근 5년 '{g} 경기 → 한국 대{g} 수출' 상관 {lk['rho']:.2f}, {lk['k']}개월 선행"
+        txt = f"경기 동조성 {LINK_KO.get(lk['state'], lk['state'])} — 최근 5년 '{g} 경기 ↔ 한국의 대{g} 수출' 상관계수 {lk['rho']:.2f}({lk['k']}개월 선행)"
+        row = {"g": g, "state": lk["state"], "state_ko": LINK_KO.get(lk["state"], lk["state"]), "rho": lk["rho"], "k": lk["k"],
+               "call": None, "delta": None, "trend": None, "ylast_pct": None, "yhat_pct": None, "target": None}
         if d:
-            txt += (f". {g} 선행지수 6개월 변화 {d['x_used']:+.2f}({d['x_month'][:7]}) → {d['target'][:7]} 수출 전년비 예측 {np.expm1(d['yhat']) * 100:+.0f}%"
-                    f"(현재 {np.expm1(d['ylast']) * 100:+.0f}%) → {d['call']}")
+            ylast_pct, yhat_pct = float(np.expm1(d["ylast"]) * 100), float(np.expm1(d["yhat"]) * 100)
+            trend = trend_label(d["ylast"], d["yhat"])
+            txt += (f". {g} 경기선행지수 6개월 변화 {d['x_used']:+.2f}({d['x_month'][:7]})를 넣으면 {d['target'][:7]} 수출 증가율(전년비) {yhat_pct:+.0f}%"
+                    f" — 지금 {ylast_pct:+.0f}% 보다 {'높음' if d['yhat'] > d['ylast'] else '낮음'} → {trend}")
+            row.update({"call": d["call"], "delta": d["delta"], "trend": trend, "ylast_pct": ylast_pct, "yhat_pct": yhat_pct, "target": d["target"][:7]})
         else:
-            txt += ". 연결이 끊겨 수요 판독 안 함"
-        out["links"].append({"g": g, "state": lk["state"], "rho": lk["rho"], "k": lk["k"], "call": d["call"] if d else None,
-                             "delta": d["delta"] if d else None, "text": txt})
+            txt += ". 동조성이 없어 전망하지 않음(상관 0.25 미만)"
+        row["text"] = txt
+        out["links"].append(row)
     tr = latest.get("total")
     if tr:
-        out["total"] = {"call": tr["call"], "delta": tr["delta"], "text": f"활성 상대국 판독을 전년 수출 비중으로 합산 → 한국 총수출 전년비 예측 변화 {tr['delta']:+.2f}(로그) → {tr['call']}"}
+        out["total"] = {"call": tr["call"], "delta": tr["delta"], "trend": "확대" if tr["delta"] > 0 else "둔화",
+                        "text": f"동조성이 있는 상대국의 전망을 전년 수출 비중으로 합산 → 한국 총수출 증가율(전년비) 6개월 뒤 변화 약 {tr['delta'] * 100:+.0f}%p(로그 차) → {'확대' if tr['delta'] > 0 else '둔화'}"}
     for s, v in sorted(latest.get("sectors", {}).items(), key=lambda kv: -kv[1]["score"]):
         ex = expo.get(s, {})
         top = sorted(ex.items(), key=lambda kv: -kv[1])[:3]

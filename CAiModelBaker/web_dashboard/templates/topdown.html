@@ -93,7 +93,7 @@
     <div class="td-grid2">
       <div class="td-card">
         <h3 id="rdTitle">이번 달 판독</h3>
-        <div class="td-sub">상대국별: 연결 상태 → 수요 판독(6개월 뒤 그 나라로의 한국 수출 전년비가 지금보다 가속/감속). 행에 근거 사슬.</div>
+        <div class="td-sub">상대국별: <b>경기 동조성</b>(그 나라 경기와 그 나라로의 한국 수출이 같이 움직이는 정도, 최근 5년 상관계수) → 동조성이 있는 나라만 <b>수출 증가율 전망</b>(6개월 뒤 전년비가 지금보다 높아지나 낮아지나). 확대·둔화는 증가율의 방향이지 수출액의 증감이 아니다. 행에 근거 사슬.</div>
         <div class="td-sub warn" id="hzDemandNote"></div>
         <table class="td" id="rdLinks"></table>
         <div id="rdTotal" style="margin-top:8px;font-size:13px;"></div>
@@ -126,8 +126,8 @@
       <div id="rdStocks"></div>
     </div>
     <div class="td-card">
-      <h3>연결 상태 이력 — 관계가 언제 바뀌었나</h3>
-      <div class="td-sub">월 × 상대국. 진할수록 연결 강함(최근 5년 상관). 사건 번호는 관계 판독 탭 목록.</div>
+      <h3>경기 동조성 이력 — 관계가 언제 바뀌었나</h3>
+      <div class="td-sub">월 × 상대국. 진할수록 상관계수가 높음(최근 5년, 상대국 경기 ↔ 한국 수출). 사건 번호는 관계 판독 탭 목록.</div>
       <div id="rdHeat" style="height:360px;"></div>
     </div>
     <div class="td-card">
@@ -145,7 +145,7 @@
   <div class="td-pane" id="p-relations">
     <div class="td-note" style="color:#a0a0b0;background:rgba(0,210,255,0.05);border-color:rgba(0,210,255,0.25);">관계는 시기마다 바뀐다 — 이 탭은 예측 규칙이 아니라 <b>지금 어떤 관계가 살아 있나</b>를 읽기 위한 계측. 5년 이동창, 매달 갱신. 세로 번호 = 아래 국면 사건.</div>
     <div class="td-card">
-      <h3>상대국 경기 → 한국 수출: 지금 살아 있는 연결</h3>
+      <h3>상대국 경기 ↔ 한국 수출: 경기 동조성(5년 이동 상관)</h3>
       <div class="td-sub">5년 창 안에서 '상대국 선행지수 6개월 변화'와 '그 나라로의 한국 수출 전년비'의 최대 상관(0~9개월 선행). 1에 가까울수록 그 나라 경기가 한국 수출을 끌고 간다.</div>
       <div id="rlLinks" style="height:330px;"></div>
       <table class="td" id="rlLinkTable" style="margin-top:8px;"></table>
@@ -157,7 +157,7 @@
         <div id="rlShares" style="height:320px;"></div>
       </div>
       <div class="td-card">
-        <h3>관계 건강도 — 주가 쪽 연결</h3>
+        <h3>경기 → 주가 동조성(이동 상관)</h3>
         <div class="td-sub" id="rlHealthSub"></div>
         <div id="rlHealth" style="height:320px;"></div>
       </div>
@@ -179,7 +179,7 @@
   <div class="td-pane" id="p-graph">
     <div class="td-card">
       <h3>관계 그래프 — 상대국 → 한국 → 업종 → 품목·종목 (현재 파악)</h3>
-      <div class="td-sub">실선 = 측정 엣지(산출물: 수출 비중·업종 노출·주가 연결도·업종 베타), 점선 = 선언 엣지(관계 원장). 굵기 = 가중치(같은 종류 안에서 정규화, 마우스를 올리면 단위), 색 = 상태(상대국 수요 <span class="up">가속</span>/<span class="down">감속</span>, 연결 <span style="color:#00d2ff">강함</span>/<span style="color:#4b6c8a">약함</span>/<span style="color:#3a3a40">끊김</span>, 업종 <span class="up">우호</span>/<span class="down">비우호</span>). 노드를 누르면 오른쪽에 근거 사슬, 빈 곳을 누르면 해제.</div>
+      <div class="td-sub">실선 = 측정 엣지(산출물: 수출 비중·업종 노출·주가 연계성·업종 베타), 점선 = 선언 엣지(관계 원장). 굵기 = 가중치(같은 종류 안에서 정규화, 마우스를 올리면 단위), 색 = 상태(상대국 수출 증가율 전망 <span class="up">확대</span>/<span class="down">둔화</span>, 경기 동조성 <span style="color:#00d2ff">높음</span>/<span style="color:#4b6c8a">낮음</span>/<span style="color:#3a3a40">없음</span>, 업종 <span class="up">우호</span>/<span class="down">비우호</span>). 노드를 누르면 오른쪽에 근거 사슬, 빈 곳을 누르면 해제.</div>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;">
         <label>월 <input type="range" id="grMonth" style="width:260px;vertical-align:middle;"></label><span id="grMonthLabel" class="muted"></span>
         <label><input type="checkbox" id="grReal" checked> 실물 경로</label>
@@ -228,7 +228,7 @@
   <div class="td-pane" id="p-influence">
     <div class="td-grid2">
       <div class="td-card">
-        <h3>누가 누구를 움직이나 — 주간 수익 연결도</h3>
+        <h3>누가 누구를 움직이나 — 주간 수익률 연계성(Diebold–Yilmaz)</h3>
         <div class="td-sub" id="infSub"></div>
         <div id="infHeat" style="height:360px;"></div>
       </div>
@@ -258,10 +258,10 @@
     </div>
     <div class="td-card" style="border-color:rgba(80,250,123,0.35);">
       <h3>실물 경로 — 수출입으로 본 국가별 영향력</h3>
-      <div class="td-sub">주가 연결도(위)는 '주가에 대한 영향', 이 섹션은 '수출·실적에 대한 영향'. 총수출은 중간재 경유 때문에 중국을 과대, 미국을 과소평가 → 최종수요 기준 부가가치(OECD TiVA)로 바로잡음.</div>
+      <div class="td-sub">주가 연계성(위)은 '주가에 대한 영향', 이 섹션은 '수출·실적에 대한 영향'. 총수출은 중간재 경유 때문에 중국을 과대, 미국을 과소평가 → 최종수요 기준 부가가치(OECD TiVA)로 바로잡음.</div>
       <div class="td-grid2">
         <div><div class="td-sub" id="trExpSub"></div><div id="trExp" style="height:300px;"></div></div>
-        <div><div class="td-sub">영향력 지수 = 최종수요 부가가치 비중 × 상대국 경기 1σ당 한국 수출 탄력성 (합 100). 주가 연결도(코스피가 받은 몫)와 나란히.</div><div id="trInf" style="height:300px;"></div></div>
+        <div><div class="td-sub">영향력 지수 = 최종수요 부가가치 비중 × 상대국 경기 1σ당 한국 수출 탄력성 (합 100). 주가 연계성(코스피가 받은 몫)과 나란히.</div><div id="trInf" style="height:300px;"></div></div>
       </div>
       <div class="td-grid2" style="margin-top:10px;">
         <div><div class="td-sub">민감도: 상대국 선행지수 6개월 변화 → 그 나라로의 한국 수출 전년비 (최대 상관 시차, 1σ당 수출 %)</div><table class="td" id="trSens"></table></div>
@@ -374,7 +374,7 @@ function renderInfluence() {
   const f = inf.full;
   if (!f) return;
   const lbl = inf.labels;
-  document.getElementById('infSub').innerHTML = `행 = 받는 시장, 열 = 주는 시장, 값 = 받는 시장 주간 변동 중 그 시장에서 온 %. ${esc(f.start)} ~ ${esc(f.end)}, ${f.n}주. 전체 연결도 ${fmt(f.total, 1)}%.`;
+  document.getElementById('infSub').innerHTML = `행 = 받는 시장, 열 = 주는 시장, 값 = 받는 시장 주간 변동 중 그 시장에서 온 %. ${esc(f.start)} ~ ${esc(f.end)}, ${f.n}주. 전체 연계성 ${fmt(f.total, 1)}%.`;
   Plotly.newPlot('infHeat', [{z: f.table, x: lbl.map(x => '← ' + x), y: lbl, type: 'heatmap', colorscale: [[0, '#18181c'], [0.25, '#164e63'], [1, '#00d2ff']],
                  zmin: 0, zmax: 60, text: f.table.map(r => r.map(v => fmt(v, 1))), texttemplate: '%{text}', hovertemplate: '%{y} ← %{x}: %{z:.1f}%<extra></extra>', showscale: false}],
                  lay({margin: {l: 110, r: 10, t: 10, b: 90}, yaxis: {autorange: 'reversed'}}), CFG);
@@ -421,7 +421,7 @@ function renderTrade() {
   Plotly.newPlot('trInf', [
     {x: names, y: names.map(n => I.full[n]), name: '실물(1995~ 탄력성)', type: 'bar', marker: {color: '#50fa7b'}},
     {x: names, y: names.map(n => (I.late || {})[n]), name: '실물(2010~ 탄력성)', type: 'bar', marker: {color: '#00d2ff'}},
-    {x: names, y: names.map(n => eqmap[n] ? E[eqmap[n]] : null), name: '주가 연결도(코스피가 받은 몫)', type: 'bar', marker: {color: '#ff79c6'}}],
+    {x: names, y: names.map(n => eqmap[n] ? E[eqmap[n]] : null), name: '주가 연계성(코스피가 받은 몫)', type: 'bar', marker: {color: '#ff79c6'}}],
     lay({barmode: 'group', legend: {orientation: 'h', y: 1.18}, margin: {l: 40, r: 10, t: 10, b: 70}}), CFG);
   let h = '<tr><th>상대국</th><th class="num">1995~</th><th class="num">~2009</th><th class="num">2010~</th></tr>';
   (T.sensitivity || []).forEach(r => {
@@ -582,17 +582,22 @@ async function jAction(id, action) {
 
 const ST_STYLE = {'강함': 'color:#50fa7b;border-color:#50fa7b', '약함': 'color:#ffd700;border-color:#ffd700', '끊김': 'color:#6c6c7c;border-color:#3e3e42',
                   '우호': 'color:#50fa7b;border-color:#50fa7b', '비우호': 'color:#ff5555;border-color:#ff5555', '확대': 'color:#50fa7b;border-color:#50fa7b',
-                  '잠식': 'color:#ff5555;border-color:#ff5555', '유지': 'color:#a0a0b0', '가속': 'color:#50fa7b;border-color:#50fa7b', '감속': 'color:#fd7e14;border-color:#fd7e14'};
-const chipS = t => t ? `<span class="chip" style="${ST_STYLE[t] || ''}">${esc(t)}</span>` : '<span class="muted">–</span>';
+                  '잠식': 'color:#ff5555;border-color:#ff5555', '유지': 'color:#a0a0b0', '가속': 'color:#50fa7b;border-color:#50fa7b', '감속': 'color:#fd7e14;border-color:#fd7e14',
+                  '확대': 'color:#50fa7b;border-color:#50fa7b', '둔화': 'color:#fd7e14;border-color:#fd7e14', '회복': 'color:#50fa7b;border-color:#50fa7b', '악화': 'color:#ff5555;border-color:#ff5555'};
+// 표시 용어(2026-10-22): 엔진 내부 값(강함/약함/끊김 = 상관 문턱 0.5/0.25, 가속/감속 = 6개월 뒤 증가율이 지금보다 높음/낮음)은 사전등록 코드·기록 그대로, 화면만 통용 용어로.
+const LBL = {'강함': '높음', '약함': '낮음', '끊김': '없음', '가속': '확대', '감속': '둔화'};
+const ko = t => LBL[t] || t;
+const chipS = (t, shown) => t ? `<span class="chip" style="${ST_STYLE[t] || ''}">${esc(shown || ko(t))}</span>` : '<span class="muted">–</span>';
+const pctS = v => v === null || v === undefined ? '–' : (v >= 0 ? '+' : '') + v.toFixed(0) + '%';
 function renderReading() {
   const R = D.reading || {};
   if (!R.evidence) { document.getElementById('rdLinks').innerHTML = '<tr><td class="empty">시스템 판독 없음 — 전체 갱신(또는 시스템 판독 단계) 실행 후 표시</td></tr>'; return; }
   const E = R.evidence;
   document.getElementById('rdTitle').textContent = `이번 달 판독 (${R.t}, 자료는 그 시점 공개분)`;
-  let h = '<tr><th>상대국</th><th>연결</th><th class="num">상관</th><th class="num">선행</th><th>수요 판독</th><th>근거</th></tr>';
-  E.links.forEach(x => { h += `<tr><td>${esc(x.g)}</td><td>${chipS(x.state)}</td><td class="num">${fmt(x.rho)}</td><td class="num">${x.k}개월</td><td>${chipS(x.call)}</td><td style="font-size:12px;" class="muted">${esc(x.text)}</td></tr>`; });
+  let h = '<tr style="white-space:normal;vertical-align:bottom;"><th>상대국</th><th title="그 나라 경기(OECD 선행지수)와 그 나라로의 한국 수출(전년비)이 최근 5년 같이 움직인 정도 = 상관계수. 0.5 이상 높음, 0.25 이상 낮음, 미만 없음(전망 안 함)">경기 동조성<br><span class="muted" style="font-weight:400;">5년 상관계수</span></th><th class="num" title="상관이 가장 높았던 선행 개월 — 경기가 수출보다 몇 달 먼저 움직이나">선행</th><th title="6개월 뒤 그 나라로의 한국 수출 증가율(전년비) 전망. 지금보다 높으면 확대, 낮으면 둔화 — 수출액 증감이 아님">수출 증가율 전망<br><span class="muted" style="font-weight:400;">지금 → 6개월 뒤</span></th><th style="width:50%;">근거</th></tr>';
+  E.links.forEach(x => { h += `<tr><td style="white-space:nowrap;">${esc(x.g)}</td><td style="white-space:nowrap;"><b>${fmt(x.rho)}</b> ${chipS(x.state)}</td><td class="num" style="white-space:nowrap;">${x.k}개월</td><td style="white-space:nowrap;">${x.trend ? `<span class="muted">${pctS(x.ylast_pct)} →</span> <b>${pctS(x.yhat_pct)}</b> ${chipS(x.trend)}` : '<span class="muted">전망 안 함</span>'}</td><td style="font-size:12px;" class="muted">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdLinks').innerHTML = h;
-  document.getElementById('rdTotal').innerHTML = E.total ? `<b>한국 총수출</b> ${chipS(E.total.call)} <span class="muted">${esc(E.total.text)}</span>` : '';
+  document.getElementById('rdTotal').innerHTML = E.total ? `<b>한국 총수출 증가율 전망</b> ${chipS(E.total.call, E.total.trend)} <span class="muted">${esc(E.total.text)}</span>` : '';
   const V = R.verdicts || {}, S = R.summary || {}, Hh = R.health;
   const pc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
   const vcol = v => /^(판독 유효|유효|실전 후보|확정)/.test(v) ? 'color:#50fa7b;border-color:#50fa7b' : /^(부분|작게|확인 중|보류)/.test(v) ? 'color:#ffd700;border-color:#ffd700' : /^(판정 불가|대기)/.test(v) ? '' : 'color:#ff5555;border-color:#ff5555';
@@ -723,7 +728,7 @@ function grBuild(t, P) {
   const one = (type, src, dst) => E0.find(e => e.type === type && e.src === src && (!dst || e.dst === dst));
   groups.forEach((id, i) => {
     const lk = one('link', id), dm = one('demand', id), g = id.slice(2);
-    node(id, g + (dm ? ` ${dm.state}` : ''), 60, Y(i, groups.length), dm ? GR_COL[dm.state] : GR_COL.none, 'group', {state: lk && lk.state, rho: lk && lk.weight, call: dm && dm.state, delta: dm && dm.weight});
+    node(id, g + (dm ? ` ${ko(dm.state)}` : ''), 60, Y(i, groups.length), dm ? GR_COL[dm.state] : GR_COL.none, 'group', {state: lk && lk.state, rho: lk && lk.weight, call: dm && dm.state, delta: dm && dm.weight});
   });
   node('kr:exp', '한국 수출', 300, 160, '#f1fa8c', 'kr');
   node('kr:kospi', '코스피', 300, 440, '#f1fa8c', 'kr');
@@ -748,12 +753,12 @@ function grBuild(t, P) {
     groups.forEach(id => {
       const lk = one('link', id), sh = one('export_share', id), g = id.slice(2);
       const w = sh ? sh.weight : (va[g] || 0), unit = sh ? `총수출 비중 ${fmt(w, 1)}%` : `부가가치 비중 ${fmt(w, 1)}% (TiVA ${(TR.influence_index || {}).year || ''}, 월별 비중 없음)`;
-      edge('export', id, 'kr:exp', w, GR_COL[lk ? lk.state : 'none'], 'solid', `${g} → 한국 수출 · ${unit} · 연결 ${lk ? lk.state + ' 상관 ' + fmt(lk.weight) + ' (' + U.link + ')' : '–'}`);
+      edge('export', id, 'kr:exp', w, GR_COL[lk ? lk.state : 'none'], 'solid', `${g} → 한국 수출 · ${unit} · 경기 동조성 ${lk ? ko(lk.state) + ' 상관 ' + fmt(lk.weight) + ' (' + U.link + ')' : '–'}`);
     });
     by('sector_exposure').forEach(e => {
       if (!groups.includes(e.src) || !secOrder.includes(e.dst) || e.weight < 0.02) return;
       const dm = one('demand', e.src);
-      edge('expo', e.src, e.dst, e.weight * 100, GR_COL[dm ? dm.state : 'none'], 'solid', `${(LG.nodes.kr_sector || {})[e.dst.slice(2)]} 수출 중 ${e.src.slice(2)} ${fmt(e.weight * 100, 0)}% (${U.sector_exposure}) · 수요 ${dm ? dm.state : '판독 없음'}`);
+      edge('expo', e.src, e.dst, e.weight * 100, GR_COL[dm ? dm.state : 'none'], 'solid', `${(LG.nodes.kr_sector || {})[e.dst.slice(2)]} 수출 중 ${e.src.slice(2)} ${fmt(e.weight * 100, 0)}% (${U.sector_exposure}) · 수출 증가율 전망 ${dm ? ko(dm.state) : '없음'}`);
     });
     edge('total', 'kr:exp', 'kr:kospi', 1, '#6b7280', 'dashed', '총수출 판독 → 코스피 (경로 표시만; 검정은 R3)');
   }
@@ -781,8 +786,8 @@ function grInfo(n) {
     const lk = lk0 && [t, lk0.state, lk0.weight], dm = dm0 && [t, dm0.state, dm0.weight], sh = sh0 && [t, sh0.weight];
     h += row('구성(원장)', grEdges('group_member', {from: g, scope: 'reading'}).map(e => `${esc(e.to)} ${esc((LG.nodes.country || {})[e.to] || '')}`).join(', '));
     h += row('선행지수', grEdges('group_cli', {from: g}).map(e => e.to).join(', '));
-    h += row(`연결 ${t.slice(0, 7)}`, lk ? `${esc(lk[1])} · 5년 상관 ${fmt(lk[2])}` : '–');
-    h += row('수요 판독', dm ? `${esc(dm[1])} (Δ ${fmt(dm[2], 3)} 로그)` : '연결 끊김 → 판독 없음');
+    h += row(`경기 동조성 ${t.slice(0, 7)}`, lk ? `${esc(ko(lk[1]))} · 5년 상관계수 ${fmt(lk[2])}` : '–');
+    h += row('수출 증가율 전망', dm ? `${esc(ko(dm[1]))} (6개월 뒤 전년비 변화 ${fmt(dm[2] * 100, 0)}%p, 로그 차)` : '동조성 없음 → 전망 안 함');
     h += row('총수출 비중', sh ? `${fmt(sh[1], 1)}% (${sh[0].slice(0, 7)})` : '–');
     const ii = TR.influence_index || {};
     h += row('부가가치 노출', `${fmt((ii.va_share || {})[g], 1)}% (TiVA ${ii.year || ''}) · 영향력 2010~ ${fmt((ii.late || {})[g], 1)}`);
@@ -820,7 +825,7 @@ function grInfo(n) {
     h += row('총수출 판독(최신)', tot ? esc(tot.text) : '–');
     h += row('비중 그룹(원장)', grEdges('group_member', {scope: 'share'}).map(e => e.from).filter((v, i, a) => a.indexOf(v) === i).join(', '));
   } else if (d.id === 'kr:kospi') {
-    h += row('주가 연결도(받은 몫)', Object.entries(TR.equity_to_kr || {}).map(([k, v]) => `${esc(BLOCK_KO[k] || k)} ${fmt(v, 1)}%`).join(' · '));
+    h += row('주가 연계성(받은 몫)', Object.entries(TR.equity_to_kr || {}).map(([k, v]) => `${esc(BLOCK_KO[k] || k)} ${fmt(v, 1)}%`).join(' · '));
     Object.entries(REL.health || {}).forEach(([k, v]) => { const last = (v.series || []).slice(-1)[0]; if (last) h += row(k, `${fmt(last[1])} (${last[0].slice(0, 7)})`); });
   }
   document.getElementById('grInfo').innerHTML = h + '</table>';
