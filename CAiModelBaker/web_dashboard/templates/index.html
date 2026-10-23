@@ -3401,7 +3401,7 @@ async function syncAndSaveAllowGappedTradingDays(val) {
             : '🔒 결측 갭 건너뛰기 비활성화: 3영업일 이상 결측 Gap 발생 시 최신 연속 구간만 엄격 고정합니다.',
         'info'
     );
-    await applyAutoAsrlSplit(window._lastSplitMode || 'smart');
+    await applyAutoAsrlSplit(window._lastSplitMode || 'smart', false, { preserveWfa: true });
 }
 
 async function saveAnalyzePeriodConfig() {
@@ -5273,7 +5273,7 @@ function toggleHoldoutMode(mode, triggerSplit = false) {
         if (ratioInput) ratioInput.value = 100;
     }
     if (triggerSplit) {
-        applyAutoAsrlSplit(window._lastSplitMode || 'smart', true);
+        applyAutoAsrlSplit(window._lastSplitMode || 'smart', true, { preserveWfa: true });
     }
 }
 
@@ -5289,7 +5289,7 @@ function applyHoldoutSplitChange() {
     const holdoutTd = window._lastSplitPlan?.holdout_td_actual || 21;
     const ratioInput = document.getElementById('asrl_final_test_ratio');
     if (ratioInput) ratioInput.value = Math.round((fTd / Math.max(1, holdoutTd)) * 100);
-    applyAutoAsrlSplit(window._lastSplitMode || 'smart', true);
+    applyAutoAsrlSplit(window._lastSplitMode || 'smart', true, { preserveWfa: true });
 }
 
 function onFinalTestRatioChange() {
@@ -5301,7 +5301,7 @@ function onFinalTestRatioChange() {
         if (tdInput) tdInput.value = calcTd;
         const thTest = document.getElementById('thLeaderboardTest');
         if (thTest) thTest.innerText = `Final Test (${calcTd}일)`;
-        applyAutoAsrlSplit(window._lastSplitMode || 'smart', true);
+        applyAutoAsrlSplit(window._lastSplitMode || 'smart', true, { preserveWfa: true });
     }
 }
 
@@ -5309,9 +5309,20 @@ function onSplitInputChange() {
     if (typeof refreshAsrlTimeline === 'function') refreshAsrlTimeline();
 }
 
+// 프로젝트에 저장된 WFA 창 설계(Train/Opt/Test·창 수)가 있는가
+function hasPersistedWfaDesign() {
+    const o = STATE.status?.config?.OPTUNA_CONFIG || {};
+    const iv = o.wfa_input_values;
+    return !!((iv && iv.train > 0 && iv.opt > 0 && iv.test > 0) || o.wfa_window_count);
+}
+
 // AutoLab 탭 전용 WFA + 홀드아웃 자동 분할 함수 (스마트 분봉 맞춤 / 전체 수동 분할)
-async function applyAutoAsrlSplit(mode = 'smart', silent = false) {
+//   opts.preserveWfa: 버튼이 아닌 자동 호출(Gold 재빌드·홀드아웃 방식 변경 등)용 — 저장된 WFA 창 설계가 있으면
+//   홀드아웃만 갱신하고 창 설계는 그대로 둔다. WFA 시작·끝은 타임라인이 그 설계로 다시 역산한다.
+//   (2026-10-20: 자동 호출이 2025-01~·14창 설계를 1분봉 표준 41/10/10·5창으로 말없이 덮어 5개월 검증으로 돌았다)
+async function applyAutoAsrlSplit(mode = 'smart', silent = false, opts = {}) {
     window._lastSplitMode = mode;
+    const keepWfa = !!opts.preserveWfa && hasPersistedWfaDesign();
     let ds = STATE.status?.dataset;
     if (!ds || !ds.exists) {
         // 화면을 연 뒤 Gold 를 빌드했으면 STATE.status 가 옛 '없음'을 들고 있다 — 서버에 다시 묻고 판단한다 (2026-10-20)
@@ -5359,7 +5370,11 @@ async function applyAutoAsrlSplit(mode = 'smart', silent = false) {
 
     // 현재 활성화된 단위(TD, Bars, Months)에 맞추어 입력창에 값 주입
     const curUnit = window._currentSplitUnit || 'td';
-    if (p.units && p.units[curUnit] && p.units[curUnit].train > 0) {
+    if (keepWfa) {
+        const g = id => document.getElementById(id)?.value;
+        const kept = `${g('wfaTrainMonths')}/${g('wfaOptMonths')}/${g('wfaTestMonths')}·${g('wfaWindowCount')}창`;
+        showToast(`🔒 저장된 WFA 창 설계(${kept})는 유지하고 홀드아웃만 갱신했습니다 — 표준 창으로 바꾸려면 '스마트 분할' 버튼을 누르세요.`, 'info');
+    } else if (p.units && p.units[curUnit] && p.units[curUnit].train > 0) {
         setVal('wfaTrainMonths', p.units[curUnit].train);
         setVal('wfaOptMonths', p.units[curUnit].opt);
         setVal('wfaTestMonths', p.units[curUnit].test);
@@ -5369,21 +5384,23 @@ async function applyAutoAsrlSplit(mode = 'smart', silent = false) {
         setVal('wfaTestMonths', Math.max(1, p.test_months || 1));
     }
     // [NEW] WFA 횟수(창수) 및 홀드아웃 거래일수 선언형 주입
-    setVal('wfaWindowCount', p.expected_wfa_windows || 5);
+    if (!keepWfa) setVal('wfaWindowCount', p.expected_wfa_windows || 5);
     setVal('asrlHoldoutTd', p.holdout_td_actual || (p.units && p.units[curUnit] ? p.units[curUnit].holdout : 14));
     updateUnitBadges();
 
-    // 경계 - 실재 거래일(휴장일 및 무거래일 배제 완료)
-    setVal('wfaStartDate', p.wfa_start);
-    setVal('wfaEndDate', p.wfa_end);
+    // 경계 - 실재 거래일(휴장일 및 무거래일 배제 완료). 설계 유지 시 WFA 시작·끝은 아래 refreshAsrlTimeline 이 역산
+    if (!keepWfa) {
+        setVal('wfaStartDate', p.wfa_start);
+        setVal('wfaEndDate', p.wfa_end);
+    }
     setVal('asrl_holdout_start', p.holdout_start);
     setVal('asrl_holdout_end', p.holdout_end);
 
     const lblS = document.getElementById('lblWfaStartDate');
     const lblE = document.getElementById('lblWfaEndDate');
     const lblH = document.getElementById('lblHoldoutPeriod');
-    if (lblS) lblS.textContent = p.wfa_start;
-    if (lblE) lblE.textContent = p.wfa_end;
+    if (lblS && !keepWfa) lblS.textContent = p.wfa_start;
+    if (lblE && !keepWfa) lblE.textContent = p.wfa_end;
     if (lblH) lblH.textContent = `${p.holdout_start} ~ ${p.holdout_end} (${p.holdout_td_actual}거래일)`;
 
     // 홀드아웃 배지 갱신 (결측 0일 및 봉수 표기)
@@ -5419,7 +5436,7 @@ async function applyAutoAsrlSplit(mode = 'smart', silent = false) {
     if (typeof refreshAsrlTimeline === 'function') await refreshAsrlTimeline();
     if (typeof checkPeriodValidity === 'function') checkPeriodValidity();
 
-    if (!silent) {
+    if (!silent && !keepWfa) {
         const badge = p.non_standard ? '🔶 비표준 분할' : (p.mode === 'full' ? '🌐 전체 분할' : '✅ 표준 분할');
         const head = `${badge} [${String(res.interval).toUpperCase()}]`;
         const l1 = `WFA ${p.wfa_start}~${p.wfa_end} (${p.wfa_td_actual}거래일 / ${Number(p.wfa_bars).toLocaleString()}봉)`;
@@ -5454,7 +5471,7 @@ async function rebuildAutolabGoldSnapshot() {
         );
 
         if (typeof refreshStatus === 'function') await refreshStatus();
-        await applyAutoAsrlSplit('smart');
+        await applyAutoAsrlSplit('smart', false, { preserveWfa: true });
     } catch (e) {
         showToast(`Gold 재빌드 실패: ${e.message || e}`, 'error');
     } finally {
@@ -5487,14 +5504,23 @@ async function savePeriodConfig(skipRefresh = false) {
             let sOptM = parseFloat(document.getElementById('wfaOptMonths')?.value) || 0.5;
             let sTestM = parseFloat(document.getElementById('wfaTestMonths')?.value) || 0.5;
 
+            // 마지막 분할 계획의 월 환산값은 입력칸이 그 계획과 같을 때만 쓴다 — 설계를 유지했거나 손으로 고친 값을 계획값이 덮지 않게
+            const planMatchesInputs = !!(plan?.units?.[curU] && plan?.units?.months
+                && plan.units[curU].train === sTrainM && plan.units[curU].opt === sOptM && plan.units[curU].test === sTestM);
             if (curU === 'td') {
-                sTrainM = plan?.units?.months?.train || parseFloat((sTrainM / 21.0).toFixed(3));
-                sOptM = plan?.units?.months?.opt || parseFloat((sOptM / 21.0).toFixed(3));
-                sTestM = plan?.units?.months?.test || parseFloat((sTestM / 21.0).toFixed(3));
-            } else if (curU === 'bars' && plan?.units?.months) {
+                sTrainM = (planMatchesInputs && plan.units.months.train) || parseFloat((sTrainM / 21.0).toFixed(3));
+                sOptM = (planMatchesInputs && plan.units.months.opt) || parseFloat((sOptM / 21.0).toFixed(3));
+                sTestM = (planMatchesInputs && plan.units.months.test) || parseFloat((sTestM / 21.0).toFixed(3));
+            } else if (curU === 'bars' && planMatchesInputs) {
                 sTrainM = plan.units.months.train;
                 sOptM = plan.units.months.opt;
                 sTestM = plan.units.months.test;
+            } else if (curU === 'bars' && plan?.units?.bars?.train > 0 && plan?.units?.months?.train > 0) {
+                // 손으로 고친 봉 수 — 계획의 봉↔월 비율로 환산 (봉 수를 그대로 '개월'로 저장하지 않게)
+                const mPerBar = plan.units.months.train / plan.units.bars.train;
+                sTrainM = parseFloat((sTrainM * mPerBar).toFixed(3));
+                sOptM = parseFloat((sOptM * mPerBar).toFixed(3));
+                sTestM = parseFloat((sTestM * mPerBar).toFixed(3));
             }
 
             return {

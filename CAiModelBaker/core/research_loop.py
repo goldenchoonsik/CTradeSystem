@@ -656,11 +656,41 @@ def _run_optimization(config: dict, feature_subset: list, log_fn: Callable,
             feature_subset=feature_subset,
             cached_df=cached_df,
         )
+        _research_state["last_opt_error"] = ""
         return True
     except Exception as e:
         import traceback
+        # 실패 사유를 남긴다 — 호출자가 '거래 0회' 로 오인하지 않고 실패 트라이얼로 기록·진단하도록
+        _research_state["last_opt_error"] = str(e)
         _sync_log(log_fn, f"❌ 최적화 실패: {e}\n{traceback.format_exc()}")
         return False
+
+
+def check_wfa_feasibility(df_train: pd.DataFrame, config: dict) -> dict:
+    """탐색 데이터로 WFA 창을 하나라도 만들 수 있는지 루프 시작 전에 판정한다 (2026-10-20).
+
+    종전: 창이 0개면 트라이얼마다 process_02 가 같은 '데이터 부족' 예외를 냈고, 루프는 이를
+    '거래 0회' 트라이얼로 기록해 SAMPLE_SHORTAGE(문턱을 낮추라) 로 오진했다.
+    (0167A0 10s: 탐색 13거래일 < Train 11 + Opt 3 + Test 3 → 트라이얼 3개 + 재학습 3회 전부 같은 예외)
+    창 크기 환산은 model_engine 과 같은 규칙(개월 × 시장별 월 거래일, 반올림)을 쓴다.
+    """
+    optuna_cfg = config.get("OPTUNA_CONFIG", {}) or {}
+    if not optuna_cfg.get("wfa_enabled", False) or df_train is None or df_train.empty:
+        return {"ok": True}
+    from CAiModelBaker.core.split_planner import build_wfa_windows
+    from CAiModelBaker.core.split_standards import trading_days_per_month
+    tdpm = trading_days_per_month(str(config.get("SYMBOL_UPBIT") or config.get("SYMBOL") or "KRX"))
+    train_td = max(1, int(round(float(optuna_cfg.get("wfa_train_months", 12)) * tdpm)))
+    opt_td = max(1, int(round(float(optuna_cfg.get("wfa_opt_months", 3)) * tdpm)))
+    test_td = max(1, int(round(float(optuna_cfg.get("wfa_test_months", 3)) * tdpm)))
+    ts = pd.to_datetime(df_train["timestamp"])
+    n_td = int(ts.dt.date.nunique())
+    windows = build_wfa_windows(ts, train_td, opt_td, test_td)
+    return {
+        "ok": bool(windows), "windows": len(windows), "trading_days": n_td,
+        "train_td": train_td, "opt_td": opt_td, "test_td": test_td,
+        "need_td": train_td + opt_td + test_td,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -897,6 +927,25 @@ def diagnose_failure(trial_history: list, min_trades: int = 5,
             "message": "유효한 Trial 결과가 없습니다.",
             "prescription": "스냅샷 데이터 유효성을 확인하세요."
         }
+
+    # 최적화 자체가 예외로 끝난 트라이얼은 성과가 아니다 — 거래 0회로 섞으면 SAMPLE_SHORTAGE 로 오진된다
+    failed = [t for t in trial_history if t.get("failed")]
+    if failed and len(failed) == len(trial_history):
+        err = str(failed[0].get("error") or "")
+        is_shortage = "데이터 부족" in err
+        return {
+            "code": "DATA_SHORTAGE" if is_shortage else "OPTIMIZATION_ERROR",
+            "title": "WFA 창 구성 불가 (데이터 부족)" if is_shortage else "최적화 실행 오류",
+            "message": f"모든 Trial({len(failed)}개)이 최적화 단계에서 중단: {err[:200]}",
+            "prescription": (
+                "성과 문제가 아니라 실행이 되지 않은 것입니다.\n"
+                "권장 조치:\n"
+                "  1. 홀드아웃 거래일(holdout_td)을 줄여 탐색 구간 확보\n"
+                "  2. WFA 창(Train/Opt/Test) 크기 축소\n"
+                "  3. 더 긴 데이터가 있는 인터벌 사용"
+            ) if is_shortage else "로그의 Traceback 을 확인하세요."
+        }
+    trial_history = [t for t in trial_history if not t.get("failed")] or trial_history
 
     trades_list = [t.get("trades", 0) for t in trial_history]
     mdd_list = [t.get("mdd", 0.0) for t in trial_history]
@@ -1328,6 +1377,32 @@ def run_auto_research(
         _sync_log(log_fn, f"   탐색 데이터: {len(df_train):,}행")
         _sync_log(log_fn, f"   홀드아웃:    {len(df_full) - len(df_train):,}행")
 
+        # 🧮 [WFA 사전 점검] 창을 하나도 못 만들면 스크리닝·트라이얼을 돌려도 전부 같은 예외로 끝난다 — 여기서 멈춘다
+        _wf = check_wfa_feasibility(df_train, config)
+        if not _wf.get("ok"):
+            _sync_log(log_fn, f"\n❌ [WFA 사전 점검] 탐색 구간 {_wf['trading_days']}거래일 < 창 1개 필요량 "
+                              f"{_wf['need_td']}거래일 (Train {_wf['train_td']} + Opt {_wf['opt_td']} + Test {_wf['test_td']}) — 탐색 중단")
+            diagnosis = {
+                "code": "DATA_SHORTAGE", "title": "WFA 창 구성 불가 (데이터 부족)",
+                "message": (f"탐색 {_wf['trading_days']}거래일 (홀드아웃 {holdout_start}~ 제외) < "
+                            f"WFA 창 1개 {_wf['need_td']}거래일"),
+                "prescription": (
+                    "권장 조치:\n"
+                    "  1. 홀드아웃 거래일(holdout_td)을 줄여 탐색 구간 확보\n"
+                    "  2. WFA 창(Train/Opt/Test) 크기 축소\n"
+                    "  3. 더 긴 데이터가 있는 인터벌 사용"
+                ),
+            }
+            with _research_lock:
+                _research_state["status"] = "failed"
+                _research_state["diagnosis"] = diagnosis
+                _research_state["running"] = False
+            _print_diagnosis(diagnosis, log_fn)
+            _broadcast_progress(broadcast_fn, {"type": "auto_research_done", "status": "failed", "diagnosis": diagnosis})
+            return
+        if "windows" in _wf:
+            _sync_log(log_fn, f"   🧮 [WFA 사전 점검] 탐색 {_wf['trading_days']}거래일 → 창 {_wf['windows']}개 구성 가능")
+
         # [Phase 3 대비] 최종 Test 구간을 먼저 예약 (Phase 1 Validation에서 미사용)
         try:
             df_holdout = df_full[df_full['timestamp'] >= pd.to_datetime(holdout_start)].copy()
@@ -1554,7 +1629,8 @@ def run_auto_research(
                 trial_history.append({
                     "trial": trial_idx + 1, "features": feature_subset,
                     "net_profit": 0.0, "mdd": 99.0, "trades": 0,
-                    "ic_pass_count": ic_pass_count
+                    "ic_pass_count": ic_pass_count,
+                    "failed": True, "error": _research_state.get("last_opt_error", ""),
                 })
                 continue
 
@@ -1721,10 +1797,12 @@ def run_auto_research(
         # ============================================================
         # [프로 표준 Phase 2] — Validation 성과 기준 Top-3 후보 선정 (복잡도 패널티 적용)
         # ============================================================
-        if not trial_history:
-            _sync_log(log_fn, "\n❌ 유효한 Trial 결과가 없습니다.")
-            diagnosis = {"code": "NO_DATA", "title": "시도 기록 없음",
-                         "message": "모든 Trial이 실패했습니다.", "prescription": "스냅샷 데이터를 확인하세요."}
+        if not trial_history or all(t.get("failed") for t in trial_history):
+            _sync_log(log_fn, "\n❌ 유효한 Trial 결과가 없습니다 (모든 Trial 이 최적화 단계에서 실패) — 최종 Test 생략.")
+            diagnosis = (diagnose_failure(trial_history) if trial_history else
+                         {"code": "NO_DATA", "title": "시도 기록 없음",
+                          "message": "모든 Trial이 실패했습니다.", "prescription": "스냅샷 데이터를 확인하세요."})
+            _print_diagnosis(diagnosis, log_fn)
             with _research_lock:
                 _research_state["status"] = "failed"
                 _research_state["diagnosis"] = diagnosis
@@ -1744,7 +1822,7 @@ def run_auto_research(
         # 최종 Test 는 한 번뿐인 독립 검증이다 — WFA 견고성 미달(승격 불가) 트라이얼에 쓰지 않는다.
         # (2026-10-01 069500 1m: 견고성 통과는 Trial 9 하나였는데, Validation 상위 3개가 모두 미달 트라이얼이라
         #  승격될 수 없는 후보 3개가 최종 Test 를 소모했고 Trial 9 는 검증받지 못했다)
-        _robust_pool = [t for t in trial_history if t.get("wfa_robust") is not False]
+        _robust_pool = [t for t in trial_history if t.get("wfa_robust") is not False and not t.get("failed")]
         _n_not_robust = len(trial_history) - len(_robust_pool)
         if _n_not_robust:
             _sync_log(log_fn, f"\n🧱 [Phase 2] WFA 견고성 미달 트라이얼 {_n_not_robust}개는 최종 Test 후보에서 제외 "

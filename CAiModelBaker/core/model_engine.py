@@ -1088,6 +1088,10 @@ def process_02_relay_optimization(config, train_start_str, train_end_str, optuna
                 if is_horizon_locked:
                     bp_w['predict_ahead_candles'] = locked_pa
                     bp_w['max_hold_candles'] = locked_mhc
+                else:
+                    # 지평 후보 모드는 max_hold 를 탐색하지 않고 지평과 같게 둔다(w_outer_objective) — 창 파라미터에도 같은 값을 채워야
+                    # 아래 진단·OOS 백테스트가 KeyError 없이 학습 때와 같은 보유 한도로 돈다 (2026-10-20 'max_hold_candles' 진단 실패)
+                    bp_w.setdefault('max_hold_candles', bp_w['predict_ahead_candles'])
                 best_params_per_window.append(bp_w)
                 window_best_scores.append(_w_best_trial.value)
                 window_best_idx.append(w_idx)
