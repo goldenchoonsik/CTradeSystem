@@ -124,3 +124,12 @@ scratch/
 # 7. Project lab: per-run artifacts and per-PC state (accepted models/config under deploy/*/*/ stay tracked)
 CAiModelBaker/deploy/*/*/runs/
 CAiModelBaker/config/active_project.json
+
+# 8. 연구 폴더의 대용량 원천 복사본(1MB 초과) — 스크립트·보고서·작은 결과표만 추적
+docs/research/20261021_random_portfolio_vs_qqq/data_sp500_membership/sp500_components.csv
+docs/research/20261021_random_portfolio_vs_qqq/data_sp500_membership/sp500_components_updated.csv
+docs/research/20261021_kr_pead/prelim_candidates.csv
+docs/research/20261021_kr_pead/prelim_plan.csv
+docs/research/20261021_weight_design/sleeves_krw.csv
+docs/research/20261021_weight_design/grid_all_B1.csv
+docs/research/20261021_weight_design/regime_all.csv

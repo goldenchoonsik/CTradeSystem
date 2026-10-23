@@ -1,5 +1,7 @@
 # QQQ 복제 및 포트폴리오 전략 실험 누적 원장 (Experiment Log)
 
+> ⚠️ **2026-10-21 정정: 이 폴더의 성과 수치는 무효입니다.** ① `load_stock_data`가 분할 당일 가격을 한 번 더 나눔(분할일마다 −90%/+900% 가짜 봉) ② `NAS_UNIVERSE`는 2024~26 나스닥100을 1999년부터 쓴 사후 명단 ③ `OFFICIAL_ADDITIONS`는 실제 편입 이력과 다름(APP·DOCU·SMCI 날짜 오류, FSLR 가짜 편입, ANSS·SGEN·SPLK 등 누락) ④ 슈퍼루키 손절일 미래 참조. 정정 후 시총 가속도(당시 명단) 1999~2024 +783%(QQQ +901%), 슈퍼루키-3(실제 이력) 2016~2024 연 8.6~11.5%(QQQ 18.7%). → [../20261021_slot_swing_recompute/README.md](../20261021_slot_swing_recompute/README.md)
+
 ---
 
 ## [EXP-001] QQQ ETF 공식 복제 바스켓 vs 실제 QQQ 비교 검증 (기준선 확립)

@@ -1,0 +1,442 @@
+{
+  "burst_2s_5s": [
+    {
+      "freq_sec": 2,
+      "name": "SK하이닉스(000660, 고변동 대장주)",
+      "bars": 170550,
+      "events": 102,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.21,
+      "horizons": {
+        "2s": {
+          "chart_close_gross_pct": -0.024,
+          "orderbook_instant_gross_pct": -0.024,
+          "real_latency_net_pct": -0.21,
+          "real_win_rate_pct": 0.0
+        },
+        "5s": {
+          "chart_close_gross_pct": -0.024,
+          "orderbook_instant_gross_pct": -0.024,
+          "real_latency_net_pct": -0.21,
+          "real_win_rate_pct": 0.0
+        },
+        "10s": {
+          "chart_close_gross_pct": -0.031,
+          "orderbook_instant_gross_pct": -0.031,
+          "real_latency_net_pct": -0.217,
+          "real_win_rate_pct": 0.0
+        },
+        "30s": {
+          "chart_close_gross_pct": -0.031,
+          "orderbook_instant_gross_pct": -0.031,
+          "real_latency_net_pct": -0.217,
+          "real_win_rate_pct": 4.9
+        },
+        "60s": {
+          "chart_close_gross_pct": -0.008,
+          "orderbook_instant_gross_pct": -0.008,
+          "real_latency_net_pct": -0.194,
+          "real_win_rate_pct": 9.8
+        },
+        "180s": {
+          "chart_close_gross_pct": 0.011,
+          "orderbook_instant_gross_pct": 0.011,
+          "real_latency_net_pct": -0.175,
+          "real_win_rate_pct": 22.5
+        }
+      }
+    },
+    {
+      "freq_sec": 5,
+      "name": "SK하이닉스(000660, 고변동 대장주)",
+      "bars": 68220,
+      "events": 7,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.21,
+      "horizons": {
+        "5s": {
+          "chart_close_gross_pct": 0.035,
+          "orderbook_instant_gross_pct": 0.035,
+          "real_latency_net_pct": -0.21,
+          "real_win_rate_pct": 0.0
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.042,
+          "orderbook_instant_gross_pct": 0.042,
+          "real_latency_net_pct": -0.203,
+          "real_win_rate_pct": 0.0
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.104,
+          "orderbook_instant_gross_pct": 0.104,
+          "real_latency_net_pct": -0.141,
+          "real_win_rate_pct": 14.3
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.105,
+          "orderbook_instant_gross_pct": 0.105,
+          "real_latency_net_pct": -0.14,
+          "real_win_rate_pct": 28.6
+        },
+        "180s": {
+          "chart_close_gross_pct": -0.048,
+          "orderbook_instant_gross_pct": -0.048,
+          "real_latency_net_pct": -0.292,
+          "real_win_rate_pct": 28.6
+        }
+      }
+    },
+    {
+      "freq_sec": 2,
+      "name": "삼성전자(005930, 대형주)",
+      "bars": 170550,
+      "events": 105,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.21,
+      "horizons": {
+        "2s": {
+          "chart_close_gross_pct": -0.08,
+          "orderbook_instant_gross_pct": -0.08,
+          "real_latency_net_pct": -0.21,
+          "real_win_rate_pct": 0.0
+        },
+        "5s": {
+          "chart_close_gross_pct": -0.055,
+          "orderbook_instant_gross_pct": -0.055,
+          "real_latency_net_pct": -0.185,
+          "real_win_rate_pct": 12.4
+        },
+        "10s": {
+          "chart_close_gross_pct": -0.041,
+          "orderbook_instant_gross_pct": -0.041,
+          "real_latency_net_pct": -0.171,
+          "real_win_rate_pct": 16.2
+        },
+        "30s": {
+          "chart_close_gross_pct": -0.022,
+          "orderbook_instant_gross_pct": -0.022,
+          "real_latency_net_pct": -0.152,
+          "real_win_rate_pct": 21.9
+        },
+        "60s": {
+          "chart_close_gross_pct": -0.012,
+          "orderbook_instant_gross_pct": -0.012,
+          "real_latency_net_pct": -0.142,
+          "real_win_rate_pct": 26.7
+        },
+        "180s": {
+          "chart_close_gross_pct": -0.033,
+          "orderbook_instant_gross_pct": -0.033,
+          "real_latency_net_pct": -0.163,
+          "real_win_rate_pct": 24.8
+        }
+      }
+    },
+    {
+      "freq_sec": 5,
+      "name": "삼성전자(005930, 대형주)",
+      "bars": 68220,
+      "events": 59,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.21,
+      "horizons": {
+        "5s": {
+          "chart_close_gross_pct": -0.047,
+          "orderbook_instant_gross_pct": -0.047,
+          "real_latency_net_pct": -0.21,
+          "real_win_rate_pct": 0.0
+        },
+        "10s": {
+          "chart_close_gross_pct": -0.034,
+          "orderbook_instant_gross_pct": -0.034,
+          "real_latency_net_pct": -0.197,
+          "real_win_rate_pct": 8.5
+        },
+        "30s": {
+          "chart_close_gross_pct": -0.003,
+          "orderbook_instant_gross_pct": -0.003,
+          "real_latency_net_pct": -0.166,
+          "real_win_rate_pct": 18.6
+        },
+        "60s": {
+          "chart_close_gross_pct": -0.017,
+          "orderbook_instant_gross_pct": -0.017,
+          "real_latency_net_pct": -0.18,
+          "real_win_rate_pct": 8.5
+        },
+        "180s": {
+          "chart_close_gross_pct": -0.035,
+          "orderbook_instant_gross_pct": -0.035,
+          "real_latency_net_pct": -0.197,
+          "real_win_rate_pct": 16.9
+        }
+      }
+    },
+    {
+      "freq_sec": 2,
+      "name": "KODEX 레버리지(122630, 무세금 2배 ETF)",
+      "bars": 170520,
+      "events": 13,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.01,
+      "horizons": {
+        "2s": {
+          "chart_close_gross_pct": 0.008,
+          "orderbook_instant_gross_pct": 0.008,
+          "real_latency_net_pct": -0.01,
+          "real_win_rate_pct": 0.0
+        },
+        "5s": {
+          "chart_close_gross_pct": 0.038,
+          "orderbook_instant_gross_pct": 0.038,
+          "real_latency_net_pct": 0.02,
+          "real_win_rate_pct": 61.5
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.015,
+          "orderbook_instant_gross_pct": 0.015,
+          "real_latency_net_pct": -0.003,
+          "real_win_rate_pct": 30.8
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.129,
+          "orderbook_instant_gross_pct": 0.129,
+          "real_latency_net_pct": 0.11,
+          "real_win_rate_pct": 46.2
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.135,
+          "orderbook_instant_gross_pct": 0.135,
+          "real_latency_net_pct": 0.117,
+          "real_win_rate_pct": 61.5
+        },
+        "180s": {
+          "chart_close_gross_pct": -0.003,
+          "orderbook_instant_gross_pct": -0.003,
+          "real_latency_net_pct": -0.021,
+          "real_win_rate_pct": 53.8
+        }
+      }
+    },
+    {
+      "freq_sec": 5,
+      "name": "KODEX 레버리지(122630, 무세금 2배 ETF)",
+      "bars": 68208,
+      "events": 2,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.01,
+      "horizons": {
+        "5s": {
+          "chart_close_gross_pct": 0.007,
+          "orderbook_instant_gross_pct": 0.007,
+          "real_latency_net_pct": -0.01,
+          "real_win_rate_pct": 0.0
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.212,
+          "orderbook_instant_gross_pct": 0.212,
+          "real_latency_net_pct": 0.195,
+          "real_win_rate_pct": 100.0
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.008,
+          "orderbook_instant_gross_pct": 0.008,
+          "real_latency_net_pct": -0.009,
+          "real_win_rate_pct": 50.0
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.171,
+          "orderbook_instant_gross_pct": 0.171,
+          "real_latency_net_pct": 0.153,
+          "real_win_rate_pct": 50.0
+        },
+        "180s": {
+          "chart_close_gross_pct": -0.339,
+          "orderbook_instant_gross_pct": -0.339,
+          "real_latency_net_pct": -0.357,
+          "real_win_rate_pct": 50.0
+        }
+      }
+    },
+    {
+      "freq_sec": 2,
+      "name": "SOL 반도체핵심소재(0167A0, 무세금 섹터 ETF)",
+      "bars": 170550,
+      "events": 46,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.01,
+      "horizons": {
+        "2s": {
+          "chart_close_gross_pct": 0.02,
+          "orderbook_instant_gross_pct": 0.02,
+          "real_latency_net_pct": -0.01,
+          "real_win_rate_pct": 0.0
+        },
+        "5s": {
+          "chart_close_gross_pct": 0.019,
+          "orderbook_instant_gross_pct": 0.019,
+          "real_latency_net_pct": -0.011,
+          "real_win_rate_pct": 43.5
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.019,
+          "orderbook_instant_gross_pct": 0.019,
+          "real_latency_net_pct": -0.011,
+          "real_win_rate_pct": 41.3
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.026,
+          "orderbook_instant_gross_pct": 0.026,
+          "real_latency_net_pct": -0.003,
+          "real_win_rate_pct": 39.1
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.035,
+          "orderbook_instant_gross_pct": 0.035,
+          "real_latency_net_pct": 0.005,
+          "real_win_rate_pct": 41.3
+        },
+        "180s": {
+          "chart_close_gross_pct": -0.042,
+          "orderbook_instant_gross_pct": -0.042,
+          "real_latency_net_pct": -0.072,
+          "real_win_rate_pct": 47.8
+        }
+      }
+    },
+    {
+      "freq_sec": 5,
+      "name": "SOL 반도체핵심소재(0167A0, 무세금 섹터 ETF)",
+      "bars": 68220,
+      "events": 10,
+      "median_spread_pct": 0.05,
+      "fee_tax_pct": 0.01,
+      "horizons": {
+        "5s": {
+          "chart_close_gross_pct": -0.002,
+          "orderbook_instant_gross_pct": -0.002,
+          "real_latency_net_pct": -0.01,
+          "real_win_rate_pct": 0.0
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.054,
+          "orderbook_instant_gross_pct": 0.054,
+          "real_latency_net_pct": 0.046,
+          "real_win_rate_pct": 60.0
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.011,
+          "orderbook_instant_gross_pct": 0.011,
+          "real_latency_net_pct": 0.003,
+          "real_win_rate_pct": 40.0
+        },
+        "60s": {
+          "chart_close_gross_pct": -0.033,
+          "orderbook_instant_gross_pct": -0.033,
+          "real_latency_net_pct": -0.041,
+          "real_win_rate_pct": 60.0
+        },
+        "180s": {
+          "chart_close_gross_pct": 0.148,
+          "orderbook_instant_gross_pct": 0.148,
+          "real_latency_net_pct": 0.14,
+          "real_win_rate_pct": 60.0
+        }
+      }
+    }
+  ],
+  "lead_lag_2s_5s": [
+    {
+      "freq_sec": 2,
+      "target": "KODEX 레버리지(122630)",
+      "n": 89,
+      "horizons": {
+        "2s": {
+          "chart_close_gross_pct": 0.02,
+          "real_ask_to_bid_net_pct": 0.01
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.034,
+          "real_ask_to_bid_net_pct": 0.024
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.032,
+          "real_ask_to_bid_net_pct": 0.022
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.037,
+          "real_ask_to_bid_net_pct": 0.027
+        }
+      }
+    },
+    {
+      "freq_sec": 2,
+      "target": "KODEX 200(069500)",
+      "n": 90,
+      "horizons": {
+        "2s": {
+          "chart_close_gross_pct": 0.015,
+          "real_ask_to_bid_net_pct": 0.005
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.024,
+          "real_ask_to_bid_net_pct": 0.014
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.017,
+          "real_ask_to_bid_net_pct": 0.007
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.024,
+          "real_ask_to_bid_net_pct": 0.014
+        }
+      }
+    },
+    {
+      "freq_sec": 5,
+      "target": "KODEX 레버리지(122630)",
+      "n": 26,
+      "horizons": {
+        "5s": {
+          "chart_close_gross_pct": 0.037,
+          "real_ask_to_bid_net_pct": 0.027
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.033,
+          "real_ask_to_bid_net_pct": 0.023
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.081,
+          "real_ask_to_bid_net_pct": 0.071
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.131,
+          "real_ask_to_bid_net_pct": 0.121
+        }
+      }
+    },
+    {
+      "freq_sec": 5,
+      "target": "KODEX 200(069500)",
+      "n": 26,
+      "horizons": {
+        "5s": {
+          "chart_close_gross_pct": 0.026,
+          "real_ask_to_bid_net_pct": 0.016
+        },
+        "10s": {
+          "chart_close_gross_pct": 0.028,
+          "real_ask_to_bid_net_pct": 0.018
+        },
+        "30s": {
+          "chart_close_gross_pct": 0.054,
+          "real_ask_to_bid_net_pct": 0.044
+        },
+        "60s": {
+          "chart_close_gross_pct": 0.083,
+          "real_ask_to_bid_net_pct": 0.073
+        }
+      }
+    }
+  ]
+}

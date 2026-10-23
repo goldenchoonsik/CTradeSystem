@@ -2,7 +2,7 @@
 import json, os, sys, time, requests
 ROOT = "/home/kuzimo/projects/CTradeSystem/DataVault"
 OUT = f"{ROOT}/staging/us_fundamentals_sec"
-UA = {"User-Agent": "CTradeSystem research script"}
+UA = {"User-Agent": os.environ.get("SEC_USER_AGENT", "CTradeSystem research script")}  # SEC 공정 접근: 이름+연락처 필요
 POOL = """AAPL MSFT AMZN GOOGL META NVDA TSLA AVGO COST PEP ADBE CSCO INTC NFLX CMCSA AMGN QCOM TXN AMD GILD SBUX MDLZ INTU BKNG ISRG AMAT
 REGN VRTX MU LRCX ADP PYPL TMUS HON MRNA ABNB PANW SNPS CDNS KLAC MAR CHTR MELI BIIB ORLY CSX CTAS ADI WBA EBAY ILMN LULU DXCM KDP MNST
 CRWD WDAY ROST FTNT PCAR CSGP TTWO AZN CTSH ATVI XLNX CELG YHOO""".split()

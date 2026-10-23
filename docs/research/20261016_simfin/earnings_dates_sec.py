@@ -1,12 +1,12 @@
 """SEC EDGAR 에서 실적 발표(8-K Item 2.02) 접수 시각 수집. 산출: derived/earnings_8k.csv (ticker,cik,filed_dt(ET)).
 SimFin 회사 중 현재 EDGAR 티커와 매칭되는 곳만(상폐 티커는 매칭 불가 → 한계로 보고)."""
-import json, time
+import json, os, time
 from pathlib import Path
 import requests, pandas as pd
 
 R = Path(__file__).resolve().parents[3] / "DataVault/staging/us_fundamentals_simfin/raw"
 OUT = R.parent / "derived"; OUT.mkdir(exist_ok=True)
-UA = {"User-Agent": "CTradeSystem research script"}
+UA = {"User-Agent": os.environ.get("SEC_USER_AGENT", "CTradeSystem research script")}  # SEC 공정 접근: 이름+연락처 필요
 
 def get(url):
     for k in range(5):

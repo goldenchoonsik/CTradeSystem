@@ -1,0 +1,262 @@
+[
+  {
+    "code": "A069500",
+    "name": "KODEX 200 (무세금 1배 대표 지수 ETF)",
+    "setups": {
+      "ORB": {
+        "+2틱(+10원) 지정가익절 / -4틱 손절 / 10초 타임컷": {
+          "n": 13,
+          "tp_fill_rate_pct": 69.2,
+          "sl_rate_pct": 30.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0015,
+          "avg_net_pct": -0.0088,
+          "win_rate_net_pct": 69.2,
+          "cum_net_pct": -0.115
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 10초 타임컷": {
+          "n": 13,
+          "tp_fill_rate_pct": 69.2,
+          "sl_rate_pct": 30.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0006,
+          "avg_net_pct": -0.0067,
+          "win_rate_net_pct": 69.2,
+          "cum_net_pct": -0.087
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 30초 타임컷": {
+          "n": 13,
+          "tp_fill_rate_pct": 69.2,
+          "sl_rate_pct": 30.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0006,
+          "avg_net_pct": -0.0067,
+          "win_rate_net_pct": 69.2,
+          "cum_net_pct": -0.087
+        },
+        "+4틱(+20원) 지정가익절 / -6틱 손절 / 60초 타임컷": {
+          "n": 13,
+          "tp_fill_rate_pct": 61.5,
+          "sl_rate_pct": 38.5,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0015,
+          "avg_net_pct": -0.0088,
+          "win_rate_net_pct": 61.5,
+          "cum_net_pct": -0.114
+        },
+        "+8틱(+40원) 지정가익절 / -8틱 손절 / 5분(300초) 타임컷": {
+          "n": 13,
+          "tp_fill_rate_pct": 46.2,
+          "sl_rate_pct": 53.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0069,
+          "avg_net_pct": -0.0142,
+          "win_rate_net_pct": 46.2,
+          "cum_net_pct": -0.184
+        },
+        "+15틱(+75원) 지정가익절 / -10틱 손절 / 15분(900초) 타임컷": {
+          "n": 13,
+          "tp_fill_rate_pct": 38.5,
+          "sl_rate_pct": 61.5,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0063,
+          "avg_net_pct": -0.0136,
+          "win_rate_net_pct": 38.5,
+          "cum_net_pct": -0.177
+        }
+      },
+      "VWAP": {
+        "+2틱(+10원) 지정가익절 / -4틱 손절 / 10초 타임컷": {
+          "n": 94,
+          "tp_fill_rate_pct": 69.1,
+          "sl_rate_pct": 25.5,
+          "timeout_rate_pct": 5.3,
+          "avg_gross_pct": 0.0001,
+          "avg_net_pct": -0.0072,
+          "win_rate_net_pct": 69.1,
+          "cum_net_pct": -0.677
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 10초 타임컷": {
+          "n": 94,
+          "tp_fill_rate_pct": 57.4,
+          "sl_rate_pct": 26.6,
+          "timeout_rate_pct": 16.0,
+          "avg_gross_pct": -0.0011,
+          "avg_net_pct": -0.0084,
+          "win_rate_net_pct": 57.4,
+          "cum_net_pct": -0.792
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 30초 타임컷": {
+          "n": 94,
+          "tp_fill_rate_pct": 64.9,
+          "sl_rate_pct": 35.1,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0007,
+          "avg_net_pct": -0.008,
+          "win_rate_net_pct": 64.9,
+          "cum_net_pct": -0.752
+        },
+        "+4틱(+20원) 지정가익절 / -6틱 손절 / 60초 타임컷": {
+          "n": 94,
+          "tp_fill_rate_pct": 61.7,
+          "sl_rate_pct": 38.3,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.001,
+          "avg_net_pct": -0.0083,
+          "win_rate_net_pct": 61.7,
+          "cum_net_pct": -0.784
+        },
+        "+8틱(+40원) 지정가익절 / -8틱 손절 / 5분(300초) 타임컷": {
+          "n": 94,
+          "tp_fill_rate_pct": 53.2,
+          "sl_rate_pct": 46.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0004,
+          "avg_net_pct": -0.0069,
+          "win_rate_net_pct": 53.2,
+          "cum_net_pct": -0.646
+        },
+        "+15틱(+75원) 지정가익절 / -10틱 손절 / 15분(900초) 타임컷": {
+          "n": 94,
+          "tp_fill_rate_pct": 45.7,
+          "sl_rate_pct": 54.3,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0044,
+          "avg_net_pct": -0.0029,
+          "win_rate_net_pct": 45.7,
+          "cum_net_pct": -0.271
+        }
+      }
+    }
+  },
+  {
+    "code": "A122630",
+    "name": "KODEX 레버리지 (무세금 2배 ETF)",
+    "setups": {
+      "ORB": {
+        "+2틱(+10원) 지정가익절 / -4틱 손절 / 10초 타임컷": {
+          "n": 17,
+          "tp_fill_rate_pct": 64.7,
+          "sl_rate_pct": 35.3,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0038,
+          "avg_net_pct": -0.0111,
+          "win_rate_net_pct": 64.7,
+          "cum_net_pct": -0.189
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 10초 타임컷": {
+          "n": 17,
+          "tp_fill_rate_pct": 70.6,
+          "sl_rate_pct": 29.4,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0005,
+          "avg_net_pct": -0.0078,
+          "win_rate_net_pct": 70.6,
+          "cum_net_pct": -0.132
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 30초 타임컷": {
+          "n": 17,
+          "tp_fill_rate_pct": 70.6,
+          "sl_rate_pct": 29.4,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0005,
+          "avg_net_pct": -0.0078,
+          "win_rate_net_pct": 70.6,
+          "cum_net_pct": -0.132
+        },
+        "+4틱(+20원) 지정가익절 / -6틱 손절 / 60초 타임컷": {
+          "n": 17,
+          "tp_fill_rate_pct": 70.6,
+          "sl_rate_pct": 29.4,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0016,
+          "avg_net_pct": -0.0057,
+          "win_rate_net_pct": 70.6,
+          "cum_net_pct": -0.096
+        },
+        "+8틱(+40원) 지정가익절 / -8틱 손절 / 5분(300초) 타임컷": {
+          "n": 17,
+          "tp_fill_rate_pct": 76.5,
+          "sl_rate_pct": 23.5,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0192,
+          "avg_net_pct": 0.0119,
+          "win_rate_net_pct": 76.5,
+          "cum_net_pct": 0.203
+        },
+        "+15틱(+75원) 지정가익절 / -10틱 손절 / 15분(900초) 타임컷": {
+          "n": 17,
+          "tp_fill_rate_pct": 52.9,
+          "sl_rate_pct": 47.1,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": 0.0092,
+          "avg_net_pct": 0.0019,
+          "win_rate_net_pct": 52.9,
+          "cum_net_pct": 0.032
+        }
+      },
+      "VWAP": {
+        "+2틱(+10원) 지정가익절 / -4틱 손절 / 10초 타임컷": {
+          "n": 98,
+          "tp_fill_rate_pct": 61.2,
+          "sl_rate_pct": 37.8,
+          "timeout_rate_pct": 1.0,
+          "avg_gross_pct": -0.0056,
+          "avg_net_pct": -0.0129,
+          "win_rate_net_pct": 61.2,
+          "cum_net_pct": -1.264
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 10초 타임컷": {
+          "n": 98,
+          "tp_fill_rate_pct": 60.2,
+          "sl_rate_pct": 38.8,
+          "timeout_rate_pct": 1.0,
+          "avg_gross_pct": -0.0046,
+          "avg_net_pct": -0.0119,
+          "win_rate_net_pct": 60.2,
+          "cum_net_pct": -1.166
+        },
+        "+3틱(+15원) 지정가익절 / -5틱 손절 / 30초 타임컷": {
+          "n": 98,
+          "tp_fill_rate_pct": 61.2,
+          "sl_rate_pct": 38.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0043,
+          "avg_net_pct": -0.0116,
+          "win_rate_net_pct": 61.2,
+          "cum_net_pct": -1.138
+        },
+        "+4틱(+20원) 지정가익절 / -6틱 손절 / 60초 타임컷": {
+          "n": 98,
+          "tp_fill_rate_pct": 60.2,
+          "sl_rate_pct": 39.8,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0034,
+          "avg_net_pct": -0.0107,
+          "win_rate_net_pct": 60.2,
+          "cum_net_pct": -1.049
+        },
+        "+8틱(+40원) 지정가익절 / -8틱 손절 / 5분(300초) 타임컷": {
+          "n": 98,
+          "tp_fill_rate_pct": 50.0,
+          "sl_rate_pct": 50.0,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0036,
+          "avg_net_pct": -0.0109,
+          "win_rate_net_pct": 50.0,
+          "cum_net_pct": -1.071
+        },
+        "+15틱(+75원) 지정가익절 / -10틱 손절 / 15분(900초) 타임컷": {
+          "n": 98,
+          "tp_fill_rate_pct": 35.7,
+          "sl_rate_pct": 64.3,
+          "timeout_rate_pct": 0.0,
+          "avg_gross_pct": -0.0089,
+          "avg_net_pct": -0.0162,
+          "win_rate_net_pct": 35.7,
+          "cum_net_pct": -1.591
+        }
+      }
+    }
+  }
+]

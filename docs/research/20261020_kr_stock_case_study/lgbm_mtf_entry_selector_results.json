@@ -1,0 +1,326 @@
+[
+  {
+    "code": "A069500",
+    "name": "KODEX 200 (무세금 대표 지수 ETF)",
+    "horizons": {
+      "fwd_50s": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 1815,
+          "gross_pct": -0.0008,
+          "net_pct": -0.0081,
+          "win_rate_net_pct": 45.0
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 449,
+          "gross_pct": 0.0005,
+          "net_pct": -0.0068,
+          "win_rate_net_pct": 44.1
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 231,
+          "gross_pct": -0.0017,
+          "net_pct": -0.009,
+          "win_rate_net_pct": 41.6
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 122,
+          "gross_pct": -0.0002,
+          "net_pct": -0.0075,
+          "win_rate_net_pct": 40.2
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 122,
+          "gross_pct": -0.0002,
+          "net_pct": -0.0139,
+          "win_rate_net_pct": 36.1
+        },
+        "top_features": [
+          "m1_prev_ret(246.2)",
+          "m1_dcvd_ratio(242.1)",
+          "sub10s_ret(241.1)",
+          "m1_vol_ratio15(239.9)",
+          "m1_ret_3m(238.0)"
+        ]
+      },
+      "fwd_5m": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 1815,
+          "gross_pct": -0.014,
+          "net_pct": -0.0213,
+          "win_rate_net_pct": 44.7
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 664,
+          "gross_pct": -0.0003,
+          "net_pct": -0.0076,
+          "win_rate_net_pct": 46.1
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 461,
+          "gross_pct": 0.0093,
+          "net_pct": 0.002,
+          "win_rate_net_pct": 47.5
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 293,
+          "gross_pct": 0.0135,
+          "net_pct": 0.0062,
+          "win_rate_net_pct": 48.8
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 147,
+          "gross_pct": 0.022,
+          "net_pct": 0.0083,
+          "win_rate_net_pct": 49.7
+        },
+        "top_features": [
+          "m1_dist_day_open_pct(553.0)",
+          "m1_dist_vwap_pct(367.4)",
+          "dist_or_high20_pct(262.2)",
+          "m1_prev_ret(259.1)",
+          "m1_dist_high_sofar_pct(242.2)"
+        ]
+      },
+      "fwd_15m": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 1815,
+          "gross_pct": -0.0399,
+          "net_pct": -0.0472,
+          "win_rate_net_pct": 42.1
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 922,
+          "gross_pct": -0.0189,
+          "net_pct": -0.0262,
+          "win_rate_net_pct": 42.8
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 729,
+          "gross_pct": -0.0047,
+          "net_pct": -0.012,
+          "win_rate_net_pct": 44.2
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 546,
+          "gross_pct": 0.0219,
+          "net_pct": 0.0146,
+          "win_rate_net_pct": 46.0
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 97,
+          "gross_pct": 0.009,
+          "net_pct": -0.0047,
+          "win_rate_net_pct": 47.4
+        },
+        "top_features": [
+          "m1_dist_vwap_pct(781.8)",
+          "dist_or_high20_pct(632.7)",
+          "m1_cum_cvd_ratio(582.9)",
+          "m1_dist_day_open_pct(582.6)",
+          "m20_ret(535.2)"
+        ]
+      },
+      "fwd_30m": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 1815,
+          "gross_pct": -0.0856,
+          "net_pct": -0.0929,
+          "win_rate_net_pct": 39.0
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 933,
+          "gross_pct": -0.0579,
+          "net_pct": -0.0652,
+          "win_rate_net_pct": 40.1
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 595,
+          "gross_pct": -0.0399,
+          "net_pct": -0.0472,
+          "win_rate_net_pct": 42.7
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 476,
+          "gross_pct": -0.0214,
+          "net_pct": -0.0287,
+          "win_rate_net_pct": 43.3
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 50,
+          "gross_pct": -0.098,
+          "net_pct": -0.1117,
+          "win_rate_net_pct": 36.0
+        },
+        "top_features": [
+          "m1_dist_vwap_pct(1015.4)",
+          "m1_cum_cvd_ratio(946.3)",
+          "m20_cvd_ratio(887.9)",
+          "m1_dist_high_sofar_pct(885.6)",
+          "m1_dist_day_open_pct(752.5)"
+        ]
+      }
+    }
+  },
+  {
+    "code": "A122630",
+    "name": "KODEX 레버리지 (무세금 2배 ETF)",
+    "horizons": {
+      "fwd_50s": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 2031,
+          "gross_pct": 0.0002,
+          "net_pct": -0.0071,
+          "win_rate_net_pct": 47.1
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 547,
+          "gross_pct": 0.0026,
+          "net_pct": -0.0047,
+          "win_rate_net_pct": 47.5
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 304,
+          "gross_pct": 0.0016,
+          "net_pct": -0.0057,
+          "win_rate_net_pct": 46.4
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 174,
+          "gross_pct": 0.0168,
+          "net_pct": 0.0095,
+          "win_rate_net_pct": 48.3
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 174,
+          "gross_pct": 0.0168,
+          "net_pct": -0.0035,
+          "win_rate_net_pct": 44.8
+        },
+        "top_features": [
+          "sub5s_ret(278.3)",
+          "m1_prev_ret(247.6)",
+          "sub10s_vol_vs_1m_avg(244.4)",
+          "m1_dist_vwap_pct(237.5)",
+          "sub10s_cvd_imb(232.1)"
+        ]
+      },
+      "fwd_5m": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 2031,
+          "gross_pct": -0.0258,
+          "net_pct": -0.0331,
+          "win_rate_net_pct": 45.5
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 655,
+          "gross_pct": 0.0083,
+          "net_pct": 0.001,
+          "win_rate_net_pct": 47.5
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 462,
+          "gross_pct": 0.0331,
+          "net_pct": 0.0258,
+          "win_rate_net_pct": 49.1
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 339,
+          "gross_pct": 0.052,
+          "net_pct": 0.0447,
+          "win_rate_net_pct": 49.9
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 176,
+          "gross_pct": 0.0632,
+          "net_pct": 0.0429,
+          "win_rate_net_pct": 47.7
+        },
+        "top_features": [
+          "m1_cum_cvd_ratio(447.9)",
+          "m1_dist_day_open_pct(382.1)",
+          "m1_dist_high_sofar_pct(303.1)",
+          "m20_ret(243.6)",
+          "dist_or_high20_pct(228.0)"
+        ]
+      },
+      "fwd_15m": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 2031,
+          "gross_pct": -0.0989,
+          "net_pct": -0.1062,
+          "win_rate_net_pct": 42.6
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 909,
+          "gross_pct": -0.067,
+          "net_pct": -0.0743,
+          "win_rate_net_pct": 45.1
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 707,
+          "gross_pct": -0.077,
+          "net_pct": -0.0843,
+          "win_rate_net_pct": 42.9
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 529,
+          "gross_pct": -0.0731,
+          "net_pct": -0.0804,
+          "win_rate_net_pct": 42.5
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 94,
+          "gross_pct": -0.1277,
+          "net_pct": -0.148,
+          "win_rate_net_pct": 37.2
+        },
+        "top_features": [
+          "m1_cum_cvd_ratio(983.4)",
+          "m1_dist_high_sofar_pct(608.4)",
+          "m1_dist_day_open_pct(555.3)",
+          "dist_or_high20_pct(533.8)",
+          "m1_dist_vwap_pct(483.0)"
+        ]
+      },
+      "fwd_30m": {
+        "① 무필터 전체 진입 (Baseline)": {
+          "n": 2031,
+          "gross_pct": -0.2002,
+          "net_pct": -0.2075,
+          "win_rate_net_pct": 39.6
+        },
+        "② LightGBM 상위 20% 타점 선별 (실시간 임계치)": {
+          "n": 684,
+          "gross_pct": -0.1088,
+          "net_pct": -0.1161,
+          "win_rate_net_pct": 44.3
+        },
+        "③ LightGBM 상위 10% 타점 선별 (실시간 임계치)": {
+          "n": 601,
+          "gross_pct": -0.0876,
+          "net_pct": -0.0949,
+          "win_rate_net_pct": 43.9
+        },
+        "④ LightGBM 상위  5% 핵심 타점 (실시간 임계치)": {
+          "n": 468,
+          "gross_pct": -0.0147,
+          "net_pct": -0.022,
+          "win_rate_net_pct": 46.2
+        },
+        "⑤ LightGBM 상위  5% (중복제거 + 한투우대 + 시장가 1틱 슬리피지 차감)": {
+          "n": 48,
+          "gross_pct": -0.0698,
+          "net_pct": -0.0901,
+          "win_rate_net_pct": 47.9
+        },
+        "top_features": [
+          "m1_cum_cvd_ratio(1470.7)",
+          "m1_dist_day_open_pct(930.2)",
+          "m1_dist_vwap_pct(703.9)",
+          "m1_dist_high_sofar_pct(656.1)",
+          "gap_pct(589.6)"
+        ]
+      }
+    }
+  }
+]

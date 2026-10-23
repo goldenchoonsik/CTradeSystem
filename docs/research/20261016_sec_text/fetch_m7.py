@@ -1,7 +1,7 @@
 """M7 의 10-K·10-Q 본문(primary document) 원본 수집 — 무수정 저장(0o444), 이미 있으면 건너뜀(이어받기). SEC 공개 API, 초당 약 6회."""
 import json, os, re, sys, time, requests
 OUT = "/home/kuzimo/projects/CTradeSystem/DataVault/staging/us_filings_sec"
-UA = {"User-Agent": "CTradeSystem research script"}
+UA = {"User-Agent": os.environ.get("SEC_USER_AGENT", "CTradeSystem research script")}  # SEC 공정 접근: 이름+연락처 필요
 M7 = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA"]
 FORMS = {"10-K", "10-Q"}
 SINCE = "2016-01-01"
