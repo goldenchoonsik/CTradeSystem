@@ -11,6 +11,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+from . import ledger
 from . import reading as R
 from . import reading_eval as E
 from . import reading_ext as X
@@ -36,9 +37,71 @@ def trend_label(ylast: float, yhat: float) -> str:
     return "악화" if yhat < 0 else "둔화"
 
 
+# EU27 회원국(ISO2) — 업종 도식에서 'EU 시장 점유' 정보가 닿는 행선지(영국은 유럽 그룹이지만 EU 수입 통계 밖)
+EU27 = {"AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"}
+
+
+def sector_destinations(D, year: int) -> dict:
+    """화면 도식용 — 업종 품목 수출의 나라별 몫·금액. 관세청 수집국 각각 + 나머지 'rest'(국가별 자료 미수집).
+      share            판정 계산 비중(그 해 세계 합계 = 100%, reading.sector_exposure 와 같은 자료·같은 해)
+      amt/sh12         최근 12개월(관세청 자료 끝 달까지) 금액(달러)·비중 — 화면 막대 폭
+      amt_prev/sh12_prev  그 전 12개월
+    표시만 하고 점수에는 안 쓴다."""
+    if D.items is None:
+        return {}
+    names = {c: n["name"] for c, n in ledger.nodes("country").items()}
+    group_of = {c: g for g, (cs, _) in R.PARTNERS.items() for c in cs}
+    end = D.items_world.month.max()
+    win = lambda df, k: df[(df.month > end - pd.DateOffset(months=12 * k)) & (df.month <= end - pd.DateOffset(months=12 * (k - 1)))]
+    frames = {"yr": (D.items[D.items.month.dt.year == year], D.items_world[D.items_world.month.dt.year == year]),
+              "now": (win(D.items, 1), win(D.items_world, 1)), "prev": (win(D.items, 2), win(D.items_world, 2))}
+    out = {}
+    for s, spec in R.SECTOR_HS.items():
+        inside = lambda df, spec=spec: df.loc[df.hs4.map(lambda h: R._hs_in(h, spec)).astype(bool)] if len(df) else df
+        tot, byc = {}, {}
+        for k, (a, w) in frames.items():
+            tot[k] = float(inside(w)["exp"].sum())
+            byc[k] = inside(a).groupby("country")["exp"].sum()
+        if tot["yr"] <= 0 or tot["now"] <= 0:
+            continue
+        cs = sorted(set(byc["yr"].index) | set(byc["now"].index))
+        val = lambda k, c: float(byc[k].get(c, 0.0))
+        rows = [{"c": c, "name": names.get(c, c), "group": group_of.get(c), "eu": c in EU27,
+                 "share": val("yr", c) / tot["yr"], "amt": val("now", c), "sh12": val("now", c) / tot["now"],
+                 "amt_prev": val("prev", c), "sh12_prev": val("prev", c) / tot["prev"] if tot["prev"] > 0 else None} for c in cs]
+        rows = sorted([r for r in rows if r["share"] > 0 or r["sh12"] > 0], key=lambda r: -r["sh12"])
+        rest = {"share": max(0.0, 1.0 - sum(r["share"] for r in rows)), "amt": max(0.0, tot["now"] - sum(r["amt"] for r in rows)),
+                "amt_prev": max(0.0, tot["prev"] - sum(r["amt_prev"] for r in rows))}
+        rest["sh12"] = rest["amt"] / tot["now"]
+        rest["sh12_prev"] = rest["amt_prev"] / tot["prev"] if tot["prev"] > 0 else None
+        out[s] = {"year": year, "period": f"{(end - pd.DateOffset(months=11)):%Y-%m}~{end:%Y-%m}", "total": tot["now"], "total_prev": tot["prev"],
+                  "countries": rows, "rest": rest}
+    return out
+
+
+def sector_outlooks(t) -> dict:
+    """화면용 업종 수출 전망(공표된 최신) — {업종: {ebsi: {...}, bsi: {...}}}. 원천이 없으면 빈 dict."""
+    from . import kr_outlook as O
+    try:
+        world = pd.read_parquet(store.path("derived", "trade", "kr_exp_item_world.parquet"))
+    except Exception:
+        return {}
+    yr = (pd.Timestamp(t) - pd.offsets.MonthEnd(1)).year - 1
+    out: dict = {}
+    for kind in O.KINDS:
+        v = O.load(kind)
+        if v is None or v.empty:
+            continue
+        for s, x in O.sector_index(kind, t, v, O.sector_weights(world, yr, kind), latest=True).items():
+            out.setdefault(s, {})[kind] = x
+    return out
+
+
 def evidence(D, latest: dict, expo: dict) -> dict:
     """최신 판독을 사람이 읽을 근거 문장으로."""
     out = {"links": [], "total": None, "sectors": [], "competition": []}
+    dest = sector_destinations(D, (pd.Timestamp(latest["t"]) - pd.offsets.MonthEnd(1)).year - 1)     # expo 와 같은 해(t−1 월의 전년)
+    outlook = sector_outlooks(latest["t"])
     for g, lk in latest["links"].items():
         d = latest["demand"].get(g)
         txt = f"경기 동조성 {LINK_KO.get(lk['state'], lk['state'])} — 최근 5년 '{g} 경기 ↔ 한국의 대{g} 수출' 상관계수 {lk['rho']:.2f}(시차 {lk['k']}개월)"
@@ -66,7 +129,7 @@ def evidence(D, latest: dict, expo: dict) -> dict:
         txt += f" · 미국 시장 한국 점유 변화 {v['C']:+.2f}%p" if v["C"] is not None else " · 미국 점유 자료 없음"
         out["sectors"].append({"s": s, "name": v["name"], "reading": v["reading"], "score": v["score"], "D": v["D"], "C": v["C"], "text": txt,
                                "score_D": v.get("score_D"), "reading_D": v.get("reading_D"), "score_CE": v.get("score_CE"), "reading_CE": v.get("reading_CE"), "C_EU": v.get("C_EU"),
-                               "score_V": v.get("score_V"), "reading_V": v.get("reading_V"), "D_VA": v.get("D_VA")})
+                               "score_V": v.get("score_V"), "reading_V": v.get("reading_V"), "D_VA": v.get("D_VA"), "dest": dest.get(s), "outlook": outlook.get(s)})
     from . import us_imports
     for cmd, c in latest.get("competition", {}).items():
         out["competition"].append({"cmd": cmd, "name": us_imports.PRODUCTS.get(cmd, cmd), "kr": c.get("kr"), "cn": c.get("cn"), "month": c.get("month")})

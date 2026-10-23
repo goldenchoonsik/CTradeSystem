@@ -44,6 +44,17 @@
   .rd-verdict .rd-vhead { color: var(--text-muted); font-size: 11px; margin-bottom: 3px; }
   .rd-verdict .rd-vrow { margin: 3px 0; line-height: 1.6; }
   .rd-verdict .chip { cursor: help; }
+  .dest-legend { font-size: 11px; color: var(--text-muted); margin: 2px 0 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+  .dest-legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+  .dest-sec { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 2px 10px; padding: 6px 0; border-top: 1px solid var(--border-color); align-items: center; }
+  .dest-name { font-size: 12px; line-height: 1.5; }
+  .dest-rows { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .dest-row { display: grid; grid-template-columns: 50px minmax(0, 1fr) 250px; gap: 8px; align-items: center; font-size: 11px; }
+  .dest-row > .muted:first-child { white-space: nowrap; text-align: right; }
+  .dest-bar { display: flex; height: 20px; border-radius: 3px; overflow: hidden; background: #1a1a1e; }
+  .dest-seg { height: 100%; overflow: hidden; white-space: nowrap; font-size: 10.5px; line-height: 20px; padding-left: 3px; box-shadow: inset -1px 0 0 rgba(0,0,0,0.6); cursor: help; }
+  .dest-sum { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 900px) { .dest-sec { grid-template-columns: 1fr; } .dest-row { grid-template-columns: 50px minmax(0, 1fr); } .dest-sum { grid-column: 2; } }
   .btn-td { background: rgba(0,210,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,210,255,0.35); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
   .btn-td:disabled { opacity: 0.5; cursor: default; }
   .empty { padding: 30px; text-align: center; color: var(--text-muted); }
@@ -108,10 +119,14 @@
       <div id="rdTotal" style="margin-top:8px;font-size:13px;"></div>
     </div>
     <div class="td-card">
-      <h3>업종 판독 — 수출 노출 × 수요 + 미국 시장 점유</h3>
+      <h3>업종 판독 — 나라별 수출 비중 × 수출 증가율 전망 (+ 미국·EU 시장 점유)</h3>
       <div class="rd-verdict"><div id="rdVerdictSectors"></div><div class="warn" id="hzSectorNote"></div></div>
       <div class="td-sub">우호/비우호는 업종 간 상대 점수(z). 근거: 업종 품목 수출의 상대국 노출, 수요 충격(노출 × 나라별 수출 증가율 전망), 미국 시장 한국 점유 변화.
         <b>합성</b> = 사전등록 점수(수요 충격 + 미국 점유). 나머지 열은 전진 확인 중인 변형.</div>
+      <div class="rd-vhead" style="font-size:12px;color:var(--text-secondary);margin-top:4px;"><b>업종 수출 도식</b> — 막대 = 업종 수출(관세청, 최근 12개월) 100%를 나라별로.
+        <b>실적</b> = 나라별 금액·비중(색 = 전년비) · <b>나라 전망</b> = 그 나라로 가는 한국 수출 전체의 6개월 뒤 증가율 전망 · <b>업종 전망</b> = 수출기업 설문(무역협회 EBSI, 다음 분기; 칸 = 품목 — 과거 재현에서 앞서지 못해 현재 파악용) · <b>점유</b> = 미국·EU 수입 시장 한국산 점유 변화.
+        실적·나라 전망·점유는 같은 칸이라 위아래가 맞는다 · 칸에 마우스를 올리면 수치.</div>
+      <div id="rdDest" style="margin-bottom:10px;"></div>
       <table class="td" id="rdSectors"></table>
     </div>
     <div class="td-card">
@@ -605,6 +620,89 @@ const RD_VTIP = [['판독 유효', '~2016·2017~ 두 기간 모두 적중 55% �
 const rdVtip = v => (RD_VTIP.find(([k]) => String(v || '').startsWith(k)) || ['', ''])[1];
 const rdChip = (v, code) => `<span class="chip" style="${rdVcol(v)}" title="${esc(rdVtip(v) + (code ? ' · 사전등록 코드 ' + code : ''))}">${esc(v || '–')}</span>`;
 const rdRow = (name, v, code, metrics) => `<div class="rd-vrow"><b>${esc(name)}</b> ${rdChip(v, code)} <span class="muted">${metrics || ''}</span></div>`;
+// 업종 도식(2026-10-23, 사용자: '전체 국가를 보이고 분석 가능한 몫만 정보 표시, 나머지는 분석 불가 — 도식화가 중요'):
+// 업종 수출 100% 를 나라별 칸으로. 색 = 분석된 몫(수요: 그 나라 수출 증가율 전망, 점유: 미국·EU 시장 한국산 점유 변화), 빗금 = 분석 불가(사유별).
+// 판정 계산은 그대로(표시만) — 분석 불가 칸은 엔진에서 수요 충격 0 으로 들어간다.
+const DEST_OK = {'확대': '#50fa7b', '회복': '#50fa7b', '둔화': '#fd7e14', '악화': '#ff5555', '유지': '#8ab4f8', '잠식': '#ff5555'};
+const DEST_NA = {nolink: ['repeating-linear-gradient(135deg,#4d4d58 0 3px,#35353d 3px 7px)', '#d0d0da'],
+                 nodata: ['repeating-linear-gradient(135deg,#3a3a42 0 3px,#27272d 3px 7px)', '#a8a8b4'],
+                 rest: ['repeating-linear-gradient(135deg,#2e2e35 0 2px,#1d1d22 2px 8px)', '#8a8a96']};
+// 실적 칸 색 = 최근 12개월 전년비, 업종 전망 칸 색 = 지수(100 = 전 분기와 같음)
+const destGrowthCol = g => g === null || g === undefined ? ['#5b6b80', '#e8e8f0'] : g >= 0.1 ? ['#2f9e5a', '#f0fff4'] : g <= -0.1 ? ['#b83c3c', '#fff0f0'] : ['#5b6b80', '#e8e8f0'];
+const destIdxCol = v => v >= 110 ? ['#50fa7b', '#111'] : v >= 100 ? ['#b9f6ca', '#111'] : v >= 90 ? ['#fdb27a', '#111'] : ['#ff5555', '#111'];
+const usd = v => v >= 1e10 ? '$' + (v / 1e8).toFixed(0) + '억' : v >= 1e8 ? '$' + (v / 1e8).toFixed(1) + '억' : '$' + (v / 1e6).toFixed(0) + '백만';
+function renderDest(E) {
+  const el = document.getElementById('rdDest');
+  if (!el) return;
+  const secs = (E.sectors || []).filter(x => x.dest);
+  if (!secs.length) { el.innerHTML = '<div class="td-sub">품목 자료(관세청) 수집 후 표시</div>'; return; }
+  const L = Object.fromEntries((E.links || []).map(x => [x.g, x]));
+  const band = v => v >= 0.3 ? '확대' : v <= -0.3 ? '잠식' : '유지';                       // 경쟁 판독과 같은 ±0.3%p
+  const pct = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
+  const sgn = (v, d) => (v >= 0 ? '+' : '') + fmt(v, d);
+  const gr = (a, b) => b > 0 ? a / b - 1 : null;
+  const seg = (w, st, label, tip) => `<div class="dest-seg" style="width:${(w * 100).toFixed(3)}%;background:${st[0]};color:${st[1]};" title="${esc(tip)}">${w >= 0.06 ? esc(label) : ''}</div>`;
+  const ok = c => [DEST_OK[c] || '#8ab4f8', '#111'];
+  const sum = html => `<span class="dest-sum" title="${esc(html.replace(/<[^>]+>/g, ''))}">${html}</span>`;   // 잘려도 마우스를 올리면 전체
+  const lg = (bg, t) => `<span><i style="background:${bg};"></i>${t}</span>`;
+  let h = `<div class="dest-legend"><b>실적</b>${lg('#2f9e5a', '전년비 +10%↑')}${lg('#5b6b80', '±10%')}${lg('#b83c3c', '−10%↓')}`
+    + `<b style="margin-left:8px;">전망·점유</b>${lg('#50fa7b', '확대·회복')}${lg('#fd7e14', '둔화')}${lg('#ff5555', '악화·잠식')}${lg('#8ab4f8', '점유 유지')}`
+    + `<b style="margin-left:8px;">업종 전망 지수</b>${lg('#50fa7b', '110↑')}${lg('#b9f6ca', '100~110')}${lg('#fdb27a', '90~100')}${lg('#ff5555', '90↓')}`
+    + `<b style="margin-left:8px;">빗금 = 분석 불가</b>${lg(DEST_NA.nolink[0], '경기 동조성 없음')}${lg(DEST_NA.nodata[0], '선행지수·수입 통계 없음')}${lg(DEST_NA.rest[0], '국가별 자료 미수집')}</div>`;
+  secs.forEach(x => {
+    const Dd = x.dest;
+    let aBar = '', dBar = '', mBar = '', dOk = 0, mOk = 0;
+    const cells = Dd.countries.map(c => ({...c, w: c.sh12})).concat(Dd.rest.sh12 > 0.0005 ? [{c: '_rest', name: '그 외', rest: true, ...Dd.rest, w: Dd.rest.sh12}] : []);
+    cells.forEach(c => {
+      const head = `${c.name} — 최근 12개월(${Dd.period}) ${usd(c.amt)} · 업종 수출의 ${pct(c.sh12)}`;
+      // 실적
+      const g = gr(c.amt, c.amt_prev);
+      aBar += seg(c.w, destGrowthCol(g), c.w >= 0.11 ? `${c.name} ${usd(c.amt)} (${pct(c.sh12)})` : `${c.name} ${pct(c.sh12)}`,
+        `${head}\n이전 12개월 ${usd(c.amt_prev)} (${pct(c.sh12_prev)}) · 전년비 ${g === null ? '–' : sgn(g * 100, 0) + '%'}` + (c.rest ? '\n관세청 국가별 자료를 받지 않은 나라들의 합(수집 26개국 밖)' : `\n판정 계산 비중(${Dd.year}년) ${pct(c.share)}`));
+      if (c.rest) {
+        const t = `${head}\n분석 불가: 관세청 국가별 수출 자료 미수집(수집 26개국 밖)`;
+        dBar += seg(c.w, DEST_NA.rest, `그 외 ${pct(c.w)}`, t);
+        mBar += seg(c.w, DEST_NA.rest, '', t);
+        return;
+      }
+      // 나라 전망
+      const lk = c.group ? L[c.group] : null;
+      if (lk && lk.trend) {
+        dOk += c.w;
+        dBar += seg(c.w, ok(lk.trend), `${c.name} ${lk.trend}`, `${head}\n${c.group}로 가는 한국 수출 전체(모든 품목)의 증가율 전망: 지금 ${pctS(lk.ylast_pct)} → 6개월 뒤 ${pctS(lk.yhat_pct)} (${lk.trend})\n업종별 전망이 아님 — 이 업종 대${c.name} 실적 전년비는 ${g === null ? '–' : sgn(g * 100, 0) + '%'}`);
+      } else if (lk) {
+        dBar += seg(c.w, DEST_NA.nolink, `${c.name} ${pct(c.w)}`, `${head}\n분석 불가: ${c.group} 경기 동조성 없음(상관 ${fmt(lk.rho)} < 0.25) → 수요 충격 0 으로 계산`);
+      } else {
+        dBar += seg(c.w, DEST_NA.nodata, `${c.name} ${pct(c.w)}`, `${head}\n분석 불가: ${c.group ? c.group + ' 전망 자료 없음' : 'OECD 경기선행지수 없음(상대국 목록 밖)'} → 수요 충격 0 으로 계산`);
+      }
+      // 점유
+      const mk = c.c === 'US' ? ['미국', x.C, '합성 판독에 들어감'] : c.eu ? ['EU', x.C_EU, 'EU 경쟁만 열(전진 확인)'] : null;
+      if (mk && mk[1] !== null && mk[1] !== undefined) {
+        mOk += c.w;
+        mBar += seg(c.w, ok(band(mk[1])), `${c.name} ${sgn(mk[1], 1)}%p`, `${head}\n${mk[0]} 수입 시장 한국산 점유 변화(최근 12개월 vs 그 전 12개월, 업종 품목) ${sgn(mk[1], 2)}%p (${band(mk[1])}) — ${mk[2]}`);
+      } else {
+        mBar += seg(c.w, DEST_NA.nodata, '', `${head}\n분석 불가: ${mk ? `이 업종 품목의 ${mk[0]} 수입 대응 없음` : '그 나라 수입 시장 통계 없음(미국·EU 만 수집)'}`);
+      }
+    });
+    // 업종 전망(무역협회 EBSI, 없으면 한국은행 수출전망 BSI) — 칸 = 품목(업종 안 수출 비중)
+    const O = x.outlook || {}, eb = O.ebsi, bs = O.bsi, src = eb || bs;
+    const qlab = p => p ? (eb ? `${p.slice(0, 4)} ${Math.floor((+p.slice(5, 7) - 1) / 3) + 1}/4분기` : `${p.slice(0, 7)}`) : '';
+    let oBar = '', oSum = '<span class="muted">업종 전망 자료 없음</span>';
+    if (src) {
+      const nm = eb ? '무역협회 EBSI' : '한국은행 수출전망 BSI';
+      src.parts.forEach(p => { oBar += seg(p.weight, destIdxCol(p.value), `${p.name} ${fmt(p.value, 1)}`,
+        `${p.name} — ${nm} ${fmt(p.value, 1)} (${qlab(src.period)} 전망, 100 = 전 ${eb ? '분기' : '달'}와 같음) · 업종 수출의 ${pct(p.weight)}`); });
+      oSum = `${eb ? 'EBSI' : 'BSI'} <b style="color:var(--text-secondary);">${fmt(src.value, 1)}</b> (전 ${eb ? '분기' : '달'} ${fmt(src.prev, 1)}) · ${qlab(src.period)}` + (eb && bs ? ` · 한은 BSI ${fmt(bs.value, 0)}` : '')
+        + ' · 과거 재현에서 수출·주가를 앞서지 못함(사전등록 E) — 현재 파악용';
+    } else oBar = seg(1, DEST_NA.nodata, '업종 전망 자료 없음', '');
+    h += `<div class="dest-sec"><div class="dest-name"><b>${esc(x.name)}</b><br>${chipS(x.reading)}<span class="muted" style="font-size:10px;">합성</span></div><div class="dest-rows">`
+      + `<div class="dest-row"><span class="muted">실적</span><div class="dest-bar">${aBar}</div>${sum(`최근 12개월 <b style="color:var(--text-secondary);">${usd(Dd.total)}</b> · 전년비 ${Dd.total_prev > 0 ? sgn((Dd.total / Dd.total_prev - 1) * 100, 0) + '%' : '–'}`)}</div>`
+      + `<div class="dest-row"><span class="muted">나라 전망</span><div class="dest-bar">${dBar}</div>${sum(`전망 반영 <b style="color:var(--text-secondary);">${pct(dOk)}</b> · 수요 충격 ${sgn(x.D, 3)}`)}</div>`
+      + `<div class="dest-row"><span class="muted">업종 전망</span><div class="dest-bar">${oBar}</div>${sum(`${oSum}`)}</div>`
+      + `<div class="dest-row"><span class="muted">점유</span><div class="dest-bar">${mBar}</div>${sum(`점유 정보 <b style="color:var(--text-secondary);">${pct(mOk)}</b> · 미국 ${x.C == null ? '–' : sgn(x.C, 2) + '%p'} · EU ${x.C_EU == null ? '–' : sgn(x.C_EU, 2) + '%p'}`)}</div></div></div>`;
+  });
+  el.innerHTML = h;
+}
 function renderReading() {
   const R = D.reading || {};
   if (!R.evidence) { document.getElementById('rdLinks').innerHTML = '<tr><td class="empty">시스템 판독 없음 — 전체 갱신(또는 시스템 판독 단계) 실행 후 표시</td></tr>'; return; }
@@ -628,6 +726,7 @@ function renderReading() {
   const fwHead = F ? `<span class="muted">기록 ${F.n_readings}건 · ${F.n_months ? `채점 ${F.n_months}/${F.min_months}개월` : `첫 채점 ${F.first_scorable.slice(0, 7)}`}</span>` : '';
   document.getElementById('rdVerdictSectors').innerHTML = head
     + rdRow('합성 판독 → 6개월 뒤 업종 주가(코스피 대비)', V[K[3]], K[3], SS.all ? `IC ${fmt(SS.all.ic, 2)} (t ${fmt(SS.all.t, 1)}; ~2016 ${fmt((SS.early || {}).ic, 2)} · 2017~ ${fmt((SS.late || {}).ic, 2)}) · 상위2−하위2 ${fmt((SS.all.spread_top2 || 0) * 100, 1)}%p/6개월 · 우호/비우호 적중 ${pc(SS.all.hit)}` : '')
+    + rdRow('업종 전망 설문(무역협회 EBSI) → 주가·수출', '버림', 'E(2026-10-23)', '주가 IC +0.06 (t 1.1; ~2016 −0.06 · 2017~ +0.16) · 수출 방향 적중 52% (평균 회귀 57%) — 아래 업종 전망 줄은 현재 파악용')
     + (SS.all ? `<div class="rd-vrow muted">성분별(참고): 수요 충격만 IC ${fmt(SS.all.ic_D, 2)} (t ${fmt(SS.all.t_D, 1)}) · 상위2−하위2 ${fmt((SS.all.spread_top2_D || 0) * 100, 1)}%p · 미국 점유 IC ${fmt(SS.all.ic_C, 2)} (t ${fmt(SS.all.t_C, 1)}) — 결과를 보고 고른 것이라 판정엔 안 쓰고 아래 전진 확인으로</div>` : '')
     + (F || FC || FV ? `<div class="rd-vrow"><b>전진 확인</b> ${fwHead}<br>${fw('수요 충격만', F, K[4])} ${fw('EU 경쟁만', FC, K[5], ' — 과거 2017~ IC 0.00, 확인용')} ${fw('VA 가중 수요', FV, K[6], R.va_year ? ` — 부가가치 비중 ${R.va_year}년(OECD 공표 3년 늦음)` : '')}</div>` : '');
   document.getElementById('rdVerdictComp').innerHTML = head
@@ -635,6 +734,7 @@ function renderReading() {
   let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th>EU 경쟁만</th><th class="num">점수</th><th>VA 가중 수요</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th class="num">EU 점유 변화</th><th>근거</th></tr>';
   (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td>${chipS(x.reading_CE)}</td><td class="num">${x.score_CE == null ? '–' : fmt(x.score_CE)}</td><td>${chipS(x.reading_V)}</td><td class="num">${x.score_V == null ? '–' : fmt(x.score_V)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="num">${x.C_EU == null ? '–' : fmt(x.C_EU) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdSectors').innerHTML = (E.sectors || []).length ? sh : '<tr><td class="empty">품목 자료(관세청) 수집 후 표시</td></tr>';
+  renderDest(E);
   const LH = R.links_history || {};
   const names = Object.keys(LH).filter(g => LH[g].length);
   const dates = [...new Set(names.flatMap(g => LH[g].map(r => r[0])))].sort();

@@ -13,6 +13,7 @@ from typing import Dict, List, Optional, Tuple
 
 PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reference", "relations_ledger.json")
 SCOPES = ("reading", "links", "share")
+OUTLOOK_TYPES = {"ebsi": "sector_ebsi", "bsi": "sector_bsi"}     # 업종 수출 전망 원천(kr_outlook) — 2026-10-23 v1.2
 
 
 @lru_cache(maxsize=1)
@@ -64,6 +65,10 @@ def validate(L: dict) -> List[str]:
             errs.append(f"{tag}: scope 는 {SCOPES} 중 하나")
         if e["type"] == "sector_hs" and e.get("mode") not in ("include", "exclude"):
             errs.append(f"{tag}: mode 는 include|exclude")
+        if e["type"] in OUTLOOK_TYPES.values():
+            hs = e.get("hs")
+            if not (hs == "rest" or (isinstance(hs, list) and hs and all(isinstance(h, str) and h.isdigit() for h in hs))):
+                errs.append(f"{tag}: hs 는 'rest' 또는 HS 접두(숫자 문자열) 목록")
         key = (e["type"], e.get("from"), e.get("to"), e.get("scope"), e.get("mode"), e.get("valid_from"))
         if key in seen:
             errs.append(f"{tag}: 중복")
@@ -82,6 +87,12 @@ def validate(L: dict) -> List[str]:
     for e in act:
         if e["type"] == "group_cli" and e["to"] not in {x["to"] for x in act if x["type"] == "country_tiva"}:
             errs.append(f"group_cli {e['from']}→{e['to']}: TiVA 코드가 어느 상대국에도 없음")
+    for e in act:                                   # 업종 전망 원천의 hs 접두는 그 업종 HS 안이어야 한다(가중치가 업종 밖 수출을 세지 않게)
+        if e["type"] in OUTLOOK_TYPES.values() and isinstance(e.get("hs"), list):
+            inc = [x["to"] for x in act if x["type"] == "sector_hs" and x["mode"] == "include" and x["from"] == e["from"]]
+            for h in e["hs"]:
+                if not any(h.startswith(p) or p.startswith(h) for p in inc):
+                    errs.append(f"{e['type']} {e['from']}→{e['to']}: hs {h} 가 업종 HS({inc}) 밖")
     for mk in nodes.get("import_market", {}):
         tot = nodes["import_market"][mk].get("total_code")
         if tot and not any(e["type"] == "market_partner" and e["from"] == mk and e["to"] == tot for e in act):
@@ -174,6 +185,19 @@ def sector_products(as_of=None) -> Dict[str, List[str]]:
     for e in edges("sector_product", as_of):
         out.setdefault(e["from"], []).append(e["to"])
     return out
+
+
+def sector_outlook(kind: str, as_of=None) -> Dict[str, List[Tuple[str, str, object]]]:
+    """U코드 → [(원천 코드, 이름, hs 접두 목록 | 'rest')] — kind: ebsi(무역협회 EBSI 품목) | bsi(한국은행 수출전망 BSI 업종). kr_outlook"""
+    t = OUTLOOK_TYPES[kind]
+    names = nodes(EDGE_TO[t])
+    out: Dict[str, list] = {}
+    for e in edges(t, as_of):
+        out.setdefault(e["from"], []).append((e["to"], names[e["to"]]["name"], e["hs"]))
+    return out
+
+
+EDGE_TO = {"sector_ebsi": "ebsi_item", "sector_bsi": "bsi_industry"}
 
 
 def products() -> Dict[str, str]:

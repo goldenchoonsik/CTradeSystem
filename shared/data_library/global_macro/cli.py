@@ -81,6 +81,18 @@ def run(step: str, keys=None) -> bool:
                 return False
         else:
             issues.step_ok("kr_trade_items")
+    if step in ("kr_outlook", "all"):
+        from . import kr_outlook
+        try:
+            ok_o = kr_outlook.run()
+            if step == "kr_outlook" and not ok_o:
+                return False
+        except Exception as e:   # noqa: BLE001
+            issues.step_failed("kr_outlook", e)
+            if step == "kr_outlook":
+                return False
+        else:
+            issues.step_ok("kr_outlook")
     if step in ("kr_ksic", "all"):
         from . import kr_ksic
         try:

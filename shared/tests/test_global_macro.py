@@ -516,7 +516,7 @@ def test_ledger_file_validates_and_has_history_fields():
     s = ledger.summary()
     assert s["node_counts"]["kr_sector"] == 20 and s["edge_counts"]["country_tiva"] == 27 and s["edge_counts"]["sector_isic"] == 7 and len(s["sha256"]) == 64
     g = ledger.graph_view()
-    assert g["nodes"]["kr_sector"]["U013"] == "전기·전자" and g["edge_types"]["group_member"]["from"] == "group" and len(g["edges"]) == 188
+    assert g["nodes"]["kr_sector"]["U013"] == "전기·전자" and g["edge_types"]["group_member"]["from"] == "group" and len(g["edges"]) == 214          # 2026-10-23 v1.2: sector_ebsi 15 + sector_bsi 11 추가
 
 
 def test_ledger_validator_catches_broken_references_and_history():
@@ -751,3 +751,54 @@ def test_track_v_weights_demand_by_value_added_exposure_and_respects_publication
     r2 = X.attach_v({"t": "2024-06-30", "sectors": copy.deepcopy({s: {"name": s, "score": 0.0} for s in secs}), "demand": dem}, expo)      # 2022 는 2025-11 공표 → 2024 시점엔 못 씀
     assert "va_year" not in r2 and "score_V" not in r2["sectors"]["U009"]
     assert TI.year_available("2026-01-31", [2019, 2020, 2021, 2022]) == 2022 and TI.year_available("2010-01-31", [2019]) is None
+
+
+def test_sector_destinations_sum_to_one_with_rest():
+    """업종 도식: 수집국 몫 + 미수집 나머지 = 100%(판정 비중·최근 12개월 둘 다), 그룹·EU 표시는 원장 그대로(영국은 유럽 그룹이지만 EU 아님).
+    최근 12개월 = 관세청 끝 달까지, 이전 12개월 = 그 전 — 금액은 달러 그대로."""
+    from types import SimpleNamespace
+    from shared.data_library.global_macro import reading as R, reading_board as B
+    s, spec = next(iter(R.SECTOR_HS.items()))
+    hs = (spec["include"][0] + "0000")[:4]
+    m, m0 = pd.Timestamp("2025-06-30"), pd.Timestamp("2024-06-30")
+    items = pd.DataFrame({"month": [m] * 4 + [m0] * 2, "hs4": [hs] * 6, "country": ["US", "VN", "GB", "DE", "US", "VN"], "exp": [30.0, 20.0, 5.0, 5.0, 10.0, 10.0]})
+    world = pd.DataFrame({"month": [m, m0], "hs4": [hs, hs], "exp": [100.0, 40.0]})
+    out = B.sector_destinations(SimpleNamespace(items=items, items_world=world), 2025)[s]
+    by = {r["c"]: r for r in out["countries"]}
+    assert [r["c"] for r in out["countries"]][:2] == ["US", "VN"]                       # 최근 12개월 몫 큰 순
+    assert by["US"]["share"] == pytest.approx(0.3) and by["US"]["group"] == "미국"
+    assert by["US"]["amt"] == 30.0 and by["US"]["amt_prev"] == 10.0 and by["US"]["sh12_prev"] == pytest.approx(0.25)
+    assert by["VN"]["group"] is None                                                    # 상대국 그룹 밖 = 선행지수 없음
+    assert by["GB"]["group"] == "유럽" and not by["GB"]["eu"] and by["DE"]["eu"]
+    assert out["rest"]["share"] == pytest.approx(0.4) and out["rest"]["amt"] == pytest.approx(40.0) and out["rest"]["amt_prev"] == pytest.approx(20.0)
+    assert sum(r["sh12"] for r in out["countries"]) + out["rest"]["sh12"] == pytest.approx(1.0)
+    assert out["period"] == "2024-07~2025-06" and out["total"] == 100.0 and out["total_prev"] == 40.0
+
+
+# ---------------------------------------------------------------- 업종 수출 전망 원천(kr_outlook: EBSI·BSI)
+def test_outlook_weights_split_sector_hs_and_rest_is_union_complement():
+    """원장 hs 접두로 업종 수출을 나누고, 'rest' = 명시 접두 합집합의 나머지 — 분류 개편 전후 품목이 같은 HS 를 맡아도 두 번 빼지 않는다."""
+    from shared.data_library.global_macro import kr_outlook as O
+    m = pd.Timestamp("2025-06-30")
+    world = pd.DataFrame({"month": [m] * 5, "hs4": ["2710", "3901", "4011", "2901", "3304"], "exp": [40.0, 20.0, 15.0, 15.0, 10.0]})
+    w = O.sector_weights(world, 2025, "ebsi")["U008"]                                # 화학: 석유 27 · 플라스틱·고무(신) 39·40 · 플라스틱(구) 39 · 고무(구) 40 · 화학공업 rest
+    assert w["15360AA3ACAA"] == 40.0 and w["15360AA3ABAG"] == 35.0 and w["15360AA3ABAE"] == 20.0 and w["15360AA3ABAF"] == 15.0
+    assert w["15360AA3ACAB"] == 25.0                                                   # 100 − (27·39·40 합집합 75)
+
+
+def test_outlook_index_is_point_in_time_and_renormalizes_missing_items():
+    """과거 재현: 분기 Q 값은 Q 첫 달 말부터만 쓴다. 그 분기에 값이 없는 품목은 빼고 가중치를 다시 맞춘다."""
+    from shared.data_library.global_macro import kr_outlook as O
+    ws = {"U013": {"A": 60.0, "B": 40.0}}
+    v = pd.DataFrame({"period": pd.to_datetime(["2026-07-01", "2026-07-01", "2026-10-01"]), "code": ["A", "B", "A"], "value": [120.0, 80.0, 140.0]})
+    x = O.sector_index("ebsi", "2026-09-30", v, ws)                                    # 4분기(9-29 공표)는 10월 말부터 → 3분기 값
+    assert x["U013"]["period"] == "2026-07-01" and x["U013"]["value"] == pytest.approx(0.6 * 120 + 0.4 * 80)
+    y = O.sector_index("ebsi", "2026-10-31", v, ws)                                    # 4분기엔 B 가 없음 → A 만(가중치 1)
+    assert y["U013"]["period"] == "2026-10-01" and y["U013"]["value"] == pytest.approx(140.0) and y["U013"]["prev"] == pytest.approx(104.0)
+    assert O.sector_index("ebsi", "2026-09-30", v, ws, latest=True)["U013"]["period"] == "2026-10-01"    # 화면은 공표된 최신
+
+
+def test_kosis_unquoted_json_is_parsed():
+    from shared.data_library.global_macro import kr_outlook as O
+    rows = O._kosis_json('[{ORG_ID:"360",TBL_ID:"DT_36005_A001",TBL_NM:"품목별 EBSI",STRT_PRD_DE:"2009 2/4"}]')
+    assert rows[0]["TBL_ID"] == "DT_36005_A001" and rows[0]["STRT_PRD_DE"] == "2009 2/4"

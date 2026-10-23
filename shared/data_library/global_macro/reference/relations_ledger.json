@@ -1,12 +1,13 @@
 {
  "title": "글로벌 탑다운 관계 원장 — 노드와 선언 엣지(대응표)",
- "version": 1.1,
+ "version": 1.2,
  "fixed_at": "2026-10-22",
  "rules": [
   "코드는 이 파일만 읽는다(대응표 하드코딩 → 테스트 실패). 바꾸면 valid_to 로 닫고 새 엣지를 valid_from 으로 열며 reason 을 적는다(지우지 않는다).",
   "사전등록 결과의 해시 대상: 2026-10-22 이전은 코드 파일(kr_industry·trade·eu_imports·reading·stocks·kr_ksic), 이후는 이 파일. 값은 그날 코드와 동일(테스트 fixture 로 고정).",
   "선언 엣지(여기)는 '무엇이 무엇에 대응하는가'이고, 측정 엣지(연결 강도·비중·점유·베타)는 derived/ 산출물이다 — 섞지 않는다.",
-  "2026-10-22 v1.1: sector_isic 추가(TiVA 산업×상대국 부가가치 노출용, 전진 트랙 V). 기존 사전등록의 원장 해시 줄은 v1.0 기준으로 그대로 둔다 — 그 검정들은 sector_isic 을 쓰지 않았다."
+  "2026-10-22 v1.1: sector_isic 추가(TiVA 산업×상대국 부가가치 노출용, 전진 트랙 V). 기존 사전등록의 원장 해시 줄은 v1.0 기준으로 그대로 둔다 — 그 검정들은 sector_isic 을 쓰지 않았다.",
+  "2026-10-23 v1.2: sector_ebsi(무역협회 EBSI 품목)·sector_bsi(한국은행 업종별 수출전망 BSI) 추가 — 업종 단위 수출 전망 원천(kr_outlook). hs = 업종 안에서 그 품목이 맡는 HS 접두(가중치 = 전년 세계 수출액), 'rest' = 업종의 나머지 전부. 기존 검정들은 이 두 종류를 쓰지 않았다."
  ],
  "edge_types": {
   "country_tiva": {
@@ -77,6 +78,16 @@
    "from": "kr_sector",
    "to": "isic_activity",
    "desc": "코스피 업종 → OECD TiVA(ISIC rev4) 산업 코드 — 부가가치 기준 노출(FFD_DVA). KSIC 와 ISIC 는 2자리 번호가 다르다(KSIC C27 의료정밀 ≠ ISIC C27 전기장비)"
+  },
+  "sector_ebsi": {
+   "from": "kr_sector",
+   "to": "ebsi_item",
+   "desc": "코스피 업종 → 무역협회 수출산업경기전망지수(EBSI) 품목(KOSIS 360/DT_36005_A001). hs = 업종 안 그 품목의 HS 접두 목록 또는 'rest'(나머지 전부) — 업종 EBSI = 그 분기에 값이 있는 품목을 전년 세계 수출액으로 가중 평균"
+  },
+  "sector_bsi": {
+   "from": "kr_sector",
+   "to": "bsi_industry",
+   "desc": "코스피 업종 → 한국은행 업종별 기업경기실사지수 수출전망(ECOS 512Y008, BSI코드 BM) 업종. hs 규칙은 sector_ebsi 와 같다"
   }
  },
  "nodes": {
@@ -319,6 +330,37 @@
    "ESP": {
     "name": "스페인"
    }
+  },
+  "ebsi_item": {
+   "15360AA3ACAH": {"name": "반도체"},
+   "15360AA3ACAG": {"name": "무선통신기기 및 부품"},
+   "15360AA3ACAE": {"name": "컴퓨터", "note": "2009 3/4~2015 2/4 만"},
+   "15360AA3ACAI": {"name": "전기·전자제품"},
+   "15360AA3ACAD": {"name": "가전"},
+   "15360AA3ACAIA": {"name": "자동차 및 자동차 부품"},
+   "15360AA3ACAJ": {"name": "선박"},
+   "15360AA3ACAA": {"name": "석유제품"},
+   "15360AA3ACAB": {"name": "화학공업"},
+   "15360AA3ABAG": {"name": "플라스틱·고무·가죽제품", "note": "2015 3/4~ (이전은 플라스틱·고무및가죽제품 둘로 나뉨)"},
+   "15360AA3ABAE": {"name": "플라스틱", "note": "~2015 2/4"},
+   "15360AA3ABAF": {"name": "고무및가죽제품", "note": "~2015 2/4"},
+   "15360AA3ACAC": {"name": "철강 및 비철금속 제품"},
+   "15360AA3ACAF": {"name": "기계류"},
+   "15360AA3ACAL": {"name": "의료·정밀 및 광학기기", "note": "2015 3/4~"},
+   "15360AA3ACAK": {"name": "광학기기", "note": "~2015 2/4"}
+  },
+  "bsi_industry": {
+   "C1900": {"name": "석유정제·코크스"},
+   "C2000": {"name": "화학물질·제품"},
+   "C2100": {"name": "의료물질·의약품"},
+   "C2200": {"name": "고무·플라스틱"},
+   "C2400": {"name": "1차 금속"},
+   "C2500": {"name": "금속가공"},
+   "C2600": {"name": "전자·영상·통신장비"},
+   "C2700": {"name": "의료·정밀기기"},
+   "C2900": {"name": "기타 기계·장비"},
+   "C3000": {"name": "자동차"},
+   "C3100": {"name": "조선·기타운수"}
   }
  },
  "edges": [
@@ -509,6 +551,32 @@
   {"type": "sector_isic", "from": "U012", "to": "C28", "reason": "KSIC C29 기계 = ISIC C28(기계·장비)", "valid_from": "2026-10-22", "valid_to": null},
   {"type": "sector_isic", "from": "U013", "to": "C26", "reason": "KSIC C26 전자부품·컴퓨터·통신 = ISIC C26", "valid_from": "2026-10-22", "valid_to": null},
   {"type": "sector_isic", "from": "U014", "to": "C26", "reason": "KSIC C27 의료·정밀·광학 — ISIC 는 계측·광학이 C26, 의료기기는 C325(TiVA 에서 분리 안 됨) → C26 으로 근사(부정확 명시)", "valid_from": "2026-10-22", "valid_to": null},
-  {"type": "sector_isic", "from": "U015", "to": "C29_30", "reason": "KSIC C30 자동차 + C31 기타운송(조선) = ISIC C29_30", "valid_from": "2026-10-22", "valid_to": null}
+  {"type": "sector_isic", "from": "U015", "to": "C29_30", "reason": "KSIC C30 자동차 + C31 기타운송(조선) = ISIC C29_30", "valid_from": "2026-10-22", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U013", "to": "15360AA3ACAH", "hs": ["8541", "8542"], "reason": "반도체 = 개별소자·집적회로", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U013", "to": "15360AA3ACAG", "hs": ["8517"], "reason": "무선통신기기 = 전화기·통신장비", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U013", "to": "15360AA3ACAE", "hs": ["8471", "8473"], "reason": "컴퓨터·부품(2015 2/4 까지만 조사)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U013", "to": "15360AA3ACAI", "hs": "rest", "reason": "전기·전자제품 = 업종의 나머지(디스플레이 9013·가전 85류 포함) — EBSI 가전 품목은 HS 경계가 84류에 걸쳐 따로 대응하지 않음", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U015", "to": "15360AA3ACAIA", "hs": ["87"], "reason": "자동차·부품 = 87류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U015", "to": "15360AA3ACAJ", "hs": ["89"], "reason": "선박 = 89류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U008", "to": "15360AA3ACAA", "hs": ["27"], "reason": "석유제품 = 27류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U008", "to": "15360AA3ABAG", "hs": ["39", "40"], "reason": "플라스틱·고무(2015 3/4~)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U008", "to": "15360AA3ABAE", "hs": ["39"], "reason": "플라스틱(~2015 2/4)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U008", "to": "15360AA3ABAF", "hs": ["40"], "reason": "고무(~2015 2/4, 가죽은 업종 밖)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U008", "to": "15360AA3ACAB", "hs": "rest", "reason": "화학공업 = 업종의 나머지(29 유기화학·33 화장품)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U011", "to": "15360AA3ACAC", "hs": "rest", "reason": "철강 및 비철금속 = 금속 업종 전부(72·73)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U012", "to": "15360AA3ACAF", "hs": "rest", "reason": "기계류 = 기계 업종 전부(84, 컴퓨터 제외)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U014", "to": "15360AA3ACAL", "hs": "rest", "reason": "의료·정밀·광학(2015 3/4~)", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_ebsi", "from": "U014", "to": "15360AA3ACAK", "hs": "rest", "reason": "광학기기(~2015 2/4) — 분기마다 둘 중 하나만 값이 있음", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U013", "to": "C2600", "hs": "rest", "reason": "전자·영상·통신장비 = 전기·전자 업종 전부", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U015", "to": "C3000", "hs": ["87"], "reason": "자동차 = 87류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U015", "to": "C3100", "hs": ["89"], "reason": "조선·기타운수 = 89류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U008", "to": "C1900", "hs": ["27"], "reason": "석유정제 = 27류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U008", "to": "C2200", "hs": ["39", "40"], "reason": "고무·플라스틱 = 39·40류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U008", "to": "C2000", "hs": "rest", "reason": "화학물질·제품 = 업종의 나머지", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U011", "to": "C2400", "hs": ["72"], "reason": "1차 금속 = 철강 72류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U011", "to": "C2500", "hs": ["73"], "reason": "금속가공 = 철강 제품 73류", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U012", "to": "C2900", "hs": "rest", "reason": "기타 기계·장비 = 기계 업종 전부", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U014", "to": "C2700", "hs": "rest", "reason": "의료·정밀기기 = 업종 전부", "valid_from": "2026-10-23", "valid_to": null},
+  {"type": "sector_bsi", "from": "U009", "to": "C2100", "hs": "rest", "reason": "의료물질·의약품 = 제약 업종 전부(EBSI 엔 의약품 없음)", "valid_from": "2026-10-23", "valid_to": null}
  ]
 }
