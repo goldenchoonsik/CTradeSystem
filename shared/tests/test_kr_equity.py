@@ -247,7 +247,7 @@ def test_check_ext_fails_on_unit_typo_spike(stage):
     assert rep["spike"]["examples"][0]["code"] == "A3" and not rep["passed"]
 
 
-def test_check_ext_allows_bonus_issue_gap_between_ex_date_and_listing():
+def test_check_ext_allows_bonus_issue_gap_between_ex_date_and_listing(stage):     # stage: 검사 보고서를 실제 quality/ 에 쓰지 않게
     """무상증자 1:14 — 권리락일부터 무수정 종가 1/15, 신주 상장(30거래일 뒤)까지 KRX 공식 시총도 1/15 (아리바이오홀딩스 2023-12)."""
     e, px, krx = _ext_frames()
     a = (e.code == "A3").to_numpy()
