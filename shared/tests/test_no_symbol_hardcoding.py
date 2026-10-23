@@ -43,11 +43,11 @@ def _is_test(path: str) -> bool:
         or os.path.basename(path) == "conftest.py"
 
 
-def scan() -> Counter:
+def scan(root: str = REPO_ROOT) -> Counter:
     """{ "상대경로::SYM"|"상대경로::ALIAS": 개수 } — 운영 코드의 하드코딩 리터럴 수"""
     ledger = _ledger_keys()
     counts = Counter()
-    for dp, dn, fn in os.walk(REPO_ROOT):
+    for dp, dn, fn in os.walk(root):
         # 숨김 폴더(.claude/worktrees 의 저장소 사본 등)는 운영 코드가 아니다 — 가지치기 안 하면 사본이 위반으로 잡힌다(2026-10-22)
         dn[:] = [d for d in dn if d not in _EXCLUDE_DIRS and not d.startswith(".")]
         for name in fn:
@@ -56,7 +56,7 @@ def scan() -> Counter:
             path = os.path.join(dp, name)
             if _is_test(path):
                 continue
-            rel = os.path.relpath(path, REPO_ROOT).replace(os.sep, "/")
+            rel = os.path.relpath(path, root).replace(os.sep, "/")
             if rel in _DEFINITION_MODULES:
                 continue
             try:
@@ -93,6 +93,15 @@ def test_no_new_symbol_hardcoding_in_production_code():
         + "\n종목 신원은 코드에 박지 말고 원장(config_manager)/설정에서 읽으세요. "
           "정말 필요한 리터럴이면 이유를 남기고 `python -m shared.tests.test_no_symbol_hardcoding --update` 로 기준을 갱신하세요."
     )
+
+
+def test_scan_skips_hidden_tool_dirs(tmp_path):
+    """.claude/worktrees/ 아래 다른 체크아웃 사본의 리터럴은 세지 않는다 — 기준선에 없는 경로라 전부 '증가'로 잡혔다."""
+    for rel in ("CTrade/live.py", ".claude/worktrees/x/CTrade/live.py"):
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True)
+        p.write_text('SYMBOL = "KRW-BTC"\n', encoding="utf-8")
+    assert scan(str(tmp_path)) == Counter({"CTrade/live.py::SYM": 1})
 
 
 def test_baseline_is_not_stale_by_a_lot():

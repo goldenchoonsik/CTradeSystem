@@ -66,13 +66,23 @@ def _read(path: str) -> str:
         return f.read()
 
 
-def _iter_production_python_files():
+def _iter_production_python_files(root: str = REPO_ROOT):
     """테스트/스크래치를 제외한 프로덕션 .py 파일 순회"""
-    for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
+    for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")]   # 숨김 폴더(.claude/worktrees 사본) 제외
         for fn in filenames:
             if fn.endswith(".py"):
                 yield os.path.join(dirpath, fn)
+
+
+def test_production_scan_skips_hidden_tool_dirs(tmp_path):
+    """.claude/worktrees/ 아래 다른 체크아웃 사본은 운영 코드가 아니다 — 그 안의 data_manager.py 가 이중 writer 로 잡히면 안 된다."""
+    for rel in ("CAiModelBaker/core/data_manager.py", ".claude/worktrees/x/CAiModelBaker/core/data_manager.py"):
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True)
+        p.write_text("", encoding="utf-8")
+    found = [os.path.relpath(p, tmp_path).replace(os.sep, "/") for p in _iter_production_python_files(str(tmp_path))]
+    assert found == ["CAiModelBaker/core/data_manager.py"]
 
 
 # ==============================================================================

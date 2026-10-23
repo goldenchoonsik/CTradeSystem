@@ -133,7 +133,8 @@ def test_only_the_registry_owns_the_configured_reference_registration_loop():
     """
     owner = os.path.join("shared", "features", "feature_registry.py")
     offenders = []
-    for base, _dirs, files in os.walk(_ROOT):
+    for base, dirs, files in os.walk(_ROOT):
+        dirs[:] = [d for d in dirs if not d.startswith(".")]   # 숨김 폴더(.claude/worktrees 사본) 제외
         if any(p in base for p in (".git", "node_modules", "__pycache__", ".venv", "tests")):
             continue
         for fn in files:

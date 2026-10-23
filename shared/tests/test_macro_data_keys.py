@@ -57,7 +57,8 @@ def test_proxy_relation_is_defined_only_by_the_ledger():
     offenders = []
     for dp, dn, fn in os.walk(REPO_ROOT):
         dn[:] = [d for d in dn if d not in {".git", ".venv", "node_modules", "__pycache__",
-                                            "DataVault", "logs", "vultr_logs", "deploy", "docs", ".pytest_cache"}]
+                                            "DataVault", "logs", "vultr_logs", "deploy", "docs", ".pytest_cache"}
+                 and not d.startswith(".")]   # 숨김 폴더(.claude/worktrees 사본) 제외
         for name in fn:
             if os.path.splitext(name)[1] not in {".py", ".js"} or name.startswith("test_"):
                 continue
