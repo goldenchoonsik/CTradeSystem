@@ -9,10 +9,10 @@
     "FEE_RATE": 5e-05,
     "BACKTEST_DAYS": 40,
     "COOLDOWN_MINUTES": 2,
-    "TRAIN_START": "2026-07-21",
-    "TRAIN_END": "2026-09-22",
-    "OPT_START": "2026-09-23",
-    "OPT_END": "2026-10-06",
+    "TRAIN_START": "2026-07-27",
+    "TRAIN_END": "2026-10-06",
+    "OPT_START": "2026-10-07",
+    "OPT_END": "2026-10-16",
     "TEST_START": "2026-03-01",
     "TEST_END": "2026-03-31",
     "ACTIVE_SESSION_ID": "KODEX200_S10_NEW2",
@@ -24,77 +24,71 @@
             "ref_000660_ret_1c",
             "ref_000660_spread_vs_target",
             "ref_000660_intensity",
-            "target_trade_frequency",
-            "ref_000660_ret_5c",
-            "target_ma_ratio",
             "target_mfi",
-            "top2_lead_momentum",
+            "target_ma_ratio",
+            "target_trade_frequency",
             "target_macd_hist",
+            "ref_000660_ret_5c",
+            "top2_lead_momentum",
             "target_bb_pctb",
             "ref_15000_spread_vs_target",
             "ref_10100_spread_vs_target",
             "target_vwap_disparity",
+            "ref_krw_usdt_spread_vs_target",
             "ref_usdjpy_spread_vs_target",
             "ref_us_500_spread_vs_target",
             "target_rsi_curr",
             "ref_us_tech_100_spread_vs_target",
+            "ref_u180_spread_vs_target",
+            "target_ofi_cumsum",
             "ref_11100_spread_vs_target",
             "target_trade_bid_ratio",
-            "ref_11100_ret_5c",
+            "kospi_basis_z",
             "target_large_trade_density",
-            "overnight_gap_pct",
-            "ref_11100_ret_1c",
-            "ref_usdjpy_ret_1c",
-            "ref_15000_ret_1c",
-            "ref_10100_ret_1c",
-            "ref_us_tech_100_ret_1c",
-            "stock_basis",
-            "stock_basis_rate",
-            "stock_basis_z",
             "target_large_trade_ratio",
             "target_volume_spike",
             "target_trade_price_spike",
             "target_bb_kc_squeeze",
             "target_hour_cos",
-            "parkinson_rv_squeeze"
+            "kospi_basis",
+            "kospi_basis_rate",
+            "parkinson_rv_squeeze",
+            "krx_session_time"
         ],
         "active_features": [
             "ref_000660_ret_1c",
             "ref_000660_spread_vs_target",
             "ref_000660_intensity",
-            "target_trade_frequency",
-            "ref_000660_ret_5c",
-            "target_ma_ratio",
             "target_mfi",
-            "top2_lead_momentum",
+            "target_ma_ratio",
+            "target_trade_frequency",
             "target_macd_hist",
+            "ref_000660_ret_5c",
+            "top2_lead_momentum",
             "target_bb_pctb",
             "ref_15000_spread_vs_target",
             "ref_10100_spread_vs_target",
             "target_vwap_disparity",
+            "ref_krw_usdt_spread_vs_target",
             "ref_usdjpy_spread_vs_target",
             "ref_us_500_spread_vs_target",
             "target_rsi_curr",
             "ref_us_tech_100_spread_vs_target",
+            "ref_u180_spread_vs_target",
+            "target_ofi_cumsum",
             "ref_11100_spread_vs_target",
             "target_trade_bid_ratio",
-            "ref_11100_ret_5c",
+            "kospi_basis_z",
             "target_large_trade_density",
-            "overnight_gap_pct",
-            "ref_11100_ret_1c",
-            "ref_usdjpy_ret_1c",
-            "ref_15000_ret_1c",
-            "ref_10100_ret_1c",
-            "ref_us_tech_100_ret_1c",
-            "stock_basis",
-            "stock_basis_rate",
-            "stock_basis_z",
             "target_large_trade_ratio",
             "target_volume_spike",
             "target_trade_price_spike",
             "target_bb_kc_squeeze",
             "target_hour_cos",
-            "parkinson_rv_squeeze"
+            "kospi_basis",
+            "kospi_basis_rate",
+            "parkinson_rv_squeeze",
+            "krx_session_time"
         ],
         "feature_params": {
             "target_ma_ratio": {
@@ -184,7 +178,14 @@
             "stock_basis_rate": {},
             "stock_basis_z": {
                 "window": 60
-            }
+            },
+            "ref_krw_usdt_spread_vs_target": {},
+            "ref_u180_spread_vs_target": {},
+            "kospi_basis_z": {
+                "window": 60
+            },
+            "kospi_basis": {},
+            "kospi_basis_rate": {}
         },
         "feature_penalties": {
             "target_cvd_momentum": 0.3,
@@ -193,7 +194,9 @@
         "regime_features": {
             "target_is_auction": true,
             "target_hour_cos": true,
-            "krx_session_time": true
+            "krx_session_time": true,
+            "kospi_basis": true,
+            "kospi_basis_rate": true
         }
     },
     "OPTUNA_CONFIG": {
@@ -277,11 +280,11 @@
         "min_trades": 5,
         "min_profit_factor": 0.5,
         "wfa_enabled": true,
-        "wfa_train_months": 0.714,
+        "wfa_train_months": 0.86,
         "wfa_opt_months": 0.19,
         "wfa_test_months": 0.19,
-        "wfa_start_date": "2026-07-21",
-        "wfa_end_date": "2026-09-22",
+        "wfa_start_date": "2026-07-27",
+        "wfa_end_date": "2026-10-06",
         "buy_quantile_range": {
             "min": 0.8,
             "max": 0.995,
@@ -294,20 +297,19 @@
         "holdout_td": 7,
         "wfa_input_values": {
             "unit": "td",
-            "train": 15,
+            "train": 18,
             "opt": 4,
             "test": 4
         }
     },
     "AUTOLAB_CONFIG": {
-        "min_profit": 0,
+        "min_profit": 0.0,
         "min_trades": 8,
-        "max_mdd": 10,
+        "max_mdd": 10.0,
         "max_trials": 30,
         "seed": 42,
-        "holdout_start": "2026-09-23",
-        "holdout_end": "2026-10-06",
-        "align_mode": "",
+        "holdout_start": "2026-10-07",
+        "holdout_end": "2026-10-16",
         "ic_threshold": 0.015,
         "min_features": 2,
         "max_features": 10,
@@ -315,8 +317,7 @@
         "final_test_ratio": 100,
         "holdout_mode": "full",
         "final_test_td": 5,
-        "use_all_features": false,
-        "allow_gapped_trading_days": true
+        "use_all_features": false
     },
     "PROJECT_META": {
         "memo": "",
@@ -410,6 +411,12 @@
             "key": "15000",
             "name": "SK하이닉스 주식선물 (연결)",
             "role": "macro_futures"
+        },
+        {
+            "symbol": "KRW-USDT",
+            "key": "krw_usdt",
+            "name": "테더",
+            "role": "crypto_spot"
         }
     ],
     "REFERENCE_SYMBOLS": [
@@ -466,6 +473,12 @@
             "key": "15000",
             "name": "SK하이닉스 주식선물 (연결)",
             "role": "macro_futures"
+        },
+        {
+            "symbol": "KRW-USDT",
+            "key": "krw_usdt",
+            "name": "테더",
+            "role": "crypto_spot"
         }
     ]
 }

@@ -1,0 +1,40 @@
+{
+    "session_id": "SAMSUNG_S10_BEST1",
+    "symbol": "005930",
+    "interval": "10s",
+    "features_order": [
+        "target_ma_ratio",
+        "target_trade_bid_ratio",
+        "target_rsi_daily",
+        "target_hour",
+        "target_rsi_curr",
+        "target_atr_ratio",
+        "target_adx",
+        "target_bb_pctb",
+        "target_macd_hist",
+        "target_mfi",
+        "target_cvd_momentum"
+    ],
+    "feature_params": {
+        "target_ma_ratio": {
+            "period_bars": 15
+        },
+        "target_trade_bid_ratio": {
+            "window_mins": 10
+        },
+        "target_rsi_daily": {
+            "period_days": 14
+        },
+        "target_hour": {},
+        "target_rsi_curr": {
+            "period_bars": 14
+        },
+        "target_adx": {
+            "period_bars": 14
+        },
+        "target_atr_ratio": {
+            "period_bars": 14
+        }
+    },
+    "param_policy": "scale_v2"
+}

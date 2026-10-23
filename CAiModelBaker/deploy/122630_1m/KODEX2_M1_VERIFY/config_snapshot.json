@@ -9,10 +9,10 @@
     "FEE_RATE": 5e-05,
     "BACKTEST_DAYS": 40,
     "COOLDOWN_MINUTES": 2,
-    "TRAIN_START": "2025-01-02",
-    "TRAIN_END": "2026-08-07",
-    "OPT_START": "2026-08-10",
-    "OPT_END": "2026-10-08",
+    "TRAIN_START": "2026-03-20",
+    "TRAIN_END": "2026-08-14",
+    "OPT_START": "2026-08-18",
+    "OPT_END": "2026-10-16",
     "TEST_START": "2026-03-01",
     "TEST_END": "2026-03-31",
     "ACTIVE_SESSION_ID": "KODEX2_M1_VERIFY",
@@ -45,11 +45,26 @@
         ],
         "active_features": [
             "mtf_ema_distance_4h",
-            "target_ma_ratio",
-            "ref_000660_ret_5c",
+            "target_hour_cos",
+            "target_rsi_daily",
+            "target_atr_ratio",
             "target_adx",
+            "target_hour_sin",
             "target_bb_kc_squeeze",
-            "ref_005930_ret_5c"
+            "target_mfi",
+            "target_volatility_ratio",
+            "parkinson_rv_squeeze",
+            "kospi_basis",
+            "target_rv_ratio",
+            "target_ma_ratio",
+            "target_macd_hist",
+            "ref_000660_ret_5c",
+            "target_vwap_disparity",
+            "target_kaufman_er",
+            "ref_005930_ret_5c",
+            "kospi_basis_z",
+            "top2_lead_momentum",
+            "semi_duo_lead_delta"
         ],
         "feature_params": {
             "target_ma_ratio": {
@@ -132,7 +147,7 @@
             "min": 16,
             "max": 48,
             "user_min": 6,
-            "user_max": 15,
+            "user_max": 6,
             "step": 1
         },
         "take_profit_range": {
@@ -195,7 +210,7 @@
             "min": 24,
             "max": 64,
             "user_min": 6,
-            "user_max": 15,
+            "user_max": 6,
             "step": 1
         },
         "fee_upbit": 5e-05,
@@ -203,11 +218,11 @@
         "min_trades": 5,
         "min_profit_factor": 0.5,
         "wfa_enabled": true,
-        "wfa_train_months": 3.0,
-        "wfa_opt_months": 1.0,
-        "wfa_test_months": 1.0,
-        "wfa_start_date": "2025-01-02",
-        "wfa_end_date": "2026-08-07",
+        "wfa_train_months": 1.952,
+        "wfa_opt_months": 0.476,
+        "wfa_test_months": 0.476,
+        "wfa_start_date": "2026-03-20",
+        "wfa_end_date": "2026-08-14",
         "buy_quantile_range": {
             "min": 0.8,
             "max": 0.995,
@@ -215,35 +230,35 @@
             "user_min": 0.8,
             "user_max": 0.995
         },
-        "wfa_window_count": 14,
+        "wfa_window_count": 5,
         "holdout_td": 40,
         "split_unit": "td",
         "wfa_input_values": {
             "unit": "td",
-            "train": 63,
-            "opt": 21,
-            "test": 21
+            "train": 41,
+            "opt": 10,
+            "test": 10
         }
     },
     "AUTOLAB_CONFIG": {
         "min_profit": 0.0,
         "min_trades": 8,
         "max_mdd": 10.0,
-        "max_trials": 12,
+        "max_trials": 30,
         "seed": 42,
-        "holdout_start": "2026-08-10",
-        "holdout_end": "2026-10-08",
+        "holdout_start": "2026-08-18",
+        "holdout_end": "2026-10-16",
         "ic_threshold": 0.02,
         "min_features": 2,
         "max_features": 8,
         "complexity_penalty": 0.15,
-        "final_test_ratio": 53,
+        "final_test_ratio": 100,
         "holdout_mode": "split",
         "final_test_td": 21,
         "use_all_features": false
     },
     "TARGET_HORIZON_CONFIG": {
-        "mode": "candidate",
+        "mode": "grid_search",
         "locked_predict_ahead": 6,
         "locked_max_hold": 6,
         "candidate_horizons": [
@@ -281,6 +296,18 @@
             "key": "u180",
             "name": "KOSPI 200 현물 지수",
             "role": "index_benchmark"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "key": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "key": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
         }
     ],
     "reference_symbols": [
@@ -307,6 +334,18 @@
             "key": "u180",
             "name": "KOSPI 200 현물 지수",
             "role": "index_benchmark"
+        },
+        {
+            "symbol": "US_TECH_100",
+            "key": "us_tech_100",
+            "name": "나스닥 100 CFD (대용)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "US_500",
+            "key": "us_500",
+            "name": "S&P 500 CFD (대용)",
+            "role": "macro_futures"
         }
     ],
     "champion_features": [

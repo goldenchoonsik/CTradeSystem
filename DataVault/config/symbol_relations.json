@@ -21,6 +21,11 @@
         "symbol": "15000",
         "role": "macro_futures",
         "default_price": 100000
+      },
+      {
+        "symbol": "KRW-USDT",
+        "role": "crypto_spot",
+        "default_price": 100000
       }
     ]
   },
@@ -28,7 +33,8 @@
     "symbol": "122630",
     "groups": [
       "KRX_SEMI_LEADERS",
-      "KRX_INDEX_FUTURES"
+      "KRX_INDEX_FUTURES",
+      "GLOBAL_MACRO_US"
     ],
     "references": []
   },
@@ -214,9 +220,14 @@
     ],
     "references": [
       {
-        "symbol": "11100",
-        "role": "stock_futures",
-        "default_price": 270000.0
+        "symbol": "069500",
+        "role": "leading_stock",
+        "default_price": 100000
+      },
+      {
+        "symbol": "000660",
+        "role": "leading_stock",
+        "default_price": 100000
       }
     ]
   },

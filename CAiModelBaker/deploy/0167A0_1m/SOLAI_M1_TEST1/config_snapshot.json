@@ -9,10 +9,10 @@
     "FEE_RATE": 5e-05,
     "BACKTEST_DAYS": 40,
     "COOLDOWN_MINUTES": 2,
-    "TRAIN_START": "2026-04-06",
-    "TRAIN_END": "2026-09-01",
-    "OPT_START": "2026-09-02",
-    "OPT_END": "2026-10-02",
+    "TRAIN_START": "2026-04-07",
+    "TRAIN_END": "2026-09-02",
+    "OPT_START": "2026-09-03",
+    "OPT_END": "2026-10-06",
     "TEST_START": "2026-03-01",
     "TEST_END": "2026-03-31",
     "ACTIVE_SESSION_ID": "SOLAI_M1_TEST1",
@@ -23,15 +23,12 @@
         "enabled_features": [
             "target_adx",
             "target_ma_ratio",
-            "target_bb_pctb",
-            "ref_10100_ret_1c",
             "target_rsi_daily",
+            "ref_10100_ret_1c",
             "target_rsi_curr",
-            "ref_us_tech_100_ret_1c",
+            "target_bb_pctb",
             "target_bb_kc_squeeze",
-            "ref_us_500_ret_1c",
-            "target_mfi",
-            "ref_10100_spread_vs_target",
+            "kospi_basis_z",
             "target_large_trade_density",
             "target_large_trade_ratio",
             "target_volume_spike",
@@ -92,9 +89,15 @@
                 "long_bars": 30
             },
             "ref_us_tech_100_ret_1c": {},
-            "ref_us_500_ret_1c": {}
+            "ref_us_500_ret_1c": {},
+            "kospi_basis_z": {
+                "window": 60
+            }
         },
-        "feature_penalties": {},
+        "feature_penalties": {
+            "target_cvd_momentum": 0.3,
+            "target_trade_bid_ratio": 0.3
+        },
         "regime_features": {
             "target_hour_cos": true
         }
@@ -180,11 +183,11 @@
         "min_trades": 5,
         "min_profit_factor": 0.5,
         "wfa_enabled": true,
-        "wfa_train_months": 1.95,
-        "wfa_opt_months": 0.48,
-        "wfa_test_months": 0.48,
-        "wfa_start_date": "2026-04-06",
-        "wfa_end_date": "2026-09-01",
+        "wfa_train_months": 1.952,
+        "wfa_opt_months": 0.476,
+        "wfa_test_months": 0.476,
+        "wfa_start_date": "2026-04-07",
+        "wfa_end_date": "2026-09-02",
         "buy_quantile_range": {
             "min": 0.8,
             "max": 0.995,
@@ -208,8 +211,8 @@
         "max_mdd": 10.0,
         "max_trials": 15,
         "seed": 42,
-        "holdout_start": "2026-09-02",
-        "holdout_end": "2026-10-02",
+        "holdout_start": "2026-09-03",
+        "holdout_end": "2026-10-06",
         "ic_threshold": 0.02,
         "min_features": 2,
         "max_features": 10,
@@ -265,6 +268,12 @@
             "role": "kospi_futures"
         },
         {
+            "symbol": "U180",
+            "key": "u180",
+            "name": "KOSPI 200 현물 지수",
+            "role": "index_benchmark"
+        },
+        {
             "symbol": "US_TECH_100",
             "key": "us_tech_100",
             "name": "나스닥 100 CFD (대용)",
@@ -281,6 +290,24 @@
             "key": "005930",
             "name": "삼성전자",
             "role": "leading_stock"
+        },
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "11100",
+            "key": "11100",
+            "name": "삼성전자 주식선물 (연결)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "15000",
+            "key": "15000",
+            "name": "SK하이닉스 주식선물 (연결)",
+            "role": "macro_futures"
         }
     ],
     "REFERENCE_SYMBOLS": [
@@ -291,6 +318,12 @@
             "role": "kospi_futures"
         },
         {
+            "symbol": "U180",
+            "key": "u180",
+            "name": "KOSPI 200 현물 지수",
+            "role": "index_benchmark"
+        },
+        {
             "symbol": "US_TECH_100",
             "key": "us_tech_100",
             "name": "나스닥 100 CFD (대용)",
@@ -307,6 +340,24 @@
             "key": "005930",
             "name": "삼성전자",
             "role": "leading_stock"
+        },
+        {
+            "symbol": "000660",
+            "key": "000660",
+            "name": "SK하이닉스",
+            "role": "leading_stock"
+        },
+        {
+            "symbol": "11100",
+            "key": "11100",
+            "name": "삼성전자 주식선물 (연결)",
+            "role": "macro_futures"
+        },
+        {
+            "symbol": "15000",
+            "key": "15000",
+            "name": "SK하이닉스 주식선물 (연결)",
+            "role": "macro_futures"
         }
     ],
     "champion_features": [
