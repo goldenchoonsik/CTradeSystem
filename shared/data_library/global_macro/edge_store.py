@@ -17,7 +17,7 @@ from . import store
 COLS = ["t", "type", "src", "dst", "weight", "state", "k", "evidence", "source", "logged_at"]
 KEY = ["t", "type", "src", "dst"]
 UNITS: Dict[str, str] = {
-    "link": "상대국 경기 → 한국 수출 최근 5년 상관(k = 선행 개월)", "demand": "6개월 뒤 수출 전년비 예측 변화(로그)", "export_share": "한국 총수출 비중(%)",
+    "link": "상대국 경기 → 한국 수출 최근 5년 상관(k = 시차 개월: 경기 → 수출 반영)", "demand": "6개월 뒤 수출 전년비 예측 변화(로그)", "export_share": "한국 총수출 비중(%)",
     "sector_reading": "업종 합성 점수 z(상태 = 우호/비우호, evidence D = 수요 충격)", "sector_exposure": "업종 품목 수출 중 상대국 비중(그 해, 0~1)",
     "equity_spillover": "그 시장 주가 → 코스피 주간 변동 몫(%, 5년 창)", "import_share": "수입 시장 점유(%, 12개월 합; evidence chg3y = 3년 변화 %p)",
     "stock_beta": "종목 업종 베타(36개월, 최신 판독 달에만)",

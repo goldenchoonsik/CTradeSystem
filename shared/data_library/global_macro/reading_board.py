@@ -41,7 +41,7 @@ def evidence(D, latest: dict, expo: dict) -> dict:
     out = {"links": [], "total": None, "sectors": [], "competition": []}
     for g, lk in latest["links"].items():
         d = latest["demand"].get(g)
-        txt = f"경기 동조성 {LINK_KO.get(lk['state'], lk['state'])} — 최근 5년 '{g} 경기 ↔ 한국의 대{g} 수출' 상관계수 {lk['rho']:.2f}({lk['k']}개월 선행)"
+        txt = f"경기 동조성 {LINK_KO.get(lk['state'], lk['state'])} — 최근 5년 '{g} 경기 ↔ 한국의 대{g} 수출' 상관계수 {lk['rho']:.2f}(시차 {lk['k']}개월)"
         row = {"g": g, "state": lk["state"], "state_ko": LINK_KO.get(lk["state"], lk["state"]), "rho": lk["rho"], "k": lk["k"],
                "call": None, "delta": None, "trend": None, "ylast_pct": None, "yhat_pct": None, "target": None}
         if d:

@@ -40,6 +40,10 @@
   .chip { display: inline-block; white-space: nowrap; font-size: 11px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border-color); color: var(--text-secondary); margin-right: 4px; cursor: pointer; background: none; }
   .chip.active { border-color: var(--accent-cyan); color: var(--accent-cyan); }
   .warn { color: #fbbf24; }
+  .rd-verdict { font-size: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; margin: 6px 0 10px; }
+  .rd-verdict .rd-vhead { color: var(--text-muted); font-size: 11px; margin-bottom: 3px; }
+  .rd-verdict .rd-vrow { margin: 3px 0; line-height: 1.6; }
+  .rd-verdict .chip { cursor: help; }
   .btn-td { background: rgba(0,210,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,210,255,0.35); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
   .btn-td:disabled { opacity: 0.5; cursor: default; }
   .empty { padding: 30px; text-align: center; color: var(--text-muted); }
@@ -89,30 +93,29 @@
   </div>
 
   <div class="td-pane" id="p-reading">
-    <div class="td-note" style="color:#a0a0b0;background:rgba(0,210,255,0.05);border-color:rgba(0,210,255,0.25);" id="rdNote">판독은 사람이 아니라 로직이 한다 — 매달 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽고, 같은 방식으로 2008년부터 매달 재현한 성적을 함께 보여 준다.</div>
-    <div class="td-grid2">
-      <div class="td-card">
-        <h3 id="rdTitle">이번 달 판독</h3>
-        <div class="td-sub">상대국별: <b>경기 동조성</b>(그 나라 경기와 그 나라로의 한국 수출이 같이 움직이는 정도, 최근 5년 상관계수) → 동조성이 있는 나라만 <b>수출 증가율 전망</b>(6개월 뒤 전년비가 지금보다 높아지나 낮아지나). 확대·둔화는 증가율의 방향이지 수출액의 증감이 아니다. 행에 근거 사슬.</div>
-        <div class="td-sub warn" id="hzDemandNote"></div>
-        <table class="td" id="rdLinks"></table>
-        <div id="rdTotal" style="margin-top:8px;font-size:13px;"></div>
-      </div>
-      <div class="td-card">
-        <h3>판독 성적 (2008~ 매달 재현)</h3>
-        <div class="td-sub">사전등록 기준 판정 + 적중률. 기준선: 추세 지속(최근 3개월 방향), 평균 회귀(5년 평균 쪽으로).</div>
-        <div id="rdScore"></div>
-      </div>
+    <div class="td-note" style="color:#a0a0b0;background:rgba(0,210,255,0.05);border-color:rgba(0,210,255,0.25);line-height:1.7;" id="rdNote">
+      <b style="color:#d0d0dc;">읽는 법</b> — 판독은 사람이 아니라 로직이 한다: 매달 그 시점 자료만으로 최근 5년 관계를 다시 재서 읽는다.
+      각 카드 맨 위 <b>판정 · 과거 성적</b> = 같은 방식으로 2008년부터 매달 재현해 실제와 맞춘 결과, 판정 기준은 결과를 보기 전에 정해 뒀다(사전등록 — 판정에 마우스를 올리면 기준).<br>
+      <b>기준선</b> = 정보 없이 찍기: 추세 지속(최근 3개월 방향이 이어진다) · 평균 회귀(5년 평균 쪽으로 돌아간다).
+      <b>전진 확인</b> = 결과를 보고 고른 변형은 과거 성적으로 합격시키지 않고, 2026-10 판독부터 고쳐 쓸 수 없는 기록으로 남겨 앞으로의 실제 결과로만 채점(24개월에 1차 판정).<br>
+      <span class="warn">주의: 과거 재현에 쓴 OECD 선행지수는 오늘 받은 개정값(당시 실제로 보이던 값이 아님) — 선행지수를 쓰는 판독의 과거 성적은 실제보다 좋게 나왔을 수 있다(크기 미측정).</span>
+    </div>
+    <div class="td-card">
+      <h3 id="rdTitle">이번 달 판독</h3>
+      <div class="rd-verdict"><div id="rdVerdictLinks"></div><div class="warn" id="hzDemandNote"></div></div>
+      <div class="td-sub">상대국별: <b>경기 동조성</b>(그 나라 경기와 그 나라로의 한국 수출이 같이 움직이는 정도, 최근 5년 상관계수) → 동조성이 있는 나라만 <b>수출 증가율 전망</b>(6개월 뒤 전년비가 지금보다 높아지나 낮아지나). 확대·둔화는 증가율의 방향이지 수출액의 증감이 아니다. 행에 근거 사슬.</div>
+      <table class="td" id="rdLinks"></table>
+      <div id="rdTotal" style="margin-top:8px;font-size:13px;"></div>
     </div>
     <div class="td-card">
       <h3>업종 판독 — 수출 노출 × 수요 + 미국 시장 점유</h3>
-      <div class="td-sub">우호/비우호는 업종 간 상대 점수(z). 근거: 업종 품목 수출의 상대국 노출, 수요 충격(노출 × 수요 판독), 미국 시장 한국 점유 변화.
-        <b>합성</b> = 사전등록 점수(수요 + 미국 점유). <b>수요 충격만</b>(R5-D) = 과거 재현에서 더 좋았지만 결과를 보고 고른 것이라 2026-10 이후 전진 기록으로만 판정.</div>
-      <div id="rdForward" class="td-sub" style="color:#fbbf24;"></div>
+      <div class="rd-verdict"><div id="rdVerdictSectors"></div><div class="warn" id="hzSectorNote"></div></div>
+      <div class="td-sub">우호/비우호는 업종 간 상대 점수(z). 근거: 업종 품목 수출의 상대국 노출, 수요 충격(노출 × 나라별 수출 증가율 전망), 미국 시장 한국 점유 변화.
+        <b>합성</b> = 사전등록 점수(수요 충격 + 미국 점유). 나머지 열은 전진 확인 중인 변형.</div>
       <table class="td" id="rdSectors"></table>
     </div>
     <div class="td-card">
-      <h3>지평 곡선 — 판독의 정보가 몇 개월 지평에 남나 (국소투영, 사전등록 H)</h3>
+      <h3>지평 곡선 — 판독의 정보가 몇 개월 지평에 남나 (사전등록)</h3>
       <div class="td-sub">같은 판독을 지평 1~12개월의 누적 결과로 채점. 왼쪽: 수요 판독 적중 − 평균 회귀 기준선(월별 상대국 평균). 오른쪽: 업종 판독 IC(누적, 실선)와 한 달 구간 IC(점선 — 정보가 어느 달에 반영되는지). 통과 = 값>0 & NW t≥2, 유효 구간 = 2개 이상 연속. 운영 채점 지평(6개월)·전진 트랙은 이 결과로 바꾸지 않는다.</div>
       <div class="td-grid2">
         <div id="hzDemand" style="height:280px;"></div>
@@ -121,8 +124,8 @@
       <table class="td" id="hzJudge"></table>
     </div>
     <div class="td-card">
-      <h3>종목 후보 — 업종 판독을 종목으로 (L3, 현재 파악)</h3>
-      <div class="td-sub" id="rdStocksSub">업종 대응 = DART KSIC(오늘 기준, 상장사만). 필터: 시총 ≥ 500억·20일 평균 거래대금 ≥ 5억. 수출 비중 = DART 사업보고서 매출실적·지역별 매출 표의 수출/(수출+내수)(가장 최근 사업연도, ○ = 표의 합계와 맞음), 비중 상위 순·없으면 베타 순. 업종 베타 = 최근 36개월 종목(코스피 초과) ~ 업종 지수(코스피 초과) 기울기. 추천 아님 — 검정(stage5 S2 재사전등록)은 이력 확보 뒤.</div>
+      <h3>종목 후보 — 업종 판독을 종목으로 (현재 파악용)</h3>
+      <div class="td-sub" id="rdStocksSub">업종 대응 = DART KSIC(오늘 기준, 상장사만). 필터: 시총 ≥ 500억·20일 평균 거래대금 ≥ 5억. 수출 비중 = DART 사업보고서 매출실적·지역별 매출 표의 수출/(수출+내수)(가장 최근 사업연도, ○ = 표의 합계와 맞음), 비중 상위 순·없으면 베타 순. 업종 베타 = 최근 36개월 종목(코스피 초과) ~ 업종 지수(코스피 초과) 기울기. 추천 아님 — 검정은 이력 확보 뒤.</div>
       <div id="rdStocks"></div>
     </div>
     <div class="td-card">
@@ -132,12 +135,13 @@
     </div>
     <div class="td-card">
       <h3>경쟁 판독 — 미국 시장 점유(최근 12개월 변화)</h3>
-      <div class="td-sub">지속 판독(R4)은 무효(55%) — 표시만. 중국산 잠식만 68% 지속(탈중국은 구조적).</div>
+      <div class="rd-verdict"><div id="rdVerdictComp"></div></div>
+      <div class="td-sub">점유 변화는 현재 파악용으로만 표시 — 1년 더 이어지는지는 위 판정대로 무효, 중국산 잠식만 이어짐(탈중국은 구조적).</div>
       <table class="td" id="rdComp"></table>
     </div>
     <div class="td-card">
       <h3>경쟁 판독 — EU 역외 수입 점유(최근 12개월 변화)</h3>
-      <div class="td-sub">같은 규칙을 EU 에 적용(사전등록 stage4_eu). 한국산 지속 58% = 무효 — 표시만. EU 에선 중국산 '확대'가 66% 지속(미국과 반대 방향의 구조 변화).</div>
+      <div class="td-sub">같은 규칙을 EU 에 적용(사전등록). 한국산 지속 58% = 무효 — 표시만. EU 에선 중국산 '확대'가 66% 지속(미국과 반대 방향의 구조 변화).</div>
       <table class="td" id="rdCompEU"></table>
     </div>
   </div>
@@ -146,7 +150,7 @@
     <div class="td-note" style="color:#a0a0b0;background:rgba(0,210,255,0.05);border-color:rgba(0,210,255,0.25);">관계는 시기마다 바뀐다 — 이 탭은 예측 규칙이 아니라 <b>지금 어떤 관계가 살아 있나</b>를 읽기 위한 계측. 5년 이동창, 매달 갱신. 세로 번호 = 아래 국면 사건.</div>
     <div class="td-card">
       <h3>상대국 경기 ↔ 한국 수출: 경기 동조성(5년 이동 상관)</h3>
-      <div class="td-sub">5년 창 안에서 '상대국 선행지수 6개월 변화'와 '그 나라로의 한국 수출 전년비'의 최대 상관(0~9개월 선행). 1에 가까울수록 그 나라 경기가 한국 수출을 끌고 간다.</div>
+      <div class="td-sub">5년 창 안에서 '상대국 선행지수 6개월 변화'와 '그 나라로의 한국 수출 전년비'의 최대 상관(시차 0~9개월 중 가장 높은 곳). 1에 가까울수록 그 나라 경기가 한국 수출을 끌고 간다.</div>
       <div id="rlLinks" style="height:330px;"></div>
       <table class="td" id="rlLinkTable" style="margin-top:8px;"></table>
     </div>
@@ -252,7 +256,7 @@
       </div>
       <div class="td-card">
         <h3>어느 나라 경기가 한국 수출을 앞서나</h3>
-        <div class="td-sub">OECD 선행지수 6개월 변화 vs 한국 수출 전년비(3개월 합). 시차 = 선행지수가 몇 개월 먼저(상관이 가장 큰 곳).</div>
+        <div class="td-sub">OECD 선행지수 6개월 변화 vs 한국 수출 전년비(3개월 합). 시차 = 선행지수가 움직인 뒤 수출이 몇 개월 뒤에 따라오나(상관이 가장 큰 곳).</div>
         <table class="td" id="cliLeads"></table>
       </div>
     </div>
@@ -454,9 +458,9 @@ function renderRelations() {
   const L = R.export_links;
   Plotly.newPlot('rlLinks', Object.entries(L).map(([nm, v]) => ({x: v.map(r => r[0]), y: v.map(r => r[1]), name: nm, type: 'scatter', mode: 'lines',
       line: {color: RL_COLORS[nm], width: 1.8}, customdata: v.map(r => [r[2], r[3]]),
-      hovertemplate: `${nm} %{x}: 상관 %{y:.2f} · %{customdata[0]}개월 선행 · 1σ당 수출 %{customdata[1]}%<extra></extra>`})),
+      hovertemplate: `${nm} %{x}: 상관 %{y:.2f} · 시차 %{customdata[0]}개월 · 1σ당 수출 %{customdata[1]}%<extra></extra>`})),
     lay({legend: {orientation: 'h', y: 1.14}, xaxis: {type: 'date', gridcolor: '#29292e'}, yaxis: {gridcolor: '#29292e', range: [-0.4, 1], title: '상관'}, ...ev}), CFG);
-  let h = '<tr><th>상대국</th><th class="num">지금 상관</th><th class="num">선행</th><th class="num">1σ당 수출</th><th class="num">5년 전 상관</th><th class="num">최고(시기)</th></tr>';
+  let h = '<tr><th>상대국</th><th class="num">지금 상관</th><th class="num" title="경기선행지수가 움직인 뒤 수출이 몇 개월 뒤에 따라오나(상관이 가장 높은 곳)">시차</th><th class="num">1σ당 수출</th><th class="num">5년 전 상관</th><th class="num">최고(시기)</th></tr>';
   for (const [nm, v] of Object.entries(L)) {
     const last = v[v.length - 1], ago = v[Math.max(0, v.length - 61)];
     const best = v.reduce((a, b) => b[1] > a[1] ? b : a, v[0]);
@@ -589,41 +593,48 @@ const LBL = {'강함': '높음', '약함': '낮음', '끊김': '없음', '가속
 const ko = t => LBL[t] || t;
 const chipS = (t, shown) => t ? `<span class="chip" style="${ST_STYLE[t] || ''}">${esc(shown || ko(t))}</span>` : '<span class="muted">–</span>';
 const pctS = v => v === null || v === undefined ? '–' : (v >= 0 ? '+' : '') + v.toFixed(0) + '%';
+// 판정·과거 성적은 그 판정이 다루는 카드 맨 위에 붙인다(2026-10-23, 사용자: '판독 성적' 별도 창 + 화면 위치 안내보다 직관적).
+// 판정 키(R2…)는 사전등록 문서·로그와 맞춰 엔진(reading_eval.verdicts)에 그대로 두고, 화면엔 이름만 — 코드는 마우스를 올리면.
+const rdPc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
+const rdVcol = v => /^(판독 유효|유효|실전 후보|확정)/.test(v) ? 'color:#50fa7b;border-color:#50fa7b' : /^(부분|작게|확인 중|보류)/.test(v) ? 'color:#ffd700;border-color:#ffd700' : /^(판정 불가|대기)/.test(v) || !v ? '' : 'color:#ff5555;border-color:#ff5555';
+const RD_VTIP = [['판독 유효', '~2016·2017~ 두 기간 모두 적중 55% 이상이고 추세 지속 기준선보다 5%p 이상 높음 (평균 회귀 기준선과는 비교하지 않음)'],
+  ['부분 유효', '두 기간 중 한 기간만 기준 통과'], ['유효', '~2016·2017~ 두 기간 모두 60% 이상 지속'], ['무효', '사전등록 기준 미달'],
+  ['실전 후보', '~2016·2017~ 두 기간 모두 IC>0이고 전체 t≥2'], ['작게 실험', '두 기간 IC>0이지만 전체 t<2'], ['버림', 'IC가 0 이하인 기간이 있음'],
+  ['대기', '전진 기록이 아직 없음 — 24개월 채점 후 1차 판정'], ['확인 중', '전진 기록 채점 중 — 24개월에 1차 판정'],
+  ['보류', '24개월 판정이 애매해 36개월까지 연장'], ['확정', '전진 기록으로 효과 확인'], ['기각', '전진 기록에서 효과 없음']];
+const rdVtip = v => (RD_VTIP.find(([k]) => String(v || '').startsWith(k)) || ['', ''])[1];
+const rdChip = (v, code) => `<span class="chip" style="${rdVcol(v)}" title="${esc(rdVtip(v) + (code ? ' · 사전등록 코드 ' + code : ''))}">${esc(v || '–')}</span>`;
+const rdRow = (name, v, code, metrics) => `<div class="rd-vrow"><b>${esc(name)}</b> ${rdChip(v, code)} <span class="muted">${metrics || ''}</span></div>`;
 function renderReading() {
   const R = D.reading || {};
   if (!R.evidence) { document.getElementById('rdLinks').innerHTML = '<tr><td class="empty">시스템 판독 없음 — 전체 갱신(또는 시스템 판독 단계) 실행 후 표시</td></tr>'; return; }
   const E = R.evidence;
   document.getElementById('rdTitle').textContent = `이번 달 판독 (${R.t}, 자료는 그 시점 공개분)`;
-  let h = '<tr style="white-space:normal;vertical-align:bottom;"><th>상대국</th><th title="그 나라 경기(OECD 선행지수)와 그 나라로의 한국 수출(전년비)이 최근 5년 같이 움직인 정도 = 상관계수. 0.5 이상 높음, 0.25 이상 낮음, 미만 없음(전망 안 함)">경기 동조성<br><span class="muted" style="font-weight:400;">5년 상관계수</span></th><th class="num" title="상관이 가장 높았던 선행 개월 — 경기가 수출보다 몇 달 먼저 움직이나">선행</th><th title="6개월 뒤 그 나라로의 한국 수출 증가율(전년비) 전망. 지금보다 높으면 확대, 낮으면 둔화 — 수출액 증감이 아님">수출 증가율 전망<br><span class="muted" style="font-weight:400;">지금 → 6개월 뒤</span></th><th style="width:50%;">근거</th></tr>';
+  let h = '<tr style="white-space:normal;vertical-align:bottom;"><th>상대국</th><th title="그 나라 경기(OECD 선행지수)와 그 나라로의 한국 수출(전년비)이 최근 5년 같이 움직인 정도 = 상관계수. 0.5 이상 높음, 0.25 이상 낮음, 미만 없음(전망 안 함)">경기 동조성<br><span class="muted" style="font-weight:400;">5년 상관계수</span></th><th class="num" title="그 나라 경기선행지수가 움직인 뒤 한국의 그 나라 수출 증가율이 몇 개월 뒤에 따라왔나 — 최근 5년에서 0~9개월을 시험해 상관이 가장 높았던 개월. OECD 선행지수 자체의 예측 기간과는 다른 값">시차<br><span class="muted" style="font-weight:400;">경기→수출</span></th><th title="6개월 뒤 그 나라로의 한국 수출 증가율(전년비) 전망. 지금보다 높으면 확대, 낮으면 둔화 — 수출액 증감이 아님">수출 증가율 전망<br><span class="muted" style="font-weight:400;">지금 → 6개월 뒤</span></th><th style="width:50%;">근거</th></tr>';
   E.links.forEach(x => { h += `<tr><td style="white-space:nowrap;">${esc(x.g)}</td><td style="white-space:nowrap;"><b>${fmt(x.rho)}</b> ${chipS(x.state)}</td><td class="num" style="white-space:nowrap;">${x.k}개월</td><td style="white-space:nowrap;">${x.trend ? `<span class="muted">${pctS(x.ylast_pct)} →</span> <b>${pctS(x.yhat_pct)}</b> ${chipS(x.trend)}` : '<span class="muted">전망 안 함</span>'}</td><td style="font-size:12px;" class="muted">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdLinks').innerHTML = h;
   document.getElementById('rdTotal').innerHTML = E.total ? `<b>한국 총수출 증가율 전망</b> ${chipS(E.total.call, E.total.trend)} <span class="muted">${esc(E.total.text)}</span>` : '';
-  const V = R.verdicts || {}, S = R.summary || {}, Hh = R.health;
-  const pc = v => v === null || v === undefined ? '–' : (v * 100).toFixed(0) + '%';
-  const vcol = v => /^(판독 유효|유효|실전 후보|확정)/.test(v) ? 'color:#50fa7b;border-color:#50fa7b' : /^(부분|작게|확인 중|보류)/.test(v) ? 'color:#ffd700;border-color:#ffd700' : /^(판정 불가|대기)/.test(v) ? '' : 'color:#ff5555;border-color:#ff5555';
-  let sc = '<table class="td">' + Object.entries(V).map(([k, v]) => `<tr><td>${esc(k)}</td><td><span class="chip" style="${vcol(v)}">${esc(v)}</span></td></tr>`).join('') + '</table>';
-  const dp = S.demand_pooled || {};
-  if (dp.all) sc += `<div class="td-sub" style="margin-top:8px;">상대국 수요 판독 적중: 전체 ${pc(dp.all.hit)} · ~2016 ${pc((dp.early || {}).hit)} · 2017~ ${pc((dp.late || {}).hit)} (추세 지속 기준 ${pc(dp.all.base_mom)}, 평균 회귀 기준 ${pc(dp.all.base_mr)})</div>`;
-  if (Hh) sc += `<div class="td-sub" style="color:#fbbf24;">최근 5년(${Hh.from.slice(0, 7)}~${Hh.to.slice(0, 7)}) 엔진 ${pc(Hh.engine)} vs 평균 회귀 ${pc(Hh.mean_reversion)} — 차이가 작으면 상대국 경기 정보가 덜 통하는 국면</div>`;
-  const C = S.competition || {};
-  if (C.all) sc += `<div class="td-sub">경쟁 판독 지속률: ${pc(C.all.hit)} (` + Object.entries(S.competition_by || {}).map(([k, v]) => `${esc(k.replace('kr', '한국').replace('cn', '중국'))} ${pc(v.hit)}`).join(', ') + ')</div>';
-  const SS = S.sectors || {};
-  if (SS.all) sc += `<div class="td-sub">업종 판독: IC ${fmt(SS.all.ic, 3)} (t ${fmt(SS.all.t, 1)}) · ~2016 ${fmt((SS.early || {}).ic, 3)} · 2017~ ${fmt((SS.late || {}).ic, 3)} · 우호/비우호 적중 ${pc(SS.all.hit)} · 상위2−하위2 6개월 ${fmt((SS.all.spread_top2 || 0) * 100, 1)}%p</div>
-      <div class="td-sub">성분별(참고): 수요 충격만 IC ${fmt(SS.all.ic_D, 3)} (t ${fmt(SS.all.t_D, 1)}, 적중 ${pc(SS.all.hit_D)}, 상위2−하위2 ${fmt((SS.all.spread_top2_D || 0) * 100, 1)}%p) · 미국 점유 IC ${fmt(SS.all.ic_C, 3)} (t ${fmt(SS.all.t_C, 1)}) — 과거 재현에선 수요 충격이 주력(사후 선택이라 판정엔 안 씀)</div>`;
-  const F = R.forward;
-  if (F) sc += `<div class="td-sub" style="color:#fbbf24;">R5-D 전진 확인(${F.from.slice(0, 7)}~ 판독, 기록 그대로 채점): <b>${esc(F.status)}</b> · 기록 ${F.n_readings}건 · 채점 가능 ${F.n_months}개월(1차 판정 ${F.min_months}, 최종 ${F.max_months})`
-    + (F.n_months ? ` · 전진 IC 수요만 ${fmt(F.ic_D, 3)} vs 합성 ${fmt(F.ic_composite, 3)} · 상위2−하위2 ${fmt((F.spread_top2_D || 0) * 100, 1)}%p · 적중 ${pc(F.hit_D)}` : ` · 첫 채점 ${F.first_scorable}`) + '</div>';
-  const FC = R.forward_ce;
-  if (FC) sc += `<div class="td-sub" style="color:#fbbf24;">R5-CE 전진 확인(EU 경쟁 성분만, stage4_eu E2 '작게 실험' 조치): <b>${esc(FC.status)}</b> · 기록 ${FC.n_readings}건 · 채점 가능 ${FC.n_months}개월`
-    + (FC.n_months ? ` · 전진 IC ${fmt(FC.ic_D, 3)} vs 합성 ${fmt(FC.ic_composite, 3)} · 상위2−하위2 ${fmt((FC.spread_top2_D || 0) * 100, 1)}%p` : '') + ' — 과거 재현 2017~ IC 0.00(사실상 무정보), 확인용</div>';
-  const FV = R.forward_v;
-  if (FV) sc += `<div class="td-sub" style="color:#fbbf24;">R5-V 전진 확인(수요 충격을 부가가치 노출 TiVA FFD_DVA 로 가중, 사전등록 V): <b>${esc(FV.status)}</b> · 기록 ${FV.n_readings}건 · 채점 가능 ${FV.n_months}개월`
-    + (FV.n_months ? ` · 전진 IC ${fmt(FV.ic_D, 3)} vs 합성 ${fmt(FV.ic_composite, 3)} · 상위2−하위2 ${fmt((FV.spread_top2_D || 0) * 100, 1)}%p` : '') + (R.va_year ? ` — 노출 연도 ${R.va_year}(공표 시차 3년)` : '') + '</div>';
-  document.getElementById('rdScore').innerHTML = sc;
+  const V = R.verdicts || {}, S = R.summary || {}, Hh = R.health, pc = rdPc;
+  const dp = S.demand_pooled || {}, dt = (S.demand || {})['한국 총수출'] || {}, C = S.competition || {}, SS = S.sectors || {};
+  const F = R.forward, FC = R.forward_ce, FV = R.forward_v;
+  const hits = r => r && r.all ? `적중 ${pc(r.all.hit)} (~2016 ${pc((r.early || {}).hit)} · 2017~ ${pc((r.late || {}).hit)}) · 기준선: 평균 회귀 ${pc(r.all.base_mr)} · 추세 지속 ${pc(r.all.base_mom)}` : '';
+  const K = ['R2 수요(상대국 풀링)', 'R3 총수출', 'R4 경쟁 지속', 'R5 업종(가격)', 'R5-D 수요 충격만(전진 확인)', 'R5-CE EU 경쟁 성분만(전진 확인)', 'R5-V 부가가치 가중 수요(전진 확인)'];
+  const head = '<div class="rd-vhead">판정 · 과거 성적 (2008~ 매달 재현)</div>';
+  document.getElementById('rdVerdictLinks').innerHTML = head
+    + rdRow('나라별 수출 증가율 전망', V[K[0]], K[0], hits(dp))
+    + rdRow('한국 총수출 증가율 전망', V[K[1]], K[1], hits(dt))
+    + (Hh ? `<div class="rd-vrow warn">최근 5년(${Hh.from.slice(0, 7)}~${Hh.to.slice(0, 7)}) 나라별 전망 적중 ${pc(Hh.engine)} vs 평균 회귀 ${pc(Hh.mean_reversion)} — 차이가 작으면 상대국 경기 정보가 덜 통하는 국면</div>` : '');
+  const fw = (nm, f, code, tail) => f ? `<span style="white-space:nowrap;">${esc(nm)} ${rdChip(f.status, code)}</span>` + (f.n_months ? `<span class="muted">IC ${fmt(f.ic_D, 2)} · 채점 ${f.n_months}/${f.min_months}개월${tail || ''}</span> ` : (tail ? `<span class="muted">${tail}</span> ` : '')) : '';
+  const fwHead = F ? `<span class="muted">기록 ${F.n_readings}건 · ${F.n_months ? `채점 ${F.n_months}/${F.min_months}개월` : `첫 채점 ${F.first_scorable.slice(0, 7)}`}</span>` : '';
+  document.getElementById('rdVerdictSectors').innerHTML = head
+    + rdRow('합성 판독 → 6개월 뒤 업종 주가(코스피 대비)', V[K[3]], K[3], SS.all ? `IC ${fmt(SS.all.ic, 2)} (t ${fmt(SS.all.t, 1)}; ~2016 ${fmt((SS.early || {}).ic, 2)} · 2017~ ${fmt((SS.late || {}).ic, 2)}) · 상위2−하위2 ${fmt((SS.all.spread_top2 || 0) * 100, 1)}%p/6개월 · 우호/비우호 적중 ${pc(SS.all.hit)}` : '')
+    + (SS.all ? `<div class="rd-vrow muted">성분별(참고): 수요 충격만 IC ${fmt(SS.all.ic_D, 2)} (t ${fmt(SS.all.t_D, 1)}) · 상위2−하위2 ${fmt((SS.all.spread_top2_D || 0) * 100, 1)}%p · 미국 점유 IC ${fmt(SS.all.ic_C, 2)} (t ${fmt(SS.all.t_C, 1)}) — 결과를 보고 고른 것이라 판정엔 안 쓰고 아래 전진 확인으로</div>` : '')
+    + (F || FC || FV ? `<div class="rd-vrow"><b>전진 확인</b> ${fwHead}<br>${fw('수요 충격만', F, K[4])} ${fw('EU 경쟁만', FC, K[5], ' — 과거 2017~ IC 0.00, 확인용')} ${fw('VA 가중 수요', FV, K[6], R.va_year ? ` — 부가가치 비중 ${R.va_year}년(OECD 공표 3년 늦음)` : '')}</div>` : '');
+  document.getElementById('rdVerdictComp').innerHTML = head
+    + rdRow('점유 변화가 다음 1년도 이어지나', V[K[2]], K[2], C.all ? `지속 ${pc(C.all.hit)} (60% 이상이어야 유효) — ` + Object.entries(S.competition_by || {}).map(([k, v]) => `${esc(k.replace('kr', '한국').replace('cn', '중국'))} ${pc(v.hit)}`).join(' · ') : '');
   let sh = '<tr><th>업종</th><th>합성 판독</th><th class="num">점수</th><th>수요 충격만</th><th class="num">점수</th><th>EU 경쟁만</th><th class="num">점수</th><th>VA 가중 수요</th><th class="num">점수</th><th class="num">수요 충격</th><th class="num">미국 점유 변화</th><th class="num">EU 점유 변화</th><th>근거</th></tr>';
   (E.sectors || []).forEach(x => { sh += `<tr><td>${esc(x.name)}</td><td>${chipS(x.reading)}</td><td class="num">${fmt(x.score)}</td><td>${chipS(x.reading_D)}</td><td class="num">${fmt(x.score_D)}</td><td>${chipS(x.reading_CE)}</td><td class="num">${x.score_CE == null ? '–' : fmt(x.score_CE)}</td><td>${chipS(x.reading_V)}</td><td class="num">${x.score_V == null ? '–' : fmt(x.score_V)}</td><td class="num">${fmt(x.D, 3)}</td><td class="num">${x.C === null ? '–' : fmt(x.C) + '%p'}</td><td class="num">${x.C_EU == null ? '–' : fmt(x.C_EU) + '%p'}</td><td class="muted" style="font-size:12px;">${esc(x.text)}</td></tr>`; });
   document.getElementById('rdSectors').innerHTML = (E.sectors || []).length ? sh : '<tr><td class="empty">품목 자료(관세청) 수집 후 표시</td></tr>';
-  document.getElementById('rdForward').textContent = F ? `전진 확인 상태: 수요 충격만 ${F.status} · EU 경쟁만 ${FC ? FC.status : '–'} · VA 가중 수요 ${FV ? FV.status : '–'} — ${F.n_readings}건 기록(reading/forward_log.jsonl, 고쳐 쓰지 않음), 채점 ${F.n_months}개월` : '';
   const LH = R.links_history || {};
   const names = Object.keys(LH).filter(g => LH[g].length);
   const dates = [...new Set(names.flatMap(g => LH[g].map(r => r[0])))].sort();
@@ -644,7 +655,7 @@ function renderReading() {
   if (!sks.length) { document.getElementById('rdStocks').innerHTML = '<div class="empty">종목 업종코드(DART) 수집 후 표시</div>'; return; }
   let st = '';
   const s5 = ((D.signals || {}).signals || []).find(x => x.id === 'S2');
-  if (s5) st += `<div class="td-sub">stage5 S2(업종 점수 × 베타 → 업종 내 종목) 판정: <span class="chip" style="${VERDICT_STYLE[s5.verdict] || ''}">${esc(s5.verdict)}</span> — ${s5.verdict === '버림' ? '베타 상위가 판독의 몫을 더 받는다는 증거 없음 → 아래는 업종 구성·민감도 파악용' : '우호 업종 × 고베타 = 판독 전이 후보'}</div>`;
+  if (s5) st += `<div class="td-sub">업종 안에서 종목 고르기(업종 점수 × 베타) 과거 재현 판정: <span class="chip" style="${VERDICT_STYLE[s5.verdict] || ''}">${esc(s5.verdict)}</span> — ${s5.verdict === '버림' ? '베타 상위가 판독의 몫을 더 받는다는 증거 없음 → 아래는 업종 구성·민감도 파악용' : '우호 업종 × 고베타 = 판독 전이 후보'}</div>`;
   sks.forEach(([s, v]) => {
     st += `<div style="margin:10px 0 4px;font-weight:600;">${esc(v.name)} ${chipS(v.reading)} <span class="muted" style="font-weight:400;font-size:12px;">합성 ${fmt(v.score)} · 수요만 ${esc(v.reading_D || '–')} · 대응 종목 ${v.n_universe} · 필터 통과 ${v.n_pass} · 수출 비중 중앙값 ${v.export_median == null ? '–' : v.export_median + '%'} (${v.n_export || 0}종목, ${esc(v.export_year || '')}년) · 베타 중앙값 ${fmt(v.beta_median)} · 가격 ${esc(v.fund_date)}</span></div>`;
     st += '<table class="td"><tr><th>종목</th><th class="num">수출 비중</th><th class="num">업종 베타</th><th class="num">시총(십억)</th><th class="num">거래대금(십억/일)</th><th class="num">6개월</th><th class="num">1개월</th><th class="num">외국인 %</th></tr>';
@@ -760,7 +771,7 @@ function grBuild(t, P) {
       const dm = one('demand', e.src);
       edge('expo', e.src, e.dst, e.weight * 100, GR_COL[dm ? dm.state : 'none'], 'solid', `${(LG.nodes.kr_sector || {})[e.dst.slice(2)]} 수출 중 ${e.src.slice(2)} ${fmt(e.weight * 100, 0)}% (${U.sector_exposure}) · 수출 증가율 전망 ${dm ? ko(dm.state) : '없음'}`);
     });
-    edge('total', 'kr:exp', 'kr:kospi', 1, '#6b7280', 'dashed', '총수출 판독 → 코스피 (경로 표시만; 검정은 R3)');
+    edge('total', 'kr:exp', 'kr:kospi', 1, '#6b7280', 'dashed', '총수출 판독 → 코스피 (경로 표시만; 성적은 시스템 판독 탭 · 한국 총수출 증가율 전망)');
   }
   if (showEq) by('equity_spillover').forEach(e => {
     const g = Object.entries(GR_MK).find(([, mk]) => `c:${mk}` === e.src);
@@ -792,7 +803,7 @@ function grInfo(n) {
     const ii = TR.influence_index || {};
     h += row('부가가치 노출', `${fmt((ii.va_share || {})[g], 1)}% (TiVA ${ii.year || ''}) · 영향력 2010~ ${fmt((ii.late || {})[g], 1)}`);
     const se = (TR.sensitivity || []).find(x => x.name === g);
-    if (se) h += row('민감도', `경기→수출 선행 ${se.late.lag}개월 상관 ${fmt(se.late.corr)} (2010~), 1σ당 수출 ${fmt(se.late.beta_pct, 1)}%`);
+    if (se) h += row('민감도', `경기→수출 시차 ${se.late.lag}개월 상관 ${fmt(se.late.corr)} (2010~), 1σ당 수출 ${fmt(se.late.beta_pct, 1)}%`);
     const ev = (R.evidence && R.evidence.links || []).find(x => x.g === g);
     if (ev && t === R.t) h += row('근거(최신)', esc(ev.text));
     const evs = (REL.events || []).filter(e => (e.partners || []).some(p => g.includes(p) || p.includes(g)));
@@ -932,8 +943,8 @@ function renderHorizon() {
   const H = Z.horizons, pick = (rows, per, score) => H.map(h => (rows || []).find(r => r.h === h && r.per === per && (!score || r.score === score)) || {});
   const dm = pick(Z.demand, 'all'), tt = pick(Z.total, 'all');
   Plotly.newPlot('hzDemand', [
-    {x: H, y: dm.map(r => (r.diff ?? null) === null ? null : r.diff * 100), type: 'bar', name: 'R2 상대국', marker: {color: dm.map(r => (r.t ?? 0) >= 2 ? '#50fa7b' : '#4b6c8a')}, text: dm.map(r => r.t === null || r.t === undefined ? '' : `t ${r.t.toFixed(1)}`), textposition: 'outside', textfont: {size: 9}},
-    {x: H, y: tt.map(r => (r.diff ?? null) === null ? null : r.diff * 100), type: 'scatter', mode: 'lines+markers', name: 'R3 총수출', line: {color: '#f1fa8c', width: 1.5}},
+    {x: H, y: dm.map(r => (r.diff ?? null) === null ? null : r.diff * 100), type: 'bar', name: '나라별 수출 증가율 전망', marker: {color: dm.map(r => (r.t ?? 0) >= 2 ? '#50fa7b' : '#4b6c8a')}, text: dm.map(r => r.t === null || r.t === undefined ? '' : `t ${r.t.toFixed(1)}`), textposition: 'outside', textfont: {size: 9}},
+    {x: H, y: tt.map(r => (r.diff ?? null) === null ? null : r.diff * 100), type: 'scatter', mode: 'lines+markers', name: '한국 총수출 증가율 전망', line: {color: '#f1fa8c', width: 1.5}},
   ], lay({xaxis: {title: {text: '지평(개월)'}, gridcolor: '#29292e', dtick: 1}, yaxis: {title: {text: '적중 − 평균 회귀 (%p)'}, gridcolor: '#29292e', zeroline: true, zerolinecolor: '#5b5b66'}, legend: {orientation: 'h', y: 1.12}, margin: {l: 50, r: 10, t: 24, b: 40}}), CFG);
   const sc = pick(Z.sectors, 'all', 'composite'), sd = pick(Z.sectors, 'all', 'D');
   Plotly.newPlot('hzSector', [
@@ -943,16 +954,17 @@ function renderHorizon() {
     {x: H, y: sd.map(r => r.ic_marginal ?? null), type: 'scatter', mode: 'lines', name: '수요만 한 달 구간 IC', line: {color: '#bd93f9', width: 1, dash: 'dot'}},
   ], lay({xaxis: {title: {text: '지평(개월)'}, gridcolor: '#29292e', dtick: 1}, yaxis: {title: {text: '업종 간 순위상관 IC'}, gridcolor: '#29292e', zeroline: true, zerolinecolor: '#5b5b66'}, legend: {orientation: 'h', y: 1.12, font: {size: 10}}, margin: {l: 50, r: 10, t: 24, b: 40}}), CFG);
   let h = '<tr><th>판독</th><th>통과 지평</th><th>유효 구간</th><th>판정</th><th class="num">최고 지평 h*</th></tr>';
+  const HZ_UI = {'R2 수요': '나라별 수출 증가율 전망', 'R3 총수출': '한국 총수출 증가율 전망', 'R5 합성(주)': '업종 판독(합성)', 'R5-D 수요만(보충)': '업종 판독 · 수요 충격만'};
   Object.entries(Z.judgment || {}).forEach(([k, j]) => {
     const vs = j.verdict.startsWith('목표') ? 'up' : j.verdict.startsWith('단기') ? 'warn' : 'muted';
-    h += `<tr><td>${esc(k)}</td><td class="muted">${(j.passed || []).join(', ') || '없음'}</td><td>${j.run && j.run.length ? j.run[0] + '~' + j.run[j.run.length - 1] + '개월' : '–'}</td><td class="${vs}">${esc(j.verdict)}</td><td class="num">${j.h_star ?? '–'}</td></tr>`;
+    h += `<tr><td title="사전등록 코드 ${esc(k)}">${esc(HZ_UI[k] || k)}</td><td class="muted">${(j.passed || []).join(', ') || '없음'}</td><td>${j.run && j.run.length ? j.run[0] + '~' + j.run[j.run.length - 1] + '개월' : '–'}</td><td class="${vs}">${esc(j.verdict)}</td><td class="num">${j.h_star ?? '–'}</td></tr>`;
   });
   document.getElementById('hzJudge').innerHTML = h + `<tr><td colspan="5" class="muted" style="font-size:11px;">${esc(Z.rule || '')}</td></tr>`;
   const j2 = (Z.judgment || {})['R2 수요'], j5 = (Z.judgment || {})['R5 합성(주)'];
   const note = [];
-  if (j2) note.push(j2.verdict.startsWith('단기') ? `지평 곡선(사전등록 H): 수요 판독이 평균 회귀 기준선보다 나은 건 ${j2.run[0]}~${j2.run[j2.run.length - 1]}개월뿐 — 6개월 지평에선 기준선과 차이 없음(현재 파악용)` : j2.verdict.startsWith('목표') ? `지평 곡선: 수요 판독 유효 지평 ${j2.run[0]}~${j2.run[j2.run.length - 1]}개월` : '지평 곡선: 수요 판독은 평균 회귀 기준선 대비 추가 정보 없음');
-  if (j5 && j5.run && j5.run.length) note.push(`업종 판독 유효 지평 ${j5.run[0]}~${j5.run[j5.run.length - 1]}개월(최고 ${j5.h_star})`);
+  if (j2) note.push(j2.verdict.startsWith('단기') ? `지평 곡선: 나라별 수출 증가율 전망이 평균 회귀 기준선보다 나은 건 ${j2.run[0]}~${j2.run[j2.run.length - 1]}개월뿐 — 6개월 지평에선 기준선과 차이 없음(현재 파악용)` : j2.verdict.startsWith('목표') ? `지평 곡선: 나라별 수출 증가율 전망 유효 지평 ${j2.run[0]}~${j2.run[j2.run.length - 1]}개월` : '지평 곡선: 나라별 수출 증가율 전망은 평균 회귀 기준선 대비 추가 정보 없음');
   document.getElementById('hzDemandNote').textContent = note.join(' · ');
+  document.getElementById('hzSectorNote').textContent = j5 && j5.run && j5.run.length ? `지평 곡선: 업종 판독 유효 지평 ${j5.run[0]}~${j5.run[j5.run.length - 1]}개월(최고 ${j5.h_star})` : '';
   applyJournalDefaultHorizon();
 }
 
