@@ -11,9 +11,9 @@ def vault(tmp_path, monkeypatch):
     return tmp_path
 
 
-def test_total_estimate_runs_us_in_parallel_with_korea():
+def test_total_estimate_runs_korea_then_us_serially():
     est = {"ops": 15, "us": 25, "kr": 70, "kr_ext": 17, "checks": 5}
-    assert uu.total_estimate(uu.KEYS, est) == 15 + max(25, 70 + 17) + 5
+    assert uu.total_estimate(uu.KEYS, est) == 15 + 70 + 17 + 25 + 5
     assert uu.total_estimate(["us", "checks"], est) == 25 + 5
 
 

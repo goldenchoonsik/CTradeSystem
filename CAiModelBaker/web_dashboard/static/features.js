@@ -9290,7 +9290,7 @@ function _uuSelected() {
 
 function _uuTotal(sel, est) {
     const p = k => (sel.includes(k) ? (est[k] || 0) : 0);
-    return p('ops') + Math.max(p('us'), p('kr') + p('kr_ext')) + p('checks');   // 운용 → (미국 ∥ 한국) → 검사
+    return p('ops') + p('kr') + p('kr_ext') + p('us') + p('checks');   // 운용 → 한국 → 미국 → 검사 (메모리 때문에 직렬)
 }
 
 function _uuMin(m) {
@@ -9343,7 +9343,7 @@ function renderUnifiedUpdate(data) {
         <div>
           <div style="font-size:14.5px; font-weight:bold; color:#f8fafc;">🔄 통합 업데이트</div>
           <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
-            체크한 항목을 순서대로 실행합니다: 3단계 메달리온 빌드 → (미국 ∥ 한국 동시) → 실물 검사. 메달리온만 돌리려면 그 항목만 체크하세요.
+            체크한 항목을 순서대로 실행합니다: 3단계 메달리온 빌드 → 한국 → 미국(차례로) → 실물 검사. 메달리온만 돌리려면 그 항목만 체크하세요.
             저녁 20:00 이후 권장 — 한국 틱·1분봉은 다음 날 06:00에 완결되므로 저녁에는 전날 분까지 들어옵니다.
           </div>
         </div>

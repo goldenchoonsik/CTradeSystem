@@ -5098,14 +5098,11 @@ async def run_unified_update_worker(selected: list):
             except Exception as e:
                 ok, msg = False, str(e)
             uu.set_item("ops", "done" if ok else "failed", msg)
-        # 미국(네트워크)과 한국(Creon)은 자원이 겹치지 않아 동시에 — 운용(Creon) 이 끝난 뒤에 시작한다
-        jobs = []
-        if "us" in selected:
-            jobs.append(loop.run_in_executor(None, uu.run_us))
+        # 한국(패널·골드가 메모리를 크게 쓴다)과 미국을 한 번에 하나씩 — 동시에 돌리면 WSL 8GB 상한에서 OOM(-9)으로 죽었다
         if "kr" in selected or "kr_ext" in selected:
-            jobs.append(loop.run_in_executor(None, uu.run_kr, selected))
-        if jobs:
-            await asyncio.gather(*jobs)
+            await loop.run_in_executor(None, uu.run_kr, selected)
+        if "us" in selected:
+            await loop.run_in_executor(None, uu.run_us)
         if "checks" in selected:
             await loop.run_in_executor(None, uu.run_checks)
         uu.finish()

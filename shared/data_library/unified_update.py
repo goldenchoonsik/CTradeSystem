@@ -66,9 +66,9 @@ def estimates(st: Optional[dict] = None) -> Dict[str, float]:
 
 
 def total_estimate(selected: List[str], est: Dict[str, float]) -> float:
-    """운용 → (미국 ∥ 한국+보조지표) → 검사 순서로 본 전체 예상 분."""
+    """운용 → 한국+보조지표 → 미국 → 검사 순서(메모리 때문에 직렬)로 본 전체 예상 분."""
     pick = lambda k: est[k] if k in selected else 0.0
-    return pick("ops") + max(pick("us"), pick("kr") + pick("kr_ext")) + pick("checks")
+    return pick("ops") + pick("kr") + pick("kr_ext") + pick("us") + pick("checks")
 
 
 def overview() -> dict:
