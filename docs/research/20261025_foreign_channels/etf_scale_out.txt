@@ -1,0 +1,26 @@
+한국 상장 합계(보통주+우선 포함 daily_ext 2026-10-19): 시총 $3,800bn, 외국인 보유 $1,361bn (원/달러 1342)
+
+ETF별 한국 주식 보유(십억달러): {'EWY': np.float64(22.09), 'EEM': np.float64(5.36), 'IEMG': np.float64(27.0), 'ACWI': np.float64(0.68), '합계': np.float64(55.13)}
+합계 / 외국인 보유 시총 = 4.1% | / 한국 전체 시총 = 1.5%
+
+=== ETF 보유 상위 종목: 외국인 보유 대비 / 상장주식 대비 ===
+                                       name  ETF_USDbn  ETF/외국인보유  ETF/상장주식  foreign_hold_pct
+code                                                                                         
+A005930             SAMSUNG ELECTRONICS LTD    15.7473     0.0366    0.0168         45.990002
+A000660                            SK HYNIX    12.0442     0.0367    0.0179         48.820000
+A005935  SAMSUNG ELECTRONICS NON VOTING PRE     1.4752     0.0193    0.0144         75.019997
+A402340                           SK SQUARE     1.3155     0.0383    0.0177         46.220001
+A009150       SAMSUNG ELECTRO MECHANICS LTD     1.2462     0.0534    0.0197         36.830002
+A105560                  KB FINANCIAL GROUP     1.0809     0.0326    0.0255         78.250000
+A005380                       HYUNDAI MOTOR     0.8374     0.0709    0.0171         24.070000
+A055550             SHINHAN FINANCIAL GROUP     0.7761     0.0395    0.0241         61.130001
+A006400                     SAMSUNG SDI LTD     0.7187     0.0835    0.0209         25.010000
+A086790                HANA FINANCIAL GROUP     0.6800     0.0405    0.0278         68.620003
+A068270                           CELLTRION     0.6281     0.0732    0.0187         25.540001
+A012450                HANWHA AEROSPACE LTD     0.6078     0.0394    0.0177         45.029999
+
+삼성·하이닉스 제외: ETF 27.7bn / 외국인 보유 602bn
+
+=== 규모 비교: 2026년 외국인 순매도 vs ETF 규모 ===
+외국인 순매도 2026년 −208조원(KRX 코스피) ≈ $155bn (연평균 환율 1.35k 가정 아님, 현재 환율 환산)
+→ EWY+EEM+IEMG+ACWI 전체 한국 노출 합 $55bn 의 몇 배인지: 2.8배

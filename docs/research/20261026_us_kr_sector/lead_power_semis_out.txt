@@ -1,0 +1,43 @@
+/home/kuzimo/projects/CTradeSystem/docs/research/20261026_us_kr_sector/lead_power_semis.py:14: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  def basket(names,f): return pd.concat([f(n) for n in names],axis=1).mean(axis=1,skipna=True)
+/home/kuzimo/projects/CTradeSystem/docs/research/20261026_us_kr_sector/lead_power_semis.py:14: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  def basket(names,f): return pd.concat([f(n) for n in names],axis=1).mean(axis=1,skipna=True)
+/home/kuzimo/projects/CTradeSystem/docs/research/20261026_us_kr_sector/lead_power_semis.py:14: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  def basket(names,f): return pd.concat([f(n) for n in names],axis=1).mean(axis=1,skipna=True)
+열: 오프셋 -2 -1 +0 +1 +2 +3   (j=0 미국→한국 다음 세션 / +1·+2 한국이 늦게 반응 / −1·−2 한국 선행)
+
+[전력]
+  2020~23  원 -0.01 +0.13 +0.28 +0.01 +0.12 +0.00 | 시장제거 -0.03 +0.02 +0.12 -0.04 -0.01 +0.05
+  2024~    원 +0.00 +0.12 +0.35 -0.02 -0.00 +0.02 | 시장제거 +0.01 -0.00 +0.21 +0.08 +0.01 +0.02
+
+[전력(GRID ETF)]
+  2020~23  원 +0.01 +0.13 +0.29 +0.07 +0.14 -0.01 | 시장제거 -0.04 -0.03 +0.09 +0.01 -0.02 +0.04
+  2024~    원 +0.03 +0.18 +0.37 -0.02 -0.05 +0.00 | 시장제거 +0.07 +0.03 +0.10 +0.06 -0.03 -0.02
+
+[반도체(SOXX)→삼성·하이닉스]
+  2013~19  원 +0.01 +0.17 +0.12 +0.00 +0.01 +0.01 | 시장제거 +0.00 +0.09 +0.07 -0.01 +0.01 +0.01
+  2020~23  원 +0.02 +0.20 +0.35 -0.01 +0.05 -0.08 | 시장제거 +0.04 +0.09 +0.18 -0.01 +0.02 -0.03
+  2024~    원 +0.00 +0.14 +0.20 -0.05 -0.00 +0.03 | 시장제거 +0.03 +0.07 +0.05 -0.01 +0.04 +0.04
+
+[반도체(SOXX)→반도체 5종]
+  2013~19  원 +0.02 +0.16 +0.13 -0.02 +0.02 +0.01 | 시장제거 +0.01 +0.07 +0.06 -0.02 +0.01 +0.00
+  2020~23  원 +0.00 +0.18 +0.34 +0.01 +0.11 -0.06 | 시장제거 +0.02 +0.07 +0.20 -0.01 +0.02 -0.03
+  2024~    원 -0.03 +0.13 +0.21 -0.04 -0.01 +0.03 | 시장제거 -0.03 +0.04 +0.06 -0.02 +0.01 +0.04
+
+[메모리(MU)→하이닉스·삼성]
+  2013~19  원 +0.01 +0.20 +0.09 +0.00 +0.01 +0.01 | 시장제거 -0.00 +0.17 +0.07 +0.00 +0.01 +0.00
+  2020~23  원 +0.02 +0.25 +0.40 +0.02 +0.07 -0.04 | 시장제거 +0.06 +0.19 +0.32 +0.02 +0.00 -0.02
+  2024~    원 -0.05 +0.30 +0.44 -0.08 +0.02 +0.07 | 시장제거 -0.03 +0.24 +0.26 -0.05 +0.06 +0.11
+
+[AI(NVDA)→반도체 5종]
+  2013~19  원 +0.05 +0.09 +0.07 -0.00 +0.01 +0.01 | 시장제거 +0.01 +0.03 +0.02 -0.00 +0.00 -0.01
+  2020~23  원 -0.04 +0.09 +0.20 -0.00 +0.05 -0.01 | 시장제거 -0.05 +0.03 +0.09 -0.00 +0.01 -0.00
+  2024~    원 -0.02 +0.04 +0.10 -0.04 -0.03 +0.00 | 시장제거 +0.00 -0.02 +0.07 -0.03 -0.03 +0.03
+
+=== 주 단위(월~일 합): 미국 t→한국 t+1, 한국 t→미국 t+1, 동기 — 2024~ ===
+  전력                     동기 +0.38 | 미국→한국 다음 주 +0.08 | 한국→미국 다음 주 +0.02 (n=145)
+  전력(GRID ETF)           동기 +0.52 | 미국→한국 다음 주 +0.09 | 한국→미국 다음 주 -0.06 (n=145)
+  반도체(SOXX)→삼성·하이닉스      동기 +0.23 | 미국→한국 다음 주 +0.17 | 한국→미국 다음 주 -0.00 (n=145)
+  반도체(SOXX)→반도체 5종       동기 +0.15 | 미국→한국 다음 주 +0.12 | 한국→미국 다음 주 -0.05 (n=145)
+  메모리(MU)→하이닉스·삼성        동기 +0.68 | 미국→한국 다음 주 +0.26 | 한국→미국 다음 주 -0.06 (n=145)
+  AI(NVDA)→반도체 5종        동기 +0.05 | 미국→한국 다음 주 +0.03 | 한국→미국 다음 주 -0.05 (n=145)

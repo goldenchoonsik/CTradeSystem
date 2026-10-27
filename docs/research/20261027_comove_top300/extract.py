@@ -1,0 +1,28 @@
+import numpy as np, pandas as pd, warnings; warnings.filterwarnings("ignore")
+R="/home/kuzimo/projects/CTradeSystem"; V=f"{R}/DataVault"
+kuni=pd.read_csv(f"{V}/staging/kr_equity/universe.csv",dtype=str).set_index("code")
+de=pd.read_parquet(f"{V}/staging/kr_equity/derived/daily_ext.parquet",columns=["code","date","market_cap"]); de["date"]=pd.to_datetime(de.date)
+pr=pd.read_parquet(f"{V}/staging/kr_equity/derived/prices_1d.parquet",columns=["code","date","close"]); pr["date"]=pd.to_datetime(pr.date)
+px=pr.pivot(index="date",columns="code",values="close").sort_index()
+spy=pd.read_csv(f"{V}/raw/yahoo/candle_1d/SPY_1d.csv",usecols=["timestamp","close"],parse_dates=["timestamp"]).set_index("timestamp").close; spy.index=spy.index.normalize()
+wk=lambda s:np.log(s.resample("W-FRI").last()).diff()
+pw=np.log(px.resample("W-FRI").last()).diff(); sw=wk(spy)
+d0=min(px.index.max(),spy.index.max()); dc=de.date[de.date<=d0].max()
+cap=de[de.date==dc].set_index("code").market_cap.dropna()
+ok=[c for c in cap.index if c in kuni.index and kuni.loc[c,"is_preferred"]=="0" and kuni.loc[c,"is_spac"]=="0" and kuni.loc[c,"status"]=="listed" and c in px.columns]
+top=cap.loc[ok].nlargest(300).index
+w=pw.loc[(pw.index<=d0)&(pw.index>d0-pd.Timedelta(days=735)),top]; s=sw.reindex(w.index)
+cor=w.apply(lambda c:c.corr(s) if c.notna().sum()>=80 else np.nan)
+df=pd.DataFrame({"name":kuni.loc[top,"name"],"market":kuni.loc[top,"market"],"cap_won":cap.loc[top],"cor_spy":cor})
+df["rank_cap"]=range(1,301); df["quintile"]=pd.qcut(df.cor_spy,5,labels=False)+1
+pairs=pd.read_csv(f"{R}/docs/research/20261026_us_kr_pairs/pairs_stable.csv")
+pairs=pairs[pairs.kr.isin(top)].sort_values("m",ascending=False)
+g=pairs.groupby("kr")
+df["n_us_partners"]=g.size().reindex(df.index).fillna(0).astype(int)
+df["us_partners_top5"]=g.apply(lambda x:"; ".join(f"{a}({m:.2f})" for a,m in zip(x.us.head(5),x.m.head(5)))).reindex(df.index).fillna("")
+df.index.name="code"; df=df.sort_values("cor_spy",ascending=False)
+df.to_csv("top300_comove_20261027.csv",encoding="utf-8-sig")
+pairs.assign(kr_name=pairs.kr.map(kuni.name)).to_csv("top300_us_pairs.csv",index=False,encoding="utf-8-sig")
+print(d0,dc,len(df),df.cor_spy.isna().sum(),len(pairs))
+print(df.groupby("quintile").cor_spy.agg(["count","mean"]))
+print(df.head(25)[["name","cor_spy","quintile","n_us_partners","us_partners_top5"]].to_string())

@@ -1,0 +1,68 @@
+dev 1721 일 (800, 400)
+hold 928 일 (800, 400)
+229518 쌍; 상관 분포 dev {'mean': 0.004, 'std': 0.043, 'min': -0.2, 'max': 0.341}
+dev–hold 전체 쌍 상관(구간 간 재현성): 0.226
+dev ≥0.10 쌍 4925개 → 검증 평균 0.053, 검증 ≥0.05 비율 53%, 검증 ≥0.10 비율 16%
+
+개발·검증 모두 ≥0.08: 2181쌍 (무작위 기대 0에 가까움 — 양쪽 SE≈0.025/0.034)
+  us                            us_name      kr kr_name   dev  hold
+ DVN Devon Energy Corporation Common... A010950   S-Oil 0.265 0.279
+ XOM ExxonMobil Holdings Corporation... A010950   S-Oil 0.294 0.263
+  SU   Suncor Energy  Inc. Common Stock A010950   S-Oil 0.261 0.258
+ EOG   EOG Resources, Inc. Common Stock A010950   S-Oil 0.265 0.257
+FANG Diamondback Energy, Inc. - Comm... A010950   S-Oil 0.249 0.270
+EQNR                        Equinor ASA A010950   S-Oil 0.248 0.287
+  BP             BP p.l.c. Common Stock A010950   S-Oil 0.243 0.250
+ COP        ConocoPhillips Common Stock A010950   S-Oil 0.264 0.243
+ OXY Occidental Petroleum Corporatio... A010950   S-Oil 0.241 0.257
+ OVV                  Ovintiv Inc. (DE) A010950   S-Oil 0.238 0.264
+  MU Micron Technology, Inc. - Commo... A000660  SK하이닉스 0.341 0.235
+ DAL Delta Air Lines, Inc. Common Stock A003490    대한항공 0.231 0.233
+SHEL Shell PLC American Depositary S... A010950   S-Oil 0.227 0.272
+ HAL   Halliburton Company Common Stock A010950   S-Oil 0.276 0.225
+ UAL United Airlines Holdings, Inc. ... A003490    대한항공 0.232 0.222
+ CVE    Cenovus Energy Inc Common Stock A010950   S-Oil 0.216 0.305
+  SM     SM Energy Company Common Stock A010950   S-Oil 0.215 0.248
+ CVX   Chevron Corporation Common Stock A010950   S-Oil 0.225 0.215
+ VLO Valero Energy Corporation Commo... A010950   S-Oil 0.205 0.205
+ CNQ Canadian Natural Resources Limi... A010950   S-Oil 0.204 0.212
+ AAL American Airlines Group, Inc. -... A003490    대한항공 0.231 0.200
+ APA     APA Corporation - Common Stock A010950   S-Oil 0.200 0.247
+ SLB          SLB Limited Common Shares A010950   S-Oil 0.242 0.197
+ TTE   TotalEnergies SE Ordinary Shares A010950   S-Oil 0.197 0.234
+ ALK Alaska Air Group, Inc. Common S... A003490    대한항공 0.195 0.230
+ BKR Baker Hughes Company - Common S... A010950   S-Oil 0.195 0.210
+ PSX           Phillips 66 Common Stock A010950   S-Oil 0.262 0.194
+ PBF PBF Energy Inc. Class A Common ... A010950   S-Oil 0.192 0.193
+ MET         MetLife, Inc. Common Stock A024110    기업은행 0.222 0.192
+ WFC Wells Fargo & Company Common Stock A024110    기업은행 0.234 0.184
+ WPM Wheaton Precious Metals Corp Co... A010130    고려아연 0.200 0.181
+ RIG Transocean Ltd (Switzerland) Co... A010950   S-Oil 0.229 0.181
+ MPC Marathon Petroleum Corporation ... A010950   S-Oil 0.180 0.208
+VALE VALE S.A.  American Depositary ... A004020    현대제철 0.198 0.180
+DINO HF Sinclair Corporation Common ... A010950   S-Oil 0.178 0.184
+ WFC Wells Fargo & Company Common Stock A105560    KB금융 0.247 0.175
+ PRU Prudential Financial, Inc. Comm... A024110    기업은행 0.240 0.173
+AMAT Applied Materials, Inc. - Commo... A240810   원익IPS 0.173 0.208
+ FTI      TechnipFMC plc Ordinary Share A010950   S-Oil 0.216 0.171
+  CF CF Industries Holdings, Inc. Co... A010950   S-Oil 0.170 0.199
+ EQT       EQT Corporation Common Stock A010950   S-Oil 0.170 0.174
+ RRC Range Resources Corporation Com... A010950   S-Oil 0.170 0.230
+LRCX Lam Research Corporation - Comm... A084370    유진테크 0.169 0.212
+PAAS Pan American Silver Corp. Commo... A010130    고려아연 0.172 0.169
+PNFP Pinnacle Financial Partners, In... A139130  iM금융지주 0.217 0.168
+PNFP Pinnacle Financial Partners, In... A024110    기업은행 0.191 0.167
+ CCL Carnival Corporation Ltd. Commo... A003490    대한항공 0.181 0.166
+ BCS          Barclays PLC Common Stock A024110    기업은행 0.176 0.165
+LRCX Lam Research Corporation - Comm... A240810   원익IPS 0.177 0.165
+  AR Antero Resources Corporation Co... A010950   S-Oil 0.165 0.189
+ KMI   Kinder Morgan, Inc. Common Stock A010950   S-Oil 0.175 0.164
+ BCS          Barclays PLC Common Stock A086790  하나금융지주 0.220 0.164
+ BNY The Bank of New York Mellon Cor... A024110    기업은행 0.200 0.162
+ HIG The Hartford Insurance Group, I... A024110    기업은행 0.225 0.161
+KLAC    KLA Corporation  - Common Stock A084370    유진테크 0.160 0.265
+KLAC    KLA Corporation  - Common Stock A240810   원익IPS 0.160 0.244
+ASML ASML Holding N.V. - New York Re... A084370    유진테크 0.159 0.196
+ CFG Citizens Financial Group, Inc. ... A024110    기업은행 0.230 0.159
+ WFC Wells Fargo & Company Common Stock A086790  하나금융지주 0.236 0.159
+ FCX Freeport-McMoRan, Inc. Common S... A010130    고려아연 0.181 0.158

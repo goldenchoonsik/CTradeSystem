@@ -1,0 +1,82 @@
+=== 한국 리츠(맥쿼리인프라 제외) 연도별 동일가중 (형성=1월 첫 거래일) ===
+       n   r3   yld  spread     TR  price  kospi   part  초과vsKOSPI
+y                                                                 
+2013   1  2.8   0.0    -2.8   17.0    4.9    0.7  False       16.3
+2014   1  2.9  13.8    10.9   13.9    7.7   -4.8  False       18.7
+2015   1  2.1   6.7     4.5   27.7   25.0    2.4  False       25.3
+2016   1  1.7   2.6     0.9  125.2  123.8    3.3  False      121.9
+2017   1  1.7   0.8    -0.9  -60.6  -61.3   21.8  False      -82.3
+2018   1  2.1   2.0    -0.1   18.4   16.7  -17.3  False       35.7
+2019   1  1.8   1.7    -0.1  -15.1  -16.9    7.7  False      -22.8
+2020   3  1.4   3.7     2.4    3.4   -1.5   30.8  False      -27.3
+2021   4  1.0   5.9     4.9   17.8   13.3    3.6  False       14.1
+2022  10  1.8   5.3     3.5  -18.4  -23.3  -24.9  False        6.5
+2023  14  3.6   7.7     4.0    0.0   -6.4   18.7  False      -18.7
+2024  15  3.4   8.0     4.6    0.4   -7.1   -9.6  False       10.1
+2025  16  2.6   9.6     7.0   11.1    5.1   75.6  False      -64.5
+2026  16  3.0   6.8     3.8  -16.4  -19.3   30.9   True      -47.3
+
+=== 맥쿼리인프라(참고: 인프라펀드, 리츠 아님) ===
+        r3  yld  spread   ret  price  kospi
+y                                         
+2008  5.9  6.6     0.7 -22.4  -28.2  -40.7
+2009  4.0  9.8     5.8  11.2    4.1   49.7
+2010  4.2  7.8     3.6   2.9   -2.9   21.9
+2011  3.2  7.1     3.9   9.1    3.3  -11.0
+2012  3.4  6.6     3.2  44.9   36.8    9.4
+2013  2.8  7.2     4.4  -1.3   -7.8    0.7
+2014  2.9  8.5     5.5  18.9   13.0   -4.8
+2015  2.1  6.0     3.8  20.0   14.4    2.4
+2016  1.7  5.8     4.1   6.0    1.7    3.3
+2017  1.7  5.0     3.3   8.4    2.7   21.8
+2018  2.1  6.6     4.5  19.4   13.0  -17.3
+2019  1.8  6.7     4.8  30.7   24.3    7.7
+2020  1.4  6.0     4.6  -3.4   -8.6   30.8
+2021  1.0  6.8     5.8  37.9   31.9    3.6
+2022  1.8  5.4     3.6 -15.8  -20.5  -24.9
+2023  3.6  6.9     3.3  18.0   12.1   18.7
+2024  3.4  6.2     2.8 -10.2  -15.3   -9.6
+2025  2.6  7.2     4.6  12.2    6.1   75.6
+2026  3.0  6.8     3.8 -10.5  -13.1   30.9
+
+리츠 완결연도 13개: 평균 TR 10.9% KOSPI(가격) 8.3% 평균 배당-금리 스프레드 +3.0%p
+
+=== 개별 리츠 × 연도 TR% (배당 세후) ===
+y                                  2013  2014  2015   2016  2017  2018  2019  2020  2021  2022  2023  2024  2025  2026
+name                                                                                                                  
+D&D platform REIT Co., Ltd.         NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN   NaN   1.0  -2.0  20.0 -41.0
+E Kocref Cr-Reit                    NaN   NaN   NaN    NaN   NaN   NaN   NaN -15.0  17.0  -6.0  -1.0 -10.0  19.0 -30.0
+ESR Kendall Square REIT Co., Ltd.   NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN -33.0  -3.0  21.0   4.0 -25.0
+Hanwha REIT Co., Ltd.               NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN  25.0  28.0
+IGIS RESIDENCE REIT Co., Ltd.       NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN -21.0   2.0   8.0   5.0 -15.0
+IGIS Value Plus REIT Co., Ltd.      NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN -12.0   4.0  10.0   1.0 -18.0
+JR Global REIT                      NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN -12.0   3.0 -26.0   9.0 -58.0
+K-TOP Reits Co.,Ltd.               17.0  14.0  28.0  125.0 -61.0  18.0 -15.0  31.0  26.0 -31.0  26.0   0.0  -5.0 -14.0
+KB STAR REIT Co., Ltd.              NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   3.0 -11.0 -51.0
+Koramco Life Infra Reit             NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN -12.0   1.0 -15.0  14.0 -12.0
+LOTTE REIT Co., Ltd.                NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN  12.0 -22.0 -17.0   2.0  29.0  10.0
+Miraeasset Maps REIT 1 Co., Ltd.    NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN -24.0 -10.0  -6.0  13.0 -29.0
+NH All-One REIT Co., Ltd.           NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN   NaN   7.0   8.0   8.0 -18.0
+SK Reits Co., Ltd.                  NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN   NaN -20.0  17.0  33.0  -6.0
+Shinhan Alpha REIT Co., Ltd.        NaN   NaN   NaN    NaN   NaN   NaN   NaN  -5.0  17.0 -12.0   2.0  -3.0   3.0   3.0
+Shinhan Seobu T&D REIT Co., Ltd.    NaN   NaN   NaN    NaN   NaN   NaN   NaN   NaN   NaN   NaN   4.0  -1.0  10.0  13.0
+
+=== 개별 리츠 × 연도 (배당수익률−금리) %p ===
+y                                  2013  2014  2015  2016  2017  2018  2019  2020  2021  2022  2023  2024  2025  2026
+name                                                                                                                 
+D&D platform REIT Co., Ltd.         NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   4.9   5.3   6.4   4.2
+E Kocref Cr-Reit                    NaN   NaN   NaN   NaN   NaN   NaN   NaN   3.8   5.5   4.7   4.0   4.9   6.2   4.6
+ESR Kendall Square REIT Co., Ltd.   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   2.4   3.1   3.9   3.6   3.4
+Hanwha REIT Co., Ltd.               NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   5.8   3.5
+IGIS RESIDENCE REIT Co., Ltd.       NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   3.1   3.1   3.6   5.1   4.8
+IGIS Value Plus REIT Co., Ltd.      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   3.4   2.5   5.4  15.7   5.2
+JR Global REIT                      NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   5.3   5.3   5.9  11.6   5.1
+K-TOP Reits Co.,Ltd.               -2.8  10.9   4.5   0.9  -0.9  -0.1  -0.1   1.2   6.0   1.0   8.7   6.1   4.4  -3.0
+KB STAR REIT Co., Ltd.              NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   4.7   6.1   6.5
+Koramco Life Infra Reit             NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   5.6   2.9   3.7   7.6   4.4
+LOTTE REIT Co., Ltd.                NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   4.9   3.6   3.8   2.9   4.2  -0.1
+Miraeasset Maps REIT 1 Co., Ltd.    NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   3.8   4.5   6.5   8.7   6.5
+NH All-One REIT Co., Ltd.           NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   5.7   5.0   7.3   6.4
+SK Reits Co., Ltd.                  NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   1.4   4.5   3.3   1.5
+Shinhan Alpha REIT Co., Ltd.        NaN   NaN   NaN   NaN   NaN   NaN   NaN   2.1   3.2   2.4   2.0   2.4  11.5   3.3
+Shinhan Seobu T&D REIT Co., Ltd.    NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   NaN   4.8   4.5   4.6   4.2
