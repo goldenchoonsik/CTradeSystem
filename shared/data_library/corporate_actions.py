@@ -161,7 +161,9 @@ def update(root: str, symbol: str, detected: Iterable[dict], window: tuple, obse
 
 
 def events(root: str, symbol: str, statuses=LIVE_STATUSES) -> List[dict]:
-    return [e for e in load(root, symbol)["events"] if e["status"] in statuses]
+    """수정 계산에 쓰는 이벤트 — missing_since 가 붙은 것(관측 기간 안인데 최근 수정·무수정 비교에서 더는 안 보임)은 뺀다.
+    장중 수집분처럼 일시적 어긋남이 이벤트로 잡혔다가 사라진 경우, 남겨 두면 과거 전체 수정가가 ±1~3% 틀어진다(2026-10-19 장중 수집 627종목)."""
+    return [e for e in load(root, symbol)["events"] if e["status"] in statuses and "missing_since" not in e]
 
 
 # ---------------------------------------------------------------- 수정 계산 (유일한 지점)

@@ -108,6 +108,18 @@ def test_missing_event_is_flagged_not_deleted(tmp_path):
     assert rep["missing"] == [e["ex_date"]] and e["missing_since"] == "t2" and e["status"] == "detected"
 
 
+def test_missing_event_is_not_applied_to_adjustment(tmp_path):
+    """사라진 이벤트(missing_since)는 수정 계산에 쓰지 않는다 — 장중 수집 어긋남 잔재가 과거 전체 수정가를 틀어 놓지 않게."""
+    px = _walk(seed=6)
+    adj, raw = _pair(px, {60: 5.0})
+    root = str(tmp_path)
+    win = ("2024-12-01", "2026-01-01")
+    ca.update(root, "A1", ca.detect(adj, raw), win, observed_at="t1")
+    assert len(ca.events(root, "A1")) == 1
+    ca.update(root, "A1", [], win, observed_at="t2")
+    assert ca.events(root, "A1") == []
+
+
 # ---------------------------------------------------------------- staging 실데이터
 def _real(code):
     a, r = os.path.join(STAGE, "candle_1d", f"{code}_1d.csv"), os.path.join(STAGE, "candle_1d_unadj", f"{code}_1d.csv")
