@@ -17,6 +17,7 @@
   (삼성전자·신한지주·KB금융 2년간 계수 불변) → 현금배당은 2층(KIS 예탁원 정보)에서.
 """
 import json
+import math
 import os
 from datetime import datetime, timezone
 from fractions import Fraction
@@ -30,6 +31,7 @@ NOISE_MULT = 3.0
 MIN_ABS_LOG = 0.001
 FACTOR_TOL = 0.002          # 같은 이벤트로 볼 계수 차이(상대)
 LIVE_STATUSES = ("detected", "confirmed")
+MATERIAL_LOG = 0.1          # |ln 계수| 가 이보다 크면 분할·병합급 — 장중 값으로 잡힌 뒤 최종값으로 수렴하면 자동 채택(노이즈급은 사람 확인)
 
 
 def _now():
@@ -122,7 +124,9 @@ def update(root: str, symbol: str, detected: Iterable[dict], window: tuple, obse
 
     - 새 이벤트: 추가(status=detected)
     - 같은 날·같은 계수: last_seen_at 갱신
-    - 같은 날·다른 계수: revisions 에 남기고 status=conflict (사용자 확인)
+    - 같은 날·다른 계수: revisions 에 남기고 status=conflict (사용자 확인).
+      단 분할·병합급(MATERIAL_LOG 초과)이 직전 revision 과 같은 값으로 두 번 연속 관측되면 그 값을 채택하고 detected 로 복귀
+      (장중 수집값으로 먼저 잡힌 병합 이벤트가 conflict 에 갇혀 수정가에서 빠지던 결함 — A205100 2026-11-02)
     - 관측 기간 안인데 이번에 안 보인 기존 이벤트: missing_since 표시(삭제하지 않음)
     """
     observed_at = observed_at or _now()
@@ -144,9 +148,19 @@ def update(root: str, symbol: str, detected: Iterable[dict], window: tuple, obse
             cur.pop("missing_since", None)
             rep["seen"].append(dte)
         else:
+            last = cur["revisions"][-1]["price_factor"] if cur["revisions"] else None
+            converged = (cur["status"] == "conflict" and last is not None and abs(math.log(ev["price_factor"])) > MATERIAL_LOG
+                         and abs(ev["price_factor"] / last - 1) <= FACTOR_TOL)
             cur["revisions"].append({"at": observed_at, "price_factor": ev["price_factor"], "evidence": ev["evidence"]})
-            cur["status"] = "conflict"
-            rep["conflict"].append(dte)
+            if converged:
+                cur.setdefault("superseded_factors", []).append(cur["price_factor"])
+                cur.update(price_factor=ev["price_factor"], nominal_ratio=ev["nominal_ratio"], kind_hint=ev["kind_hint"],
+                           evidence=ev["evidence"], status="detected", last_seen_at=observed_at)
+                cur.pop("missing_since", None)
+                rep["seen"].append(dte)
+            else:
+                cur["status"] = "conflict"
+                rep["conflict"].append(dte)
     lo, hi = window
     for e in led["events"]:
         if e["source"] == SOURCE_CREON and lo < e["ex_date"] <= hi and e["ex_date"] not in seen_dates \

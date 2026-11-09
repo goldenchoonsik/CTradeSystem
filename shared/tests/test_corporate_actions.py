@@ -120,6 +120,28 @@ def test_missing_event_is_not_applied_to_adjustment(tmp_path):
     assert ca.events(root, "A1") == []
 
 
+def _ev(date, factor):
+    return {"ex_date": date, "price_factor": factor, "nominal_ratio": None, "kind_hint": "x", "status": "detected",
+            "source": ca.SOURCE_CREON, "evidence": {}, "observed_at": "t"}
+
+
+def test_material_conflict_converges_after_two_agreeing_observations(tmp_path):
+    """장중 값(4.96)으로 먼저 잡힌 병합 이벤트는 최종값(5.0)이 연속 두 번 관측되면 채택돼 수정가에 쓰인다(A205100 2026-11-02).
+    한 번 바뀐 것만으로는 conflict 로 남고, 노이즈급(±10% 미만) 이벤트는 수렴해도 conflict 로 남는다."""
+    root, win = str(tmp_path), ("2020-01-01", "2026-12-31")
+    ca.update(root, "A1", [_ev("2026-11-02", 4.964)], win, observed_at="t1")
+    ca.update(root, "A1", [_ev("2026-11-02", 5.0)], win, observed_at="t2")
+    assert ca.events(root, "A1") == []                                    # 한 번 바뀜: 아직 conflict
+    rep = ca.update(root, "A1", [_ev("2026-11-02", 5.0)], win, observed_at="t3")
+    e = ca.events(root, "A1")[0]
+    assert rep["conflict"] == [] and e["price_factor"] == 5.0 and e["status"] == "detected" and e["superseded_factors"] == [4.964]
+
+    ca.update(root, "A2", [_ev("2026-11-02", 1.01)], win, observed_at="t1")
+    ca.update(root, "A2", [_ev("2026-11-02", 1.03)], win, observed_at="t2")
+    ca.update(root, "A2", [_ev("2026-11-02", 1.03)], win, observed_at="t3")
+    assert ca.events(root, "A2") == [] and ca.load(root, "A2")["events"][0]["status"] == "conflict"
+
+
 # ---------------------------------------------------------------- staging 실데이터
 def _real(code):
     a, r = os.path.join(STAGE, "candle_1d", f"{code}_1d.csv"), os.path.join(STAGE, "candle_1d_unadj", f"{code}_1d.csv")
