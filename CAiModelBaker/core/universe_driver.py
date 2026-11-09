@@ -12,6 +12,7 @@
   py -3.10-32 universe_driver.py daily_ext --codes-file ...     # 주식수·시총·외국인·기관(일별) 증분. --full: 전체 재수집
   py -3.10-32 universe_driver.py index                          # 지수 일봉(U### 128개) 증분
   py -3.10-32 universe_driver.py minute --codes-file t.txt      # 1분봉(받은편지함 → Linux ingest_inbox.py)
+  py -3.10-32 universe_driver.py minute --refresh --codes-file t.txt   # 이미 받은 종목도 마지막 시점 이후 증분(없는 종목은 전체)
   --stage <이름>  staging 하위 데이터셋(기본 kr_equity) — 수집기 import 전에 읽는다
 """
 import argparse
@@ -308,6 +309,7 @@ def main():
     ap.add_argument("--codes-file", default=None, help="종목 목록(.txt 한 줄 하나 / .csv code 열). 기본 targets_creon.txt")
     ap.add_argument("--count", type=int, default=99999999, help="minute 전용")
     ap.add_argument("--limit", type=int, default=None, help="앞에서 N 종목만 (실측용)")
+    ap.add_argument("--refresh", action="store_true", help="minute 전용: 이미 받은 종목도 건너뛰지 않고 증분 수집(수집기가 마지막 시점부터 이어 받는다)")
     ap.add_argument("--full", action="store_true", help="증분 대신 전체 재수집(daily: 지우고 다시, daily_ext/index: 덮어쓰기)")
     ap.add_argument("--stage", default="kr_equity", help="staging 하위 데이터셋 이름 (모듈 로드 때 이미 반영)")
     a = ap.parse_args()
@@ -332,7 +334,7 @@ def main():
         cc._candle_day_save = _defer_candle_save
         day_root = os.path.join(STAGE, "raw", "creon", "candle_1m")
         before = len(codes)
-        codes = [c for c in codes if not os.path.isdir(os.path.join(day_root, c))
+        codes = [c for c in codes if (a.refresh or not os.path.isdir(os.path.join(day_root, c)))
                  and not os.path.exists(os.path.join(INBOX, f"{c}.csv.json"))]
         log(f"[minute] 이미 받은 {before - len(codes)} 종목 건너뜀")
     log(f"[{a.step}] 시작 {len(codes)} 종목 full={a.full} vault={STAGE}")
