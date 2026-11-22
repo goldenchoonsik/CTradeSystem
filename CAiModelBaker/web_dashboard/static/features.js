@@ -9293,6 +9293,10 @@ function _uuTotal(sel, est) {
     return p('ops') + p('kr') + p('kr_ext') + p('us') + p('checks');   // 운용 → 한국 → 미국 → 검사 (메모리 때문에 직렬)
 }
 
+function _uuGroupEst(data, group) {
+    return (data.items || []).filter(i => i.group === group).reduce((a, i) => a + (i.est_min || 0), 0);
+}
+
 function _uuMin(m) {
     m = Math.max(0, Math.round(m));
     return m >= 60 ? `${Math.floor(m / 60)}시간 ${m % 60}분` : `${m}분`;
@@ -9302,6 +9306,32 @@ function _uuElapsed(fromIso, toIso) {
     if (!fromIso) return 0;
     const a = new Date(fromIso), b = toIso ? new Date(toIso) : new Date();
     return (b - a) / 60000;
+}
+
+// 마지막 성공 이후 경과 — '오늘' / 'N시간 전' / 'N일 전'
+function _uuAgo(days) {
+    if (days == null) return '';
+    if (days < 1) { const h = Math.round(days * 24); return h <= 0 ? '방금' : `${h}시간 전`; }
+    return `${Math.floor(days)}일 전`;
+}
+
+// 항목 신선도 한 줄 (백엔드 unified_update.freshness): ok / warn(갱신 권장) / danger(손실 위험) / never / none
+function _uuFreshHtml(it) {
+    const f = it.fresh || {};
+    if (f.level === 'none') return '';
+    if (f.level === 'never') return `<span style="color:#fbbf24;">성공 기록 없음</span>`;
+    const ago = _uuAgo(f.days);
+    if (f.level === 'danger') return `<span style="color:#f87171; font-weight:600;">⛔ 마지막 성공 ${ago} — 지금 돌리세요</span>`;
+    if (f.level === 'warn') return `<span style="color:#fbbf24; font-weight:600;">⚠️ 마지막 성공 ${ago} — 갱신 권장</span>`;
+    return `<span style="color:#4ade80;">마지막 성공 ${ago}</span>`;
+}
+
+// 묶음 단위로 체크 — 'model' = LightGBM 운용만, 'research' = 연구 데이터만, 'all' = 전체
+function _uuPick(group) {
+    if (!_uuData) return;
+    const keys = _uuData.items.filter(i => group === 'all' || i.group === group).map(i => i.key);
+    document.querySelectorAll('#unifiedUpdateCard input[data-uu]').forEach(b => { b.checked = keys.includes(b.dataset.uu); });
+    _uuUpdateTotal();
 }
 
 function _uuSaveSel() {
@@ -9343,13 +9373,31 @@ function renderUnifiedUpdate(data) {
         <div>
           <div style="font-size:14.5px; font-weight:bold; color:#f8fafc;">🔄 통합 업데이트</div>
           <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
-            체크한 항목을 순서대로 실행합니다: 3단계 메달리온 빌드 → 한국 → 미국(차례로) → 실물 검사. 메달리온만 돌리려면 그 항목만 체크하세요.
+            체크한 항목을 순서대로 실행합니다: 운용 데이터 → 한국 → 미국(차례로) → 실물 검사.
+            <b style="color:#e2e8f0;">평소에는 '⚡ LightGBM 운용만'</b>(약 ${_uuMin(_uuGroupEst(data, 'model'))})을 자주 돌리고, 연구용 전 종목은 연구할 때·주 1회 정도면 됩니다.
             저녁 20:00 이후 권장 — 한국 틱·1분봉은 다음 날 06:00에 완결되므로 저녁에는 전날 분까지 들어옵니다.
           </div>
+          ${running ? '' : `<div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="_uuPick('model')" style="font-size:11.5px; padding:3px 10px; background:rgba(34,197,94,0.18); color:#bbf7d0; border:1px solid rgba(74,222,128,0.5); border-radius:5px;">⚡ LightGBM 운용만</button>
+            <button class="btn btn-sm" onclick="_uuPick('research')" style="font-size:11.5px; padding:3px 10px; background:rgba(148,163,184,0.12); color:#cbd5e1; border:1px solid rgba(148,163,184,0.4); border-radius:5px;">📚 연구 데이터만</button>
+            <button class="btn btn-sm" onclick="_uuPick('all')" style="font-size:11.5px; padding:3px 10px; background:rgba(148,163,184,0.08); color:#94a3b8; border:1px solid rgba(148,163,184,0.3); border-radius:5px;">전체</button>
+          </div>`}
         </div>
         ${running ? '' : `<button class="btn btn-sm" id="btnUnifiedUpdate" onclick="startUnifiedUpdate()"
             style="background:linear-gradient(135deg,#22c55e,#06b6d4); color:#fff; font-weight:bold; font-size:13px; padding:8px 18px; border:none; border-radius:6px;"></button>`}
       </div>`;
+
+    const live = data.live || {};
+    const hasOrphan = !running && !!live.orphan;
+    const renderLiveBox = (lv) => {
+        const lines = (lv && lv.lines) || [];
+        const upd = (lv && lv.updated_at) ? `<span style="color:#64748b;"> · 로그 갱신 ${_esc(lv.updated_at)}</span>` : '';
+        if (!lines.length && !upd) return '';
+        return `<div style="margin-top:6px; padding:6px 8px; border-radius:4px; background:rgba(15,23,42,0.85); border:1px solid rgba(56,189,248,0.2); font-family:monospace; font-size:11px; color:#cbd5e1; line-height:1.45; white-space:pre-wrap; word-break:break-all;">
+            <div style="color:#38bdf8; font-size:10.5px; margin-bottom:3px;">📡 실시간 진행 로그${upd}</div>
+            ${lines.length ? lines.map(l => _esc(l)).join('\n') : '<span style="color:#64748b;">(출력 대기 중...)</span>'}
+          </div>`;
+    };
 
     let body = '';
     if (running) {
@@ -9360,29 +9408,57 @@ function renderUnifiedUpdate(data) {
             진행 중 · 경과 ${_uuMin(elapsed)} / 예상 ${_uuMin(total)} ·
             ${left > 0 ? `남은 시간 약 ${_uuMin(left)}` : `<span style="color:#fbbf24;">예상보다 늦어지고 있습니다</span>`}
             <span style="color:#64748b;">(시작 ${_esc((st.started_at || '').replace('T', ' '))})</span></div>`;
-    }
-    body += `<div style="margin-top:10px; display:grid; gap:6px;">`;
-    for (const it of data.items) {
-        const s = (st.items || {})[it.key] || {};
-        const status = running ? (s.status || 'off') : null;
-        const took = s.started_at ? _uuElapsed(s.started_at, s.finished_at) : null;
-        const timeTxt = running
-            ? (status === 'running' ? `경과 ${_uuMin(took)} / 예상 약 ${_uuMin(s.est_min ?? it.est_min)}`
-               : (['done', 'warn', 'failed'].includes(status) && took != null ? `${_uuMin(took)} 걸림` : `예상 약 ${_uuMin(s.est_min ?? it.est_min)}`))
-            : `예상 약 ${_uuMin(it.est_min)}`;
-        const off = running && status === 'off';
-        body += `<div style="display:flex; gap:10px; align-items:flex-start; padding:6px 10px; border-radius:6px; background:rgba(0,0,0,0.25);${off ? ' opacity:0.4;' : ''}">
-            ${running
-                ? `<span style="width:20px; text-align:center;" title="${UU_LABEL[status] || ''}">${UU_ICON[status] || ''}</span>`
-                : `<input type="checkbox" data-uu="${it.key}" ${sel.includes(it.key) ? 'checked' : ''} onchange="_uuUpdateTotal()" style="margin-top:3px;">`}
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:12.5px; color:#f1f5f9; font-weight:600;">${_esc(it.title)}
-                ${off ? '' : `<span style="font-weight:normal; color:#94a3b8; font-size:11px; margin-left:6px;">${timeTxt}</span>`}
-                ${running ? `<span style="font-weight:normal; font-size:11px; margin-left:6px; color:${status === 'failed' ? '#f87171' : status === 'warn' ? '#fbbf24' : '#94a3b8'};">${UU_LABEL[status] || ''}</span>` : ''}
-              </div>
-              <div style="font-size:11px; color:#94a3b8;">${_esc(running && s.detail ? s.detail : it.desc)}</div>
-            </div>
+    } else if (hasOrphan) {
+        const o = live.orphan;
+        body += `<div style="margin-top:10px; padding:8px 10px; border-radius:6px; background:rgba(14,165,233,0.12); border:1px solid rgba(56,189,248,0.35); font-size:12px; color:#e0f2fe;">
+            <div>🔄 <b>독립 백그라운드 작업 실행 중</b>: ${_esc(o.step || o.key)} (PID ${_esc(String(o.pid || ''))}, 시작 ${_esc((o.started_at || '').replace('T', ' '))})</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">웹 서버가 재시작되었으나 하위 프로세스는 살아 있어 계속 진행 중입니다. 완료 후 나머지 항목을 실행하세요.</div>
+            ${renderLiveBox(live)}
           </div>`;
+    }
+    const groups = (data.groups && data.groups.length) ? data.groups : [{ key: null, title: '', desc: '' }];
+    const GROUP_COLOR = { model: '74,222,128', research: '148,163,184', check: '125,211,252' };
+    body += `<div style="margin-top:10px; display:grid; gap:10px;">`;
+    for (const g of groups) {
+        const gItems = data.items.filter(i => g.key == null || i.group === g.key);
+        if (!gItems.length) continue;
+        const rgb = GROUP_COLOR[g.key] || '148,163,184';
+        body += `<div style="border:1px solid rgba(${rgb},0.35); border-radius:8px; padding:8px 10px; background:rgba(${rgb},0.05);">
+            ${g.title ? `<div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                <span style="font-size:13px; font-weight:700; color:rgb(${rgb});">${_esc(g.title)}</span>
+                ${g.badge ? `<span style="font-size:10.5px; padding:1px 7px; border-radius:9px; border:1px solid rgba(${rgb},0.6); color:rgb(${rgb});">${_esc(g.badge)}</span>` : ''}
+                <span style="font-size:11px; color:#94a3b8;">합계 약 ${_uuMin(gItems.reduce((a, i) => a + (i.est_min || 0), 0))}</span>
+                <div style="flex-basis:100%; font-size:11px; color:#94a3b8;">${_esc(g.desc || '')}</div>
+              </div>` : ''}
+            <div style="display:grid; gap:6px;">`;
+        for (const it of gItems) {
+            const s = (st.items || {})[it.key] || {};
+            const status = running ? (s.status || 'off') : null;
+            const took = s.started_at ? _uuElapsed(s.started_at, s.finished_at) : null;
+            const timeTxt = running
+                ? (status === 'running' ? `경과 ${_uuMin(took)} / 예상 약 ${_uuMin(s.est_min ?? it.est_min)}`
+                   : (['done', 'warn', 'failed'].includes(status) && took != null ? `${_uuMin(took)} 걸림` : `예상 약 ${_uuMin(s.est_min ?? it.est_min)}`))
+                : `예상 약 ${_uuMin(it.est_min)}`;
+            const off = running && status === 'off';
+            const showLiveHere = running && status === 'running' && (live.key === it.key || !live.key);
+            body += `<div style="display:flex; gap:10px; align-items:flex-start; padding:6px 10px; border-radius:6px; background:rgba(0,0,0,0.25);${off ? ' opacity:0.4;' : ''}">
+                ${running
+                    ? `<span style="width:20px; text-align:center;" title="${UU_LABEL[status] || ''}">${UU_ICON[status] || ''}</span>`
+                    : `<input type="checkbox" data-uu="${it.key}" ${sel.includes(it.key) ? 'checked' : ''} onchange="_uuUpdateTotal()" style="margin-top:3px;">`}
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:12.5px; color:#f1f5f9; font-weight:600;">${_esc(it.title)}
+                    ${off ? '' : `<span style="font-weight:normal; color:#94a3b8; font-size:11px; margin-left:6px;">${timeTxt}</span>`}
+                    ${running ? `<span style="font-weight:normal; font-size:11px; margin-left:6px; color:${status === 'failed' ? '#f87171' : status === 'warn' ? '#fbbf24' : '#94a3b8'};">${UU_LABEL[status] || ''}</span>` : ''}
+                  </div>
+                  <div style="font-size:11px; color:#94a3b8;">${_esc(running && s.detail ? s.detail : it.desc)}</div>
+                  ${it.cadence ? `<div style="font-size:11px; margin-top:2px;"><span title="${_esc(it.why || '')}" style="color:#7dd3fc;">🗓 ${_esc(it.cadence)}</span>
+                      ${_uuFreshHtml(it) ? ` · ${_uuFreshHtml(it)}` : ''}
+                      ${['warn', 'danger'].includes((it.fresh || {}).level) && it.why ? `<div style="color:#94a3b8;">${_esc(it.why)}</div>` : ''}</div>` : ''}
+                  ${showLiveHere ? renderLiveBox(live) : ''}
+                </div>
+              </div>`;
+        }
+        body += `</div></div>`;
     }
     body += `</div>`;
 
@@ -9407,7 +9483,7 @@ function renderUnifiedUpdate(data) {
     if (!running) _uuUpdateTotal();
 
     clearTimeout(_uuTimer);
-    if (running) _uuTimer = setTimeout(loadUnifiedUpdate, 5000);
+    if (running || hasOrphan) _uuTimer = setTimeout(loadUnifiedUpdate, 5000);
 }
 
 async function loadUnifiedUpdate() {
@@ -9435,6 +9511,7 @@ async function startUnifiedUpdate() {
 window.startUnifiedUpdate = startUnifiedUpdate;
 window.loadUnifiedUpdate = loadUnifiedUpdate;
 window._uuUpdateTotal = _uuUpdateTotal;
+window._uuPick = _uuPick;
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadUnifiedUpdate);
 else loadUnifiedUpdate();
 

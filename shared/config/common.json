@@ -4,7 +4,7 @@
     "INTERVAL": "30m",
     "FEE_UPBIT": 5e-05,
     "SLIPPAGE": 0.0001,
-    "ARCHIVE_START_YM": "2020-01",
-    "ARCHIVE_END_YM": "2026-10",
+    "ARCHIVE_START_YM": "2024-01",
+    "ARCHIVE_END_YM": "2026-11",
     "FEE_RATE": 5e-05
 }

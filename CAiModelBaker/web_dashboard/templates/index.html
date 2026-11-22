@@ -2977,20 +2977,22 @@ async function refreshStatus() {
 
         // Data coverage
         const cov = document.getElementById('dataCoverage');
-        if (status.dataset?.exists) {
-            cov.innerHTML = `
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-                    <div><strong>범위:</strong> ${status.dataset.start} ~ ${status.dataset.end}</div>
-                    <div><strong>행 수:</strong> ${status.dataset.rows?.toLocaleString()}</div>
-                    <div><strong>파일:</strong> ${status.dataset.path}</div>
-                </div>
-                <div class="progress" style="margin-top:8px;">
-                    <div class="progress-bar green" style="width:100%"></div>
-                </div>
-                <div style="text-align:center;font-size:11px;color:var(--text-muted);">데이터 준비 완료 ✅</div>
-            `;
-        } else {
-            cov.innerHTML = `<div class="alert alert-warning">아직 통합 데이터셋이 없습니다. Data 탭에서 빌드해 주세요.</div>`;
+        if (cov) {
+            if (status.dataset?.exists) {
+                cov.innerHTML = `
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div><strong>범위:</strong> ${status.dataset.start} ~ ${status.dataset.end}</div>
+                        <div><strong>행 수:</strong> ${status.dataset.rows?.toLocaleString()}</div>
+                        <div><strong>파일:</strong> ${status.dataset.path}</div>
+                    </div>
+                    <div class="progress" style="margin-top:8px;">
+                        <div class="progress-bar green" style="width:100%"></div>
+                    </div>
+                    <div style="text-align:center;font-size:11px;color:var(--text-muted);">데이터 준비 완료 ✅</div>
+                `;
+            } else {
+                cov.innerHTML = `<div class="alert alert-warning">아직 통합 데이터셋이 없습니다. Data 탭에서 빌드해 주세요.</div>`;
+            }
         }
 
         // Restore period values

@@ -36,8 +36,25 @@ def test_api_compose_features_v2(client):
     """POST /api/data_vault/compose_features 엔드포인트 검증"""
     import pandas as pd
     from shared.data_library import paths as dpaths
+    from shared.data_library.symbol_relations_manager import SymbolRelationsManager
+    from CAiModelBaker.core.feature_composer import FeatureComposer
+
     p10s = dpaths.normalized_path("candles_10s", "069500_10s.parquet")
-    expected_rows = len(pd.read_parquet(p10s)) if p10s and os.path.exists(p10s) else 91299
+    if p10s and os.path.exists(p10s):
+        df_norm = pd.read_parquet(p10s, columns=["timestamp"])
+        rels = SymbolRelationsManager.get_relations("069500")
+        ref_symbols = [r["symbol"] for r in rels["references"]] if rels and rels.get("references") else None
+        if ref_symbols:
+            cov = FeatureComposer().get_coverage_summary("069500", "10s", ref_symbols=ref_symbols)
+            common_dates = cov.get("_common_dates_set")
+            if common_dates is not None:
+                expected_rows = int(pd.to_datetime(df_norm["timestamp"]).dt.date.isin(common_dates).sum())
+            else:
+                expected_rows = len(df_norm)
+        else:
+            expected_rows = len(df_norm)
+    else:
+        expected_rows = 91299
 
     payload = {
         "symbol": "069500",

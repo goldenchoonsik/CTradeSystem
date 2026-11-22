@@ -4,8 +4,8 @@
     "INTERVAL": "10s",
     "FEE_UPBIT": 5e-05,
     "SLIPPAGE": 0.0001,
-    "ARCHIVE_START_YM": "2020-01",
-    "ARCHIVE_END_YM": "2026-10",
+    "ARCHIVE_START_YM": "2024-01",
+    "ARCHIVE_END_YM": "2026-11",
     "FEE_RATE": 5e-05,
     "BACKTEST_DAYS": 40,
     "COOLDOWN_MINUTES": 2,
@@ -315,9 +315,9 @@
         "max_features": 10,
         "complexity_penalty": 0.15,
         "final_test_ratio": 100,
+        "use_all_features": false,
         "holdout_mode": "full",
-        "final_test_td": 5,
-        "use_all_features": false
+        "final_test_td": 5
     },
     "PROJECT_META": {
         "memo": "",
@@ -480,5 +480,9 @@
             "name": "테더",
             "role": "crypto_spot"
         }
-    ]
+    ],
+    "ARCHIVE_TICK_DAYS": "60",
+    "ARCHIVE_MINUTE_START_YM": "2024-01",
+    "ARCHIVE_MINUTE_END_YM": "2026-11",
+    "ARCHIVE_DAILY_RANGE": "ALL"
 }

@@ -651,43 +651,66 @@ class DataQualityAuditor:
                     return entry
 
         # 로드할 날짜 범위 산출 (증분 대상 일자가 특정되어 있으면 해당 기간만 로드하여 메모리 절약)
-        start_d = min(dates_to_audit) if dates_to_audit else None
-        end_d = max(dates_to_audit) if dates_to_audit else None
+        # 틱 일자 저장소(ref_kind != "daily")는 수천만 행을 한 번에 올리면 OOM(5GB+)이 날 수 있으므로
+        # 5거래일 단위 청크로 분할해 로드·대조하고 즉시 메모리를 해제한다.
+        _TICK_AUDIT_CHUNK_DAYS = 5
+        tick_target_dates = None
+        if tick_sym and ref_kind != "daily" and tick_store.has_data(tick_sym):
+            tick_target_dates = sorted(dates_to_audit) if dates_to_audit is not None else sorted(tick_store.dates(tick_sym))
 
-        fine = _load_series(fine_path, start=start_d, end=end_d)
-        ref = _load_series(ref_path, start=start_d, end=end_d) if ref_path and candle_store.path_exists(ref_path) else None
+        if tick_target_dates and len(tick_target_dates) > _TICK_AUDIT_CHUNK_DAYS:
+            import gc
+            new_days = {}
+            bar_label = BAR_LABEL_BY_PROVIDER.get(provider.upper(), "end")
+            for i in range(0, len(tick_target_dates), _TICK_AUDIT_CHUNK_DAYS):
+                chunk = tick_target_dates[i:i + _TICK_AUDIT_CHUNK_DAYS]
+                c_start, c_end = chunk[0], chunk[-1]
+                fine_c = _load_series(fine_path, start=c_start, end=c_end)
+                ref_c = _load_series(ref_path, start=c_start, end=c_end) if ref_path and candle_store.path_exists(ref_path) else None
+                chunk_days = audit_frames(
+                    fine_c, ref_c, bar_label, ref_kind, policy, dates_to_audit=set(chunk)
+                )
+                new_days.update(chunk_days)
+                del fine_c, ref_c
+                gc.collect()
+        else:
+            start_d = min(dates_to_audit) if dates_to_audit else None
+            end_d = max(dates_to_audit) if dates_to_audit else None
 
-        # 일반 파일(일자 저장소가 아닌 경우)에 대한 증분 계산 (파일 지문이 같을 때만 기존 일자 재사용)
-        if not full and existing and existing.get("policy") == policy_sig and existing.get("fine_sig") == _sig(fine_path) and dates_to_audit is None and not fine.empty:
-            fine_temp = fine.copy()
-            fine_temp["d"] = fine_temp["ts"].dt.strftime("%Y-%m-%d")
-            all_fine_dates = set(fine_temp["d"].unique())
-            old_days_map = existing.get("days", {})
-            reusable_days = {d: v for d, v in old_days_map.items() if d in all_fine_dates}
-            dates_to_audit = all_fine_dates - set(reusable_days.keys())
-            del fine_temp
+            fine = _load_series(fine_path, start=start_d, end=end_d)
+            ref = _load_series(ref_path, start=start_d, end=end_d) if ref_path and candle_store.path_exists(ref_path) else None
 
-            if not dates_to_audit:
-                entry = {
-                    "policy": policy_sig,
-                    "fine_sig": _sig(fine_path),
-                    "ref_sig": _sig(ref_path),
-                    "ledger_sig": _sig(fine_path + ".days.json"),
-                    "conflicts_sig": _sig(fine_path + ".conflicts.json"),
-                    "days": reusable_days,
-                    "summary": summarize(reusable_days)
-                }
-                cls._mem[key] = entry
-                cls._save()
-                return entry
+            # 일반 파일(일자 저장소가 아닌 경우)에 대한 증분 계산 (파일 지문이 같을 때만 기존 일자 재사용)
+            if not full and existing and existing.get("policy") == policy_sig and existing.get("fine_sig") == _sig(fine_path) and dates_to_audit is None and not fine.empty:
+                fine_temp = fine.copy()
+                fine_temp["d"] = fine_temp["ts"].dt.strftime("%Y-%m-%d")
+                all_fine_dates = set(fine_temp["d"].unique())
+                old_days_map = existing.get("days", {})
+                reusable_days = {d: v for d, v in old_days_map.items() if d in all_fine_dates}
+                dates_to_audit = all_fine_dates - set(reusable_days.keys())
+                del fine_temp
 
-        # 3. 프레임 감사 실행 (dates_to_audit이 있으면 해당 일자만 초고속 대조)
-        new_days = audit_frames(
-            fine, ref,
-            BAR_LABEL_BY_PROVIDER.get(provider.upper(), "end"),
-            ref_kind, policy,
-            dates_to_audit=dates_to_audit
-        )
+                if not dates_to_audit:
+                    entry = {
+                        "policy": policy_sig,
+                        "fine_sig": _sig(fine_path),
+                        "ref_sig": _sig(ref_path),
+                        "ledger_sig": _sig(fine_path + ".days.json"),
+                        "conflicts_sig": _sig(fine_path + ".conflicts.json"),
+                        "days": reusable_days,
+                        "summary": summarize(reusable_days)
+                    }
+                    cls._mem[key] = entry
+                    cls._save()
+                    return entry
+
+            # 3. 프레임 감사 실행 (dates_to_audit이 있으면 해당 일자만 초고속 대조)
+            new_days = audit_frames(
+                fine, ref,
+                BAR_LABEL_BY_PROVIDER.get(provider.upper(), "end"),
+                ref_kind, policy,
+                dates_to_audit=dates_to_audit
+            )
         _apply_ledger_check(new_days, fine_path)
 
         # 4. 기존 감사 일자와 신규 감사 일자 병합
